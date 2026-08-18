@@ -1,5 +1,6 @@
-import { ArrowRight, CheckCircle } from "@phosphor-icons/react/ssr";
+import { CheckCircle } from "@phosphor-icons/react/ssr";
 import Image from "next/image";
+import { CtaLink } from "@/components/ui/cta-link";
 
 export function FinalCTA() {
   return (
@@ -17,23 +18,17 @@ export function FinalCTA() {
             De lo que necesita tu mascota podemos acordarnos nosotros.
           </h2>
           <p className="mt-6 max-w-xl text-lg leading-8 text-white/90 sm:text-xl">
-            Estamos preparando la primera experiencia de Patitas en Villa
-            Crespo. La configuración online estará disponible muy pronto.
+            Probá una primera configuración y descubrí qué ritmo puede tener la
+            Patitas de tu mascota.
           </p>
 
           <div className="mt-9 flex flex-col items-start gap-4 sm:flex-row sm:items-center">
-            <button
-              type="button"
-              disabled
-              aria-describedby="cta-status"
-              className="inline-flex min-h-14 items-center justify-center gap-2 rounded-xl bg-brand-yellow px-6 py-3.5 font-semibold text-ink opacity-85"
-            >
+            <CtaLink href="/armar" variant="yellow">
               Armar su Patitas
-              <ArrowRight size={18} weight="bold" aria-hidden="true" />
-            </button>
+            </CtaLink>
             <p id="cta-status" className="flex items-center gap-2 text-sm font-semibold text-white">
               <CheckCircle size={20} weight="fill" className="text-brand-yellow" aria-hidden="true" />
-              Próximamente, sin dejar datos todavía
+              Sin pagos ni compromiso
             </p>
           </div>
         </div>

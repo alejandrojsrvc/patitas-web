@@ -6,7 +6,7 @@ const footerGroups = [
     links: [
       { href: "#como-funciona", label: "Cómo funciona" },
       { href: "#que-recibes", label: "Qué recibís" },
-      { href: "#armar", label: "Armar mi Patitas" },
+      { href: "/armar", label: "Armar mi Patitas" },
     ],
   },
   {

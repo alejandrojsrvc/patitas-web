@@ -70,7 +70,7 @@ export function MobileNav() {
               Entrar · Próximamente
             </span>
             <a
-              href="#armar"
+              href="/armar"
               onClick={closeMenu}
               className="mt-2 flex min-h-12 items-center justify-center rounded-xl bg-brand-blue px-5 font-semibold text-white transition-colors hover:bg-[#0048dc]"
             >

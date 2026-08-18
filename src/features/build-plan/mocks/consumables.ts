@@ -1,0 +1,58 @@
+import type { ConsumableOption } from "../types";
+
+export const consumableOptions: ConsumableOption[] = [
+  {
+    id: "dog-bags",
+    species: "dog",
+    name: "Bolsas sanitarias",
+    detail: "Rollos para los paseos",
+    quantityLabel: "packs de 60",
+    quantityOptions: [1, 2, 3],
+    defaultQuantity: 1,
+  },
+  {
+    id: "dog-snacks",
+    species: "dog",
+    name: "Snacks",
+    detail: "Un extra para la próxima entrega",
+    quantityLabel: "packs",
+    quantityOptions: [1, 2, 3],
+    defaultQuantity: 1,
+  },
+  {
+    id: "dog-hygiene",
+    species: "dog",
+    name: "Higiene",
+    detail: "Productos de cuidado habitual",
+    quantityLabel: "unidades",
+    quantityOptions: [1, 2],
+    defaultQuantity: 1,
+  },
+  {
+    id: "cat-litter",
+    species: "cat",
+    name: "Arena sanitaria",
+    detail: "Para mantener su rutina de higiene",
+    quantityLabel: "bolsas",
+    quantityOptions: [1, 2, 3],
+    defaultQuantity: 1,
+  },
+  {
+    id: "cat-wet-food",
+    species: "cat",
+    name: "Alimento húmedo",
+    detail: "Sobres o latas para complementar",
+    quantityLabel: "packs de 6",
+    quantityOptions: [1, 2, 4],
+    defaultQuantity: 1,
+  },
+  {
+    id: "cat-snacks",
+    species: "cat",
+    name: "Snacks",
+    detail: "Un gustito para sumar una vez",
+    quantityLabel: "packs",
+    quantityOptions: [1, 2, 3],
+    defaultQuantity: 1,
+  },
+];

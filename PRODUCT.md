@@ -22,7 +22,7 @@ Patitas no es un petshop ni un marketplace: organiza el abastecimiento habitual 
 
 - La primera etapa contempla perros y gatos.
 - Las frecuencias iniciales son quincenal y mensual.
-- La landing usa datos ilustrativos y no implementa backend, onboarding, autenticación, pagos ni ecommerce.
+- La landing y `/armar` usan datos ilustrativos. El wizard permite probar la configuración y una recomendación mock, sin backend, persistencia, autenticación, pagos ni ecommerce.
 - La zona inicial representada es Villa Crespo, CABA.
 
 ## Brand Commitments

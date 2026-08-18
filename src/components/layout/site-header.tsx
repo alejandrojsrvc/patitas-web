@@ -39,7 +39,7 @@ export function SiteHeader() {
             Entrar
           </span>
           <a
-            href="#armar"
+            href="/armar"
             className="flex min-h-12 items-center justify-center rounded-xl bg-brand-blue px-5 text-sm font-semibold text-white transition-colors hover:bg-[#0048dc]"
           >
             Armar mi Patitas

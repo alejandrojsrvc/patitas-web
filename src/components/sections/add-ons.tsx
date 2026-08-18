@@ -57,8 +57,8 @@ export function AddOns() {
                 la rutina sigue como estaba.
               </p>
             </div>
-            <CtaLink href="#armar" variant="secondary" className="mt-10 bg-surface">
-              Agregar a mi próxima Patitas
+            <CtaLink href="/armar" variant="secondary" className="mt-10 bg-surface">
+              Armar mi Patitas
             </CtaLink>
           </div>
         </div>
