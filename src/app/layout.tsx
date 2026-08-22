@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
+import { Analytics } from "@vercel/analytics/next";
 import { OrganizationJsonLd, WebsiteJsonLd } from "@/components/seo/json-ld";
 import { CartProvider } from "@/features/cart/cart-context";
 import "./globals.css";
@@ -101,6 +102,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <OrganizationJsonLd />
         <WebsiteJsonLd />
         <CartProvider>{children}</CartProvider>
+        <Analytics />
       </body>
     </html>
   );

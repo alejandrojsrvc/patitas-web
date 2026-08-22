@@ -27,7 +27,7 @@ async function handle(request: Request, context: Context, method: string) {
   const visitorId = cookieStore.get(authCookieNames.visitorId)?.value ?? crypto.randomUUID();
   const body = method === "GET" || method === "DELETE" ? undefined : await request.text();
 
-  let currentAccessToken = accessToken;
+  let currentAccessToken: string | null | undefined = accessToken;
   let refreshedSession = null;
   let upstream: Response;
 

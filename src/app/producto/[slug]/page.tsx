@@ -23,9 +23,10 @@ export default async function ProductPage({ params }: Props) {
   let product;
   try { product = await getProduct((await params).slug); }
   catch (error) { if (error instanceof PatitasApiError && error.status === 404) notFound(); throw error; }
+  const categorySlug = product.category?.slug;
   const relatedResults = await Promise.all([
     safeCatalogCall(() => getProducts({ brand: [product.brand.slug], perPage: 8 })),
-    product.category ? safeCatalogCall(() => getProducts({ category: product.category.slug, perPage: 8 })) : Promise.resolve(null),
+    categorySlug ? safeCatalogCall(() => getProducts({ category: categorySlug, perPage: 8 })) : Promise.resolve(null),
   ]);
   const relatedProducts = Array.from(new Map(
     relatedResults

@@ -97,9 +97,10 @@ export function CheckoutForm({ initialSession, initialShippingOptions = [] }: { 
 
   function validateStep(targetStep: CheckoutStep) {
     if (!formRef.current) return false;
-    const fields = Array.from(formRef.current.elements).filter((element): element is HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement =>
-      "dataset" in element && element.dataset.step === String(targetStep),
-    );
+    const fields = Array.from(formRef.current.elements).filter((element): element is HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement => {
+      const isField = element instanceof HTMLInputElement || element instanceof HTMLSelectElement || element instanceof HTMLTextAreaElement;
+      return isField && element.dataset.step === String(targetStep);
+    });
     const invalid = fields.find((field) => !field.checkValidity());
     if (invalid) { invalid.reportValidity(); return false; }
     return true;
