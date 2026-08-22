@@ -7,19 +7,20 @@ import {
 const steps = [
   {
     title: "Contanos sobre tu mascota",
-    description: "Qué come, cuánto pesa y qué necesita regularmente.",
+    description:
+      "Qué come, cuánto pesa, qué necesita regularmente. La configuración toma un momento y se hace una sola vez.",
     icon: Dog,
   },
   {
     title: "Armamos su Patitas",
     description:
-      "Organizamos una entrega quincenal o mensual según su consumo.",
+      "Organizamos una entrega quincenal o mensual según su consumo, con los productos que ya conocés.",
     icon: Package,
   },
   {
     title: "Llega justo cuando toca",
     description:
-      "Podés modificar, adelantar, retrasar o saltar futuras entregas.",
+      "Podés modificar, adelantar, retrasar o saltar futuras entregas. Vos tenés el control de cada una.",
     icon: CalendarDots,
   },
 ];

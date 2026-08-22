@@ -1,9 +1,11 @@
 import { Plus } from "@phosphor-icons/react/ssr";
+import { FAQJsonLd } from "@/components/seo/json-ld";
 import { faqs } from "@/data/mocks/landing";
 
 export function FAQ() {
   return (
     <section id="preguntas" className="anchor-section section-space bg-cream">
+      <FAQJsonLd faqs={faqs} />
       <div className="container-shell grid gap-12 lg:grid-cols-[0.72fr_1.28fr] lg:gap-20">
         <div>
           <h2 className="display-heading text-4xl sm:text-5xl lg:text-[3.25rem]">

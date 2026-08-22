@@ -32,6 +32,9 @@ export function PetsCovered() {
           </h2>
           <p className="body-copy mt-5 max-w-xl text-lg">
             La configuración parte de la mascota, no de un catálogo infinito.
+            Contanos qué consume tu perro o gato y armamos su Patitas con
+            los productos exactos que necesita, en la cantidad y frecuencia
+            que mejor se adapte.
           </p>
         </div>
 

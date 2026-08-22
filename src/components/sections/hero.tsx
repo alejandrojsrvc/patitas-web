@@ -19,7 +19,8 @@ export function Hero() {
           <p className="body-copy mt-6 max-w-[35rem] text-lg leading-8 sm:text-xl">
             Configurá una vez su alimento y esenciales. Patitas se ocupa de
             que lleguen según su ritmo, sin que tengas que recordar cada
-            compra.
+            compra. Elegís la frecuencia, y vos seguís teniendo el control
+            de cada entrega.
           </p>
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -58,6 +59,7 @@ export function Hero() {
               width={736}
               height={876}
               loading="eager"
+              priority
               className="absolute -right-16 -top-16 w-72 rotate-12 opacity-15 sm:w-96"
             />
 

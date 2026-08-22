@@ -1,7 +1,5 @@
 # Product
 
-<!-- uizze:product-schema 1 -->
-
 ## Platform
 
 web
@@ -12,18 +10,20 @@ Personas responsables de perros o gatos que compran regularmente alimento y otro
 
 ## Product Purpose
 
-Patitas Inquietas es un servicio de abastecimiento recurrente para mascotas. La persona configura una vez qué consume su mascota y recibe entregas quincenales o mensuales que puede modificar, adelantar, retrasar o saltar.
+Patitas Inquietas es una tienda online de consumibles para perros y gatos que estima cuánto dura lo que compra cada mascota y ayuda a reponerlo antes de que se termine.
 
 ## Positioning
 
-Patitas no es un petshop ni un marketplace: organiza el abastecimiento habitual de cada mascota para que no le falte lo que ya consume.
+Patitas funciona como un ecommerce clásico, pero la reposición no queda escondida: calcula consumo, muestra una fecha estimada y facilita recordatorios y recompra sin obligar a una suscripción.
 
 ## Capabilities and Constraints
 
 - La primera etapa contempla perros y gatos.
-- Las frecuencias iniciales son quincenal y mensual.
-- La landing y `/armar` usan datos ilustrativos. El wizard permite probar la configuración y una recomendación mock, sin backend, persistencia, autenticación, pagos ni ecommerce.
-- La zona inicial representada es Villa Crespo, CABA.
+- El catálogo inicial prioriza alimento seco y húmedo, arena, snacks y bolsas para paseo.
+- La compra inicial admite invitados; la cuenta es opcional y agrega mascotas, pedidos, direcciones y reposiciones.
+- La cobertura comercial inicial es CABA. Costos y plazos no se publican hasta estar configurados.
+- Mercado Pago Checkout Pro es el mecanismo de pago previsto para el MVP.
+- La estimación usa primero la tabla del fabricante y marca cualquier cálculo general como fallback.
 
 ## Brand Commitments
 
@@ -38,7 +38,8 @@ No hay todavía testimonios, métricas, fotografías propias ni afirmaciones com
 
 ## Product Principles
 
-- Configurar una vez y delegar el recuerdo.
-- Mantener control sobre cada entrega sin permanencia rígida.
-- Reponer lo que la mascota ya consume, sin obligar a cambiar su alimentación.
+- Comprar normalmente sin aprender un flujo especial.
+- Entender cuánto debería durar cada presentación antes de elegirla.
+- Delegar el recuerdo manteniendo control y sin permanencia rígida.
+- Reponer lo que la mascota ya consume, sin obligar a cambiar su alimentación ni activar cobros automáticos.
 - Comunicar tranquilidad antes que urgencia comercial.

@@ -10,6 +10,9 @@
   --soft-yellow: #fff9c7;
   --border: #e8e8e3;
   --white: #ffffff;
+  --catalog-canvas: #f3f5f7;
+  --catalog-soft: #e9edf1;
+  --catalog-line: #dfe4e9;
 }
 
 @theme inline {
@@ -22,6 +25,9 @@
   --color-soft-yellow: var(--soft-yellow);
   --color-border: var(--border);
   --color-surface: var(--white);
+  --color-catalog-canvas: var(--catalog-canvas);
+  --color-catalog-soft: var(--catalog-soft);
+  --color-catalog-line: var(--catalog-line);
   --font-sans: var(--font-sn-pro);
   --font-display: var(--font-bricolage);
 }
@@ -31,9 +37,10 @@
 }
 
 html {
-  scroll-behavior: smooth;
+  scroll-behavior: auto;
   scroll-padding-top: 6rem;
   background: var(--cream);
+  overscroll-behavior-x: none;
 }
 
 body {
@@ -46,6 +53,20 @@ body {
   line-height: 1.55;
   text-rendering: optimizeLegibility;
   -webkit-tap-highlight-color: rgba(0, 85, 255, 0.12);
+}
+
+main,
+section,
+article,
+aside {
+  min-width: 0;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
 }
 
 ::selection {
@@ -71,12 +92,12 @@ button:disabled {
 }
 
 .container-shell {
-  width: min(100% - 2rem, 76rem);
+  width: min(100% - 1.25rem, 76rem);
   margin-inline: auto;
 }
 
 .section-space {
-  padding-block: 4.5rem;
+  padding-block: 3.5rem;
 }
 
 .display-heading {
@@ -96,19 +117,47 @@ button:disabled {
   scroll-margin-top: 6rem;
 }
 
+.touch-target {
+  min-height: 2.75rem;
+  min-width: 2.75rem;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+@media (pointer: coarse) {
+  a:not(.text-link),
+  button,
+  summary {
+    -webkit-tap-highlight-color: rgba(0, 85, 255, 0.16);
+  }
+}
+
 @media (min-width: 48rem) {
   .container-shell {
     width: min(100% - 3rem, 76rem);
   }
 
   .section-space {
-    padding-block: 6rem;
+    padding-block: 4.5rem;
   }
 }
 
 @media (min-width: 64rem) {
   .section-space {
-    padding-block: 7.5rem;
+    padding-block: 5.5rem;
+  }
+}
+
+@media (min-width: 90rem) {
+  .container-shell {
+    width: min(100% - 4rem, 80rem);
   }
 }
 

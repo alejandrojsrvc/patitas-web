@@ -1,83 +1,45 @@
 "use client";
 
-import { List, X } from "@phosphor-icons/react";
+import { List, MagnifyingGlass, UserCircle, X } from "@phosphor-icons/react";
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
 const links = [
-  { href: "#como-funciona", label: "Cómo funciona" },
-  { href: "#que-recibes", label: "Qué recibís" },
-  { href: "#preguntas", label: "Preguntas" },
-];
+  ["Perros", "/perros"], ["Alimento para perros", "/perros/alimentos"],
+  ["Gatos", "/gatos"], ["Alimento para gatos", "/gatos/alimentos"],
+  ["Arena y piedras", "/gatos/arena"], ["Marcas", "/marcas"],
+  ["Reponer", "/reponer"], ["Calcular alimento", "/calculadora-alimento"],
+] as const;
 
-export function MobileNav() {
+export function MobileNav({ searchQuery }: { searchQuery?: string }) {
   const [isOpen, setIsOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
-
   useEffect(() => {
     if (!isOpen) return;
-
-    function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") {
-        setIsOpen(false);
-        triggerRef.current?.focus();
-      }
-    }
-
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
+    const close = (event: KeyboardEvent) => {
+      if (event.key === "Escape") { setIsOpen(false); triggerRef.current?.focus(); }
+    };
+    document.addEventListener("keydown", close);
+    return () => document.removeEventListener("keydown", close);
   }, [isOpen]);
 
-  function closeMenu() {
-    setIsOpen(false);
-  }
-
   return (
-    <div className="md:hidden">
-      <button
-        ref={triggerRef}
-        type="button"
-        className="flex size-11 items-center justify-center rounded-xl border border-border bg-surface text-ink transition-[background-color,border-color] hover:border-brand-blue hover:bg-soft-blue"
-        aria-label={isOpen ? "Cerrar menú" : "Abrir menú"}
-        aria-expanded={isOpen}
-        aria-controls="mobile-menu"
-        onClick={() => setIsOpen((current) => !current)}
-      >
-        {isOpen ? (
-          <X size={22} weight="bold" aria-hidden="true" />
-        ) : (
-          <List size={24} weight="bold" aria-hidden="true" />
-        )}
+    <div className="lg:hidden">
+      <button ref={triggerRef} type="button" onClick={() => setIsOpen((value) => !value)} aria-expanded={isOpen} aria-controls="mobile-menu" aria-label={isOpen ? "Cerrar menú" : "Abrir menú"} className="touch-target flex items-center justify-center rounded-xl border border-border bg-white text-ink hover:border-brand-blue">
+        {isOpen ? <X size={22} weight="bold" /> : <List size={23} weight="bold" />}
       </button>
-
       {isOpen ? (
-        <nav
-          id="mobile-menu"
-          aria-label="Navegación mobile"
-          className="absolute inset-x-4 top-[4.75rem] rounded-2xl border border-border bg-surface p-4 shadow-[0_12px_32px_rgba(23,23,23,0.10)]"
-        >
-          <div className="flex flex-col">
-            {links.map((link) => (
-              <a
-                key={link.href}
-                href={link.href}
-                onClick={closeMenu}
-                className="rounded-xl px-3 py-3 font-semibold text-ink transition-colors hover:bg-soft-blue hover:text-brand-blue"
-              >
-                {link.label}
-              </a>
-            ))}
-            <span className="px-3 py-3 text-muted" title="Próximamente">
-              Entrar · Próximamente
-            </span>
-            <a
-              href="/armar"
-              onClick={closeMenu}
-              className="mt-2 flex min-h-12 items-center justify-center rounded-xl bg-brand-blue px-5 font-semibold text-white transition-colors hover:bg-[#0048dc]"
-            >
-              Armar mi Patitas
-            </a>
-          </div>
-        </nav>
+        <div id="mobile-menu" className="absolute inset-x-0 top-full max-h-[calc(100svh-4rem)] overflow-y-auto border-b border-black/5 bg-catalog-canvas px-3 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 shadow-[0_16px_40px_rgba(23,23,23,0.10)] sm:px-4">
+          <form action="/buscar" className="relative mb-3 md:hidden">
+            <label htmlFor="mobile-search" className="sr-only">Buscar productos</label>
+            <MagnifyingGlass size={18} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted" />
+            <input id="mobile-search" name="q" type="search" defaultValue={searchQuery} placeholder="Buscar productos" className="h-12 w-full rounded-xl border border-transparent bg-white pl-11 pr-4 outline-none focus:border-brand-blue" />
+          </form>
+          <nav aria-label="Navegación mobile" className="grid gap-1">
+            {links.map(([label, href]) => <Link key={href} href={href} onClick={() => setIsOpen(false)} className="min-h-11 rounded-xl px-3 py-2.5 font-semibold text-ink hover:bg-soft-blue hover:text-brand-blue">{label}</Link>)}
+            <Link href="/mi-cuenta" onClick={() => setIsOpen(false)} className="mt-2 flex min-h-12 items-center gap-3 rounded-xl border-t border-border px-3 py-3 font-semibold text-ink"><UserCircle size={22} weight="bold" /> Mi cuenta</Link>
+          </nav>
+        </div>
       ) : null}
     </div>
   );

@@ -1,12 +1,14 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
+import { OrganizationJsonLd, WebsiteJsonLd } from "@/components/seo/json-ld";
+import { CartProvider } from "@/features/cart/cart-context";
 import "./globals.css";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
   ? process.env.NEXT_PUBLIC_SITE_URL
   : process.env.VERCEL_PROJECT_PRODUCTION_URL
     ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
-    : "http://localhost:3000";
+    : "http://localhost:3001";
 
 const bricolage = localFont({
   src: [
@@ -60,39 +62,46 @@ const snPro = localFont({
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: "Patitas Inquietas | Lo que necesita tu mascota, justo cuando toca",
-  description:
-    "Configurá una vez el alimento y los esenciales de tu mascota. Patitas organiza entregas quincenales o mensuales que podés cambiar o saltar.",
+  description: "Comprá alimento, arena y esenciales. Patitas calcula cuánto duran y te ayuda a reponerlos antes de que se terminen.",
   applicationName: "Patitas Inquietas",
   keywords: [
     "abastecimiento para mascotas",
     "alimento para perros",
     "alimento para gatos",
-    "entrega recurrente para mascotas",
+    "reposición de alimento para mascotas",
   ],
+  manifest: "/site.webmanifest",
+  alternates: {
+    canonical: "/",
+  },
   openGraph: {
-    title: "Que nunca le falte lo que necesita | Patitas Inquietas",
-    description:
-      "Alimento y esenciales de tu mascota, organizados según su ritmo.",
+    title: "Todo lo que consume, antes de que se termine | Patitas Inquietas",
+    description: "Comprá normalmente y calculá cuándo te conviene reponer.",
     type: "website",
     locale: "es_AR",
     siteName: "Patitas Inquietas",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Que nunca le falte lo que necesita | Patitas Inquietas",
-    description:
-      "Alimento y esenciales de tu mascota, organizados según su ritmo.",
+    title: "Todo lo que consume, antes de que se termine | Patitas Inquietas",
+    description: "Comprá normalmente y calculá cuándo te conviene reponer.",
   },
 };
 
 export const viewport: Viewport = {
   themeColor: "#fffdf5",
+  colorScheme: "light",
+  viewportFit: "cover",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="es-AR" className={`${bricolage.variable} ${snPro.variable}`}>
-      <body>{children}</body>
+      <body>
+        <OrganizationJsonLd />
+        <WebsiteJsonLd />
+        <CartProvider>{children}</CartProvider>
+      </body>
     </html>
   );
 }

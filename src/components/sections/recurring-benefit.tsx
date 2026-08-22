@@ -21,8 +21,10 @@ export function RecurringBenefit() {
             Vos cuidás de ellos. Nosotros nos acordamos.
           </h2>
           <p className="mt-6 max-w-xl text-lg leading-8 text-white/90 sm:text-xl">
-            Lo que se termina una y otra vez puede dejar de ocupar lugar en tu
-            cabeza.
+            El alimento, la arena, las bolsas, los snacks: todo lo que se
+            termina una y otra vez puede dejar de ocupar lugar en tu cabeza.
+            Patitas te lo organiza una vez y vos seguís teniendo el control
+            de cada entrega.
           </p>
         </div>
 

@@ -19,7 +19,9 @@ export function AddOns() {
           </h2>
           <p className="body-copy mt-5 max-w-xl text-lg">
             Sumalo una vez a una próxima Patitas. No todo tiene que volverse
-            recurrente.
+            recurrente: elegí un juguete, un snack o un accesorio y viaja
+            junto con su alimento sin que tengas que hacer otro pedido
+            aparte.
           </p>
         </div>
 

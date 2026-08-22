@@ -16,6 +16,8 @@ export function FamiliarFood() {
             <p className="body-copy max-w-xl text-lg">
               Patitas repone lo que tu mascota ya consume. Elegís su marca y
               variedad habitual; nosotros organizamos cuándo vuelve a llegar.
+              No hace falta cambiar su alimentación ni probar algo nuevo:
+              seguimos exactamente con lo que ya le funciona.
             </p>
             <p className="mt-5 flex items-center gap-2 text-sm font-semibold text-ink">
               <CheckCircle size={20} weight="fill" className="text-brand-blue" aria-hidden="true" />

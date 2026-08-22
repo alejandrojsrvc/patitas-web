@@ -31,7 +31,12 @@ export function PetSupplyExample() {
           </h2>
           <p className="body-copy mt-5 max-w-md text-lg">
             No es un carrito esperando que vuelvas. Es una próxima entrega
-            preparada alrededor de lo que Kiara consume.
+            preparada alrededor de lo que Kiara consume, con los productos
+            que ya conocés y la frecuencia que elegiste.
+          </p>
+          <p className="body-copy mt-4 max-w-md text-muted">
+            Cada Patitas se arma según la rutina de tu mascota. Si algo
+            cambia, podés ajustarlo antes de que salga.
           </p>
           <div className="mt-8 flex items-center gap-3 text-sm font-semibold text-brand-blue">
             <PencilSimple size={20} weight="bold" aria-hidden="true" />

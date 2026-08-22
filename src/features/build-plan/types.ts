@@ -16,7 +16,7 @@ export type FoodPresentation = {
 export type FoodLine = {
   id: string;
   name: string;
-  mockDailyGramsPerKg: number;
+  mockDailyGramsPerKg?: number;
   presentations: FoodPresentation[];
 };
 

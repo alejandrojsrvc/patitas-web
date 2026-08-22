@@ -1,0 +1,140 @@
+export type Species = "dog" | "cat";
+export type FulfillmentStatus = "IN_STOCK" | "ON_REQUEST" | "OUT_OF_STOCK";
+
+export type CatalogReference = {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  seoTitle: string | null;
+  seoDescription: string | null;
+};
+
+export type Category = CatalogReference & {
+  parentId: string | null;
+  children: Category[];
+};
+
+export type Brand = CatalogReference & {
+  logoUrl: string | null;
+};
+
+export type ProductMedia = {
+  url: string;
+  altText: string;
+  variantId: string | null;
+};
+
+export type ProductVariant = {
+  id: string;
+  sku: string;
+  presentation: string | null;
+  weightGrams: number | null;
+  salePrice: string;
+  compareAtPrice: string | null;
+  currency: "ARS";
+  fulfillment: {
+    status: FulfillmentStatus;
+    purchasable: boolean;
+    leadTimeHours: number | null;
+  };
+};
+
+export type ProductOffer = {
+  id: string;
+  name: string;
+  type: string;
+  value: string;
+};
+
+export type Product = {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  line: string | null;
+  species: Species | null;
+  lifeStage: string | null;
+  breedSize: string | null;
+  brand: Brand;
+  category: CatalogReference | null;
+  media: ProductMedia[];
+  variants: ProductVariant[];
+  offers: ProductOffer[];
+};
+
+export type PublicOffer = ProductOffer & {
+  startsAt: string | null;
+  endsAt: string | null;
+  priority: number;
+  targets: Array<{ productId: string | null; variantId: string | null; categoryId: string | null; brandId: string | null }>;
+};
+
+export type ProductTechnicalSheet = {
+  species: Species | null;
+  lifeStage: string | null;
+  breedSize: string | null;
+  line: string | null;
+  estimatedDailyGramsPerKg: string | null;
+  feedingGuide: {
+    sourceLabel: string;
+    sourceUrl: string | null;
+    requiredDimensions: Record<string, string[]>;
+    entries: Array<{
+      petWeightKg: number;
+      lifeStage: string | null;
+      conditions: Record<string, string>;
+      dailyGramsMin: number;
+      dailyGramsMax: number;
+    }>;
+  } | null;
+};
+
+export type ProductDetail = Product & {
+  technicalSheet: ProductTechnicalSheet;
+  relatedProducts: Array<{
+    id: string;
+    name: string;
+    slug: string;
+    description: string | null;
+    brand: Brand;
+    category: CatalogReference | null;
+    imageUrl: string | null;
+    startingPrice: string;
+  }>;
+};
+
+export type ProductPage = {
+  items: Product[];
+  meta: {
+    page: number;
+    perPage: number;
+    total: number;
+    totalPages: number;
+  };
+};
+
+export type ProductFilters = {
+  q?: string;
+  species?: Species;
+  category?: string;
+  brand?: string[];
+  lifeStage?: string[];
+  weightGrams?: number[];
+  minPrice?: string;
+  maxPrice?: string;
+  featured?: boolean;
+  sort?: "featured" | "name_asc" | "price_asc" | "price_desc";
+  page?: number;
+  perPage?: number;
+};
+
+export type FoodDurationResult = {
+  source: "MANUFACTURER" | "GENERAL_FALLBACK";
+  sourceLabel: string;
+  sourceUrl: string | null;
+  isFallback: boolean;
+  dailyGrams: { min: number; max: number };
+  durationDays: { min: number; max: number };
+  assumptions: string[];
+};

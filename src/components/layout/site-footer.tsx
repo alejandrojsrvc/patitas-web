@@ -1,67 +1,34 @@
 import Image from "next/image";
+import Link from "next/link";
 
-const footerGroups = [
-  {
-    title: "Patitas",
-    links: [
-      { href: "#como-funciona", label: "Cómo funciona" },
-      { href: "#que-recibes", label: "Qué recibís" },
-      { href: "/armar", label: "Armar mi Patitas" },
-    ],
-  },
-  {
-    title: "Ayuda",
-    links: [
-      { href: "#preguntas", label: "Preguntas frecuentes" },
-      { href: "#cobertura", label: "Zona de cobertura" },
-    ],
-  },
-];
+const groups = [
+  { title: "Comprar", links: [["Perros", "/perros"], ["Gatos", "/gatos"], ["Marcas", "/marcas"]] },
+  { title: "Patitas", links: [["Cómo funciona", "/reponer"], ["Reponer", "/reponer"], ["Calculadora", "/calculadora-alimento"], ["Guías", "/guias"]] },
+  { title: "Ayuda", links: [["Envíos", "/envios"], ["Cambios", "/cambios-y-devoluciones"], ["Preguntas frecuentes", "/preguntas-frecuentes"], ["Contacto", "/contacto"]] },
+  { title: "Legal", links: [["Términos", "/terminos"], ["Privacidad", "/privacidad"], ["Defensa del consumidor", "/defensa-del-consumidor"], ["Botón de arrepentimiento", "/arrepentimiento"]] },
+] as const;
 
 export function SiteFooter() {
   return (
-    <footer className="border-t border-border bg-cream py-12 sm:py-16">
-      <div className="container-shell grid gap-12 md:grid-cols-[1.5fr_1fr_1fr]">
-        <div className="max-w-sm" translate="no">
-          <Image
-            src="/brand/patitas-logo-principal.png"
-            alt="Patitas Inquietas"
-            width={190}
-            height={72}
-            className="h-auto w-40"
-          />
-          <p className="mt-5 text-sm leading-6 text-muted">
-            Abastecimiento recurrente para que a tu mascota no le falte lo que
-            consume todos los días.
-          </p>
+    <footer className="border-t border-border bg-ink py-14 text-white sm:py-18">
+      <div className="container-shell grid gap-12 lg:grid-cols-[1.2fr_2fr]">
+        <div className="max-w-sm">
+          <Image src="/brand/patitas-logo-horizontal.png" alt="Patitas Inquietas" width={220} height={24} className="h-auto w-44 brightness-0 invert" />
+          <p className="mt-5 text-sm leading-6 text-white/70">Consumibles para perros y gatos, con una ayuda extra para reponerlos antes de que se terminen.</p>
         </div>
-
-        {footerGroups.map((group) => (
-          <nav key={group.title} aria-label={group.title}>
-            <h2 className="font-display text-lg font-semibold">{group.title}</h2>
-            <ul className="mt-4 space-y-3 text-sm text-muted">
-              {group.links.map((link) => (
-                <li key={link.href}>
-                  <a
-                    href={link.href}
-                    className="underline-offset-4 transition-colors hover:text-brand-blue hover:underline"
-                  >
-                    {link.label}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </nav>
-        ))}
+        <div className="grid grid-cols-2 gap-9 md:grid-cols-4">
+          {groups.map((group) => (
+            <nav key={group.title} aria-label={group.title}>
+              <h2 className="font-display text-lg font-semibold">{group.title}</h2>
+              <ul className="mt-4 space-y-3 text-sm text-white/65">
+                {group.links.map(([label, href]) => <li key={`${label}-${href}`}><Link href={href} className="underline-offset-4 hover:text-white hover:underline">{label}</Link></li>)}
+              </ul>
+            </nav>
+          ))}
+        </div>
       </div>
-
-      <div className="container-shell mt-12 flex flex-col gap-4 border-t border-border pt-6 text-xs text-muted sm:flex-row sm:items-center sm:justify-between">
-        <p>© 2026 Patitas Inquietas</p>
-        <div className="flex flex-wrap gap-x-5 gap-y-2">
-          <span title="Contenido legal pendiente">Términos · Próximamente</span>
-          <span title="Contenido legal pendiente">Privacidad · Próximamente</span>
-          <span title="Redes pendientes">Redes · Próximamente</span>
-        </div>
+      <div className="container-shell mt-12 flex flex-col gap-3 border-t border-white/15 pt-6 text-xs text-white/55 sm:flex-row sm:justify-between">
+        <p>© 2026 Patitas Inquietas</p><p>Buenos Aires, Argentina</p>
       </div>
     </footer>
   );
