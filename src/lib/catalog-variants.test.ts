@@ -32,11 +32,11 @@ function product(statuses: Array<["IN_STOCK" | "ON_REQUEST" | "OUT_OF_STOCK", bo
 }
 
 test("selecciona primero una variante en stock y comprable", () => {
-  assert.equal(selectInitialVariant(product([["OUT_OF_STOCK", false], ["IN_STOCK", true]])).id, "variant-1");
+  assert.equal(selectInitialVariant(product([["OUT_OF_STOCK", false], ["IN_STOCK", true]]))?.id, "variant-1");
 });
 
 test("prioriza bajo pedido cuando no hay stock inmediato", () => {
-  assert.equal(selectInitialVariant(product([["OUT_OF_STOCK", false], ["ON_REQUEST", true]])).id, "variant-1");
+  assert.equal(selectInitialVariant(product([["OUT_OF_STOCK", false], ["ON_REQUEST", true]]))?.id, "variant-1");
 });
 
 test("resume disponibilidad de un producto agrupado", () => {

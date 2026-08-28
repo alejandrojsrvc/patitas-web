@@ -20,12 +20,13 @@ export function ProductPurchasePanel({ product, selectedVariantId, onSelectedVar
   const variant = useMemo(() => product.variants.find((item) => item.id === activeVariantId) ?? selectInitialVariant(product), [product, activeVariantId]);
   if (!variant) return <p className="rounded-xl bg-soft-yellow p-5">Este producto todavía no tiene una presentación vendible.</p>;
   const unitPrice = pricePerKilogram(variant);
+  const calculationVariantId = variant.id;
 
   async function calculate(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); setLoading(true); setError(null); setResult(null);
     const data = new FormData(event.currentTarget);
     try {
-      const response = await fetch("/api/calculator", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ productSlug: product.slug, variantId: variant.id, petWeightKg: Number(data.get("weight")), lifeStage: data.get("lifeStage") }) });
+      const response = await fetch("/api/calculator", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ productSlug: product.slug, variantId: calculationVariantId, petWeightKg: Number(data.get("weight")), lifeStage: data.get("lifeStage") }) });
       const payload = await response.json() as FoodDurationResult | { message: string };
       if (!response.ok) throw new Error("message" in payload ? payload.message : "No pudimos hacer el cálculo.");
       setResult(payload as FoodDurationResult);
