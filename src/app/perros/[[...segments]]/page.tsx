@@ -4,7 +4,7 @@ import { CatalogResults } from "@/components/catalog/catalog-results";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import { resolveCatalogRoute } from "@/data/catalog-routes";
-import { getBrands, getCategories, getCatalogFilterProducts, getProducts, safeCatalogCall } from "@/infrastructure/api/patitas-api";
+import { getBrands, getCategories, getProducts, safeCatalogCall } from "@/infrastructure/api/patitas-api";
 import { productFiltersFromSearchParams } from "@/lib/catalog-search-params";
 
 type Props = { params: Promise<{ segments?: string[] }>; searchParams: Promise<Record<string, string | string[] | undefined>> };
@@ -21,13 +21,12 @@ export default async function DogsCatalogPage({ params, searchParams }: Props) {
   const query = await searchParams;
   const pathname = `/perros${route.segments.length ? `/${route.segments.join("/")}` : ""}`;
   const filters = productFiltersFromSearchParams(query, { species: "dog", category: route.category });
-  const [products, brands, categories, filterProducts] = await Promise.all([
+  const [products, brands, categories] = await Promise.all([
     safeCatalogCall(() => getProducts(filters)),
     safeCatalogCall(() => getBrands()),
     safeCatalogCall(() => getCategories()),
-    safeCatalogCall(() => getCatalogFilterProducts({ species: "dog", category: route.category })),
   ]);
-  return <><SiteHeader />{products.ok ? <CatalogResults result={products.data} brands={brands.ok ? brands.data : []} categories={categories.ok ? categories.data : []} filterProducts={filterProducts.ok ? filterProducts.data : undefined} species="dog" title={route.title} description={route.description} current={query} pathname={pathname} /> : <CatalogFailure title={route.title} message={products.error} />}<SiteFooter /></>;
+  return <><SiteHeader />{products.ok ? <CatalogResults result={products.data} brands={brands.ok ? brands.data : []} categories={categories.ok ? categories.data : []} species="dog" title={route.title} description={route.description} current={query} pathname={pathname} /> : <CatalogFailure title={route.title} message={products.error} />}<SiteFooter /></>;
 }
 
 function CatalogFailure({ title, message }: { title: string; message: string }) {

@@ -10,7 +10,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     safeCatalogCall(() => getBrands()),
     Promise.all(indexableCatalogRoutes.map(async (route) => ({ route, result: await safeCatalogCall(() => getCatalogFilterProducts({ species: route.species, category: route.category })) }))),
   ]);
-  const fixed = ["", "/marcas", "/reponer", "/calculadora-alimento", "/guias", "/preguntas-frecuentes", "/envios", "/contacto"];
+  const fixed = ["", "/pet-shop-caba", "/marcas", "/reponer", "/calculadora-alimento", "/guias", "/preguntas-frecuentes", "/envios", "/contacto"];
   return [
     ...fixed.map((path, index) => ({ url: `${siteUrl}${path}`, changeFrequency: index === 0 ? "daily" as const : "weekly" as const, priority: index === 0 ? 1 : 0.7 })),
     ...routeAvailability.filter(({ result }) => result.ok && result.data.length > 0).map(({ route }) => ({ url: `${siteUrl}${catalogPath(route.species, route.segments)}`, changeFrequency: "daily" as const, priority: 0.8 })),

@@ -2,7 +2,15 @@ import { Package } from "@phosphor-icons/react/ssr";
 import type { Product } from "@/domain/catalog/types";
 import { ProductCard } from "./product-card";
 
-export function ProductGrid({ products, emptyCopy }: { products: Product[]; emptyCopy?: string }) {
+export function ProductGrid({
+  products,
+  emptyCopy,
+  variant = "catalog",
+}: {
+  products: Product[];
+  emptyCopy?: string;
+  variant?: "catalog" | "featured";
+}) {
   if (products.length === 0) {
     return (
       <div className="flex min-h-72 flex-col items-center justify-center rounded-2xl bg-catalog-soft px-6 text-center">
@@ -13,8 +21,10 @@ export function ProductGrid({ products, emptyCopy }: { products: Product[]; empt
     );
   }
   return (
-    <div className="grid grid-cols-2 items-stretch gap-1 sm:grid-cols-3 sm:gap-2 lg:grid-cols-3 lg:gap-2 xl:grid-cols-4">
-      {products.map((product) => <ProductCard key={product.id} product={product} />)}
+    <div className={variant === "featured"
+      ? "grid grid-cols-2 items-stretch gap-3 md:grid-cols-3 lg:grid-cols-4 lg:gap-4"
+      : "grid grid-cols-2 items-stretch gap-1 sm:grid-cols-3 sm:gap-2 lg:grid-cols-3 lg:gap-2 xl:grid-cols-4"}>
+      {products.map((product) => <ProductCard key={product.id} product={product} variant={variant} />)}
     </div>
   );
 }

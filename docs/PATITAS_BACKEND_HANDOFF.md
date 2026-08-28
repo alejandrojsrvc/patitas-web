@@ -2,16 +2,41 @@
 
 Este documento describe las capacidades necesarias para convertir la experiencia frontend de Patitas en una operación completa. No forman parte de la implementación frontend actual.
 
+## Auditoría SEO reproducible
+
+Con el dominio publicado configurado, ejecutar `pnpm seo:audit -- https://dominio-real` para obtener un JSON con URLs del sitemap, páginas indexables, palabras del contenido principal, títulos, H1, enlaces internos y candidatos a páginas huérfanas. Este informe no mide backlinks externos ni reemplaza Search Console; esos datos deben incorporarse desde la propiedad verificada de Google.
+
 ## Estado actual del frontend
 
-- La homepage muestra una experiencia de cálculo de tres pasos.
+- La homepage prioriza categorías, productos y marcas publicables; la calculadora vive en `/calculadora-alimento`.
 - El cálculo usa el proxy existente `POST /api/calculator`.
 - El catálogo y sus precios vienen de Patitas API.
 - La landing no crea planes persistentes, no envía WhatsApp y no dispara cobros.
-- La conversación de WhatsApp es una maqueta explícitamente ilustrativa.
+- El CTA de WhatsApp solo abre la URL configurada en `NEXT_PUBLIC_WHATSAPP_URL`; no simula mensajes ni automatizaciones.
+- La landing `/pet-shop-caba` comunica una operación exclusivamente online, con cobertura inicial en CABA y sin dirección de tienda física.
 - No se deben publicar testimonios, métricas, descuentos o promesas de entrega sin datos operativos reales.
 
+## 0. Nombres públicos y SEO de producto
+
+El nombre del producto que entrega la API debe estar listo para una persona compradora, no ser una abreviatura interna de catálogo.
+
+- Publicar nombres como `Excellent Adulto Perros Medianos y Grandes`, no `Excellent Adulto M&B`.
+- Evitar duplicar la marca dentro de `name` cuando ya viene separada en `brand.name`; el frontend normaliza la presentación visible mientras conviven ambos formatos.
+- Mantener el peso en la variante. El frontend solo lo agrega al título cuando existe una única variante comprable.
+- Si el backend incorpora `seoTitle` y `seoDescription` de producto, deben ser campos editoriales opcionales y nunca reemplazar el nombre comercial mostrado.
+- Cada variante debe conservar `presentation`, `weightGrams`, precio y disponibilidad como fuente de verdad. No se crearán URLs canónicas distintas por peso mientras la selección viva en una sola página de producto.
+
 ## 1. Plan de reposición
+
+### Captura previa a la primera compra
+
+La calculadora pública puede solicitar un aviso de reposición mediante:
+
+`POST /api/v1/replenishment-leads`
+
+El proxy frontend envía `productSlug`, `variantId`, `petWeightKg`, `lifeStage`, `estimatedDurationDays`, `calculationSource`, `email`, `whatsapp` opcional y `consent` por canal con su versión. El email y su consentimiento son obligatorios; WhatsApp solo se registra si existe número y consentimiento explícito.
+
+La captura debe ser idempotente cuando corresponda, validar que el producto y la variante sean publicables y devolver un identificador de lead/plan. No debe crear una orden ni cobrar.
 
 Crear un recurso persistente asociado a una orden, una cuenta o un acceso seguro de invitado.
 
@@ -57,6 +82,26 @@ Implementar el pago real sin almacenar datos de tarjeta en Patitas.
 - Permitir generar un enlace de pago único para una orden pendiente.
 
 El frontend necesita recibir únicamente URL de pago, estado de orden y mensajes de error accionables.
+
+### Contrato consumido por `patitas-web`
+
+Para cerrar el flujo de Checkout Pro, `POST /api/v1/checkout/sessions/:id/confirm` debe aceptar `termsAccepted` y `termsVersion`, respetar `Idempotency-Key` y devolver:
+
+```json
+{
+  "order": {},
+  "payment": {
+    "provider": "MERCADO_PAGO",
+    "status": "PENDING",
+    "redirectUrl": "https://www.mercadopago.com.ar/checkout/v1/redirect"
+  },
+  "publicToken": "token-de-consulta-para-invitado"
+}
+```
+
+`redirectUrl` puede ser `null` únicamente cuando el pago ya está `APPROVED`. El retorno del navegador debe permitir consultar el pedido y su `paymentStatus`; no debe marcar la orden como pagada. El webhook continúa siendo la fuente de verdad para aprobado, pendiente, rechazado, cancelado y expirado.
+
+El endpoint público de productos debe agregar a `meta` las facetas `brandSlugs`, `lifeStages` y `weightGrams`, calculadas sin paginación y excluyendo la dimensión que se está filtrando. Esto evita que la tienda descargue todo el catálogo para construir filtros.
 
 ## 3. Envíos y cobertura
 

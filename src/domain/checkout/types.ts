@@ -12,7 +12,7 @@ export type CheckoutSession = {
   shippingAddress: Record<string, string> | null;
   shippingOptionId: string | null;
   shippingCost: string;
-  paymentMethod: "SIMULATED_CARD" | "SIMULATED_TRANSFER" | "SIMULATED_CASH" | null;
+  paymentMethod: "MERCADO_PAGO" | null;
   couponCode: string | null;
   orderId: string | null;
   subtotal: string;
@@ -37,5 +37,10 @@ export type CheckoutCreateResult = {
 
 export type CheckoutConfirmResult = {
   order: import("@/domain/customer/types").OrderSummary;
+  payment: {
+    provider: "MERCADO_PAGO";
+    status: "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED" | "EXPIRED";
+    redirectUrl: string | null;
+  };
   publicToken?: string;
 };

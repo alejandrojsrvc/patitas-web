@@ -1,37 +1,18 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
+import Script from "next/script";
 import { Analytics } from "@vercel/analytics/next";
 import { OrganizationJsonLd, WebsiteJsonLd } from "@/components/seo/json-ld";
 import { CartProvider } from "@/features/cart/cart-context";
 import "./globals.css";
+
+const googleAnalyticsId = process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID;
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
   ? process.env.NEXT_PUBLIC_SITE_URL
   : process.env.VERCEL_PROJECT_PRODUCTION_URL
     ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
     : "http://localhost:3001";
-
-const bricolage = localFont({
-  src: [
-    {
-      path: "../../public/fonts/bricolage-grotesque/bricolage-grotesque-regular.ttf",
-      weight: "400",
-      style: "normal",
-    },
-    {
-      path: "../../public/fonts/bricolage-grotesque/bricolage-grotesque-medium.ttf",
-      weight: "500",
-      style: "normal",
-    },
-    {
-      path: "../../public/fonts/bricolage-grotesque/bricolage-grotesque-semibold.ttf",
-      weight: "600",
-      style: "normal",
-    },
-  ],
-  variable: "--font-bricolage",
-  display: "swap",
-});
 
 const snPro = localFont({
   src: [
@@ -62,30 +43,27 @@ const snPro = localFont({
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
-  title: "Patitas Inquietas | Lo que necesita tu mascota, justo cuando toca",
-  description: "Comprá alimento, arena y esenciales. Patitas calcula cuánto duran y te ayuda a reponerlos antes de que se terminen.",
+  title: "Patitas Inquietas | Pet shop online en CABA",
+  description: "Comprá alimento balanceado, arena y esenciales para perros y gatos en CABA.",
   applicationName: "Patitas Inquietas",
   keywords: [
     "abastecimiento para mascotas",
     "alimento para perros",
     "alimento para gatos",
-    "reposición de alimento para mascotas",
+    "pet shop online CABA",
   ],
   manifest: "/site.webmanifest",
-  alternates: {
-    canonical: "/",
-  },
   openGraph: {
-    title: "Todo lo que consume, antes de que se termine | Patitas Inquietas",
-    description: "Comprá normalmente y calculá cuándo te conviene reponer.",
+    title: "Patitas Inquietas | Pet shop online en CABA",
+    description: "Alimento balanceado, arena y esenciales para perros y gatos.",
     type: "website",
     locale: "es_AR",
     siteName: "Patitas Inquietas",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Todo lo que consume, antes de que se termine | Patitas Inquietas",
-    description: "Comprá normalmente y calculá cuándo te conviene reponer.",
+    title: "Patitas Inquietas | Pet shop online en CABA",
+    description: "Alimento balanceado, arena y esenciales para perros y gatos.",
   },
 };
 
@@ -97,13 +75,29 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="es-AR" className={`${bricolage.variable} ${snPro.variable}`}>
+    <html lang="es-AR" className={snPro.variable}>
       <body>
         <OrganizationJsonLd />
         <WebsiteJsonLd />
         <CartProvider>{children}</CartProvider>
         <Analytics />
       </body>
+      {googleAnalyticsId ? (
+        <>
+          <Script
+            src={`https://www.googletagmanager.com/gtag/js?id=${googleAnalyticsId}`}
+            strategy="afterInteractive"
+          />
+          <Script id="google-analytics" strategy="afterInteractive">
+            {`
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', '${googleAnalyticsId}');
+            `}
+          </Script>
+        </>
+      ) : null}
     </html>
   );
 }

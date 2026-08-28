@@ -7,7 +7,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test src/features/build-plan/utils/calculations.test.ts"
+    "test": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test src/features/build-plan/utils/calculations.test.ts src/lib/catalog-variants.test.ts src/lib/catalog-search-params.test.ts src/data/catalog-routes.test.ts",
+    "seo:audit": "node scripts/seo-audit.mjs",
+    "test:scraper": "node --test scripts/scrape-old-prince.test.mjs",
+    "scrape:old-prince": "node scripts/scrape-old-prince.mjs"
   },
   "dependencies": {
     "@phosphor-icons/react": "^2.1.10",

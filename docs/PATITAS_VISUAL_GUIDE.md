@@ -60,9 +60,9 @@ Botón amarillo: fondo `#FFEC00`, texto `#171717`.
 
 ## 4. Tipografía
 
-### Bricolage Grotesque
+### SN Pro
 
-Para H1, H2, H3 relevantes, números protagonistas y frases de marca.
+Se usa en toda la interfaz: H1, H2, H3, números protagonistas, frases de marca y texto funcional.
 
 **Desktop**
 - H1: `72px / 0.95 / 700`
@@ -75,18 +75,13 @@ Para H1, H2, H3 relevantes, números protagonistas y frases de marca.
 - H2: `36px`
 - H3: `26px`
 
-### SN Pro
-
-Para body, navegación, botones, formularios, labels, información funcional, dashboard y checkout.
-
 - Body XL: `20px / 1.5`
 - Body: `16px / 1.55`
 - Small: `14px / 1.45`
 - Caption: `12px / 1.4`
 - Button: `15–16px / 600`
 
-> **Bricolage = Patitas habla.**  
-> **SN Pro = Patitas funciona.**
+> **SN Pro = Patitas habla y funciona.**
 
 ---
 
@@ -167,7 +162,7 @@ box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
 └─────────────────────────────┘
 ```
 
-`28 AGO` puede usar Bricolage grande. El resto SN Pro. `PRÓXIMA PATITAS` puede usar una pill amarilla.
+`28 AGO` puede usar SN Pro grande. `PRÓXIMA PATITAS` puede usar una pill amarilla.
 
 ---
 
@@ -415,8 +410,7 @@ Por pantalla/sección:
 
 # Resumen
 
-**Bricolage Grotesque** → personalidad.  
-**SN Pro** → claridad.  
+**SN Pro** → personalidad, claridad y función.
 **#0055FF** → Patitas.  
 **#FFEC00** → energía.  
 **Crema/blanco** → tranquilidad.  

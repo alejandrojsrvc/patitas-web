@@ -70,6 +70,18 @@ export type PublicOffer = ProductOffer & {
   targets: Array<{ productId: string | null; variantId: string | null; categoryId: string | null; brandId: string | null }>;
 };
 
+export type ReplenishmentLeadInput = {
+  productSlug: string;
+  variantId: string;
+  petWeightKg: number;
+  lifeStage: string;
+  estimatedDurationDays: { min: number; max: number };
+  calculationSource: string;
+  email: string;
+  whatsapp?: string;
+  consent: { email: boolean; whatsapp: boolean; version: string };
+};
+
 export type ProductTechnicalSheet = {
   species: Species | null;
   lifeStage: string | null;
@@ -111,6 +123,11 @@ export type ProductPage = {
     perPage: number;
     total: number;
     totalPages: number;
+    facets?: {
+      brandSlugs: string[];
+      lifeStages: string[];
+      weightGrams: number[];
+    };
   };
 };
 

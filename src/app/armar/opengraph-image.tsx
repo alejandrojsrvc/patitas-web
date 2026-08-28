@@ -8,19 +8,16 @@ export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
 export default async function OpenGraphImage() {
-  const [logo, isotype, bricolage, snPro] = await Promise.all([
+  const [logo, isotype, snPro, snProSemibold] = await Promise.all([
     readFile(
       path.join(process.cwd(), "public/brand/patitas-logo-horizontal.png"),
     ),
     readFile(path.join(process.cwd(), "public/brand/patitas-isotipo.png")),
     readFile(
-      path.join(
-        process.cwd(),
-        "public/fonts/bricolage-grotesque/bricolage-grotesque-semibold.ttf",
-      ),
+      path.join(process.cwd(), "public/fonts/sn-pro/sn-pro-regular.ttf"),
     ),
     readFile(
-      path.join(process.cwd(), "public/fonts/sn-pro/sn-pro-regular.ttf"),
+      path.join(process.cwd(), "public/fonts/sn-pro/sn-pro-semibold.ttf"),
     ),
   ]);
   const logoSrc = `data:image/png;base64,${logo.toString("base64")}`;
@@ -53,7 +50,6 @@ export default async function OpenGraphImage() {
         >
           <div
             style={{
-              fontFamily: "Bricolage",
               fontSize: 76,
               fontWeight: 600,
               lineHeight: 0.98,
@@ -100,20 +96,20 @@ export default async function OpenGraphImage() {
       ...size,
       fonts: [
         {
-          name: "Bricolage",
-          data: bricolage.buffer.slice(
-            bricolage.byteOffset,
-            bricolage.byteOffset + bricolage.byteLength,
-          ) as ArrayBuffer,
-          weight: 600,
-        },
-        {
           name: "SN Pro",
           data: snPro.buffer.slice(
             snPro.byteOffset,
             snPro.byteOffset + snPro.byteLength,
           ) as ArrayBuffer,
           weight: 400,
+        },
+        {
+          name: "SN Pro",
+          data: snProSemibold.buffer.slice(
+            snProSemibold.byteOffset,
+            snProSemibold.byteOffset + snProSemibold.byteLength,
+          ) as ArrayBuffer,
+          weight: 600,
         },
       ],
     },

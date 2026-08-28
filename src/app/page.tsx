@@ -1,89 +1,167 @@
 import {
   ArrowRight,
-  BellRinging,
   Calculator,
-  Check,
-  Clock,
-  House,
-  Package,
-  ShieldCheck,
-  ShoppingBagOpen,
-  WhatsappLogo,
 } from "@phosphor-icons/react/ssr";
+import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { ProductGrid } from "@/components/catalog/product-grid";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
-import { LandingPlanQuiz } from "@/features/landing/landing-plan-quiz";
-import { getProducts, safeCatalogCall } from "@/infrastructure/api/patitas-api";
+import { FAQ } from "@/components/sections/faq";
+import { PatitasIcon, type PatitasIconName } from "@/components/ui/patitas-icon";
+import type { Brand } from "@/domain/catalog/types";
+import { getBrands, getProducts, safeCatalogCall } from "@/infrastructure/api/patitas-api";
 
-const valueProps = [
-  [ShoppingBagOpen, "Menos peso para vos", "Recibí alimento y esenciales en la puerta de tu casa."],
-  [Calculator, "Sabés cuándo reponer", "Calculamos cuánto debería durar cada presentación."],
-  [BellRinging, "Vos seguís teniendo el control", "Te ayudamos a recordar, sin cobros automáticos ni permanencia."],
-  [House, "Comprás desde CABA", "La cobertura, el costo y el plazo aparecen según tu dirección."],
+export const metadata: Metadata = {
+  title: "Pet shop online en CABA | Patitas Inquietas",
+  description: "Comprá alimento balanceado, arena, snacks y esenciales para perros y gatos en CABA. Encontrá marcas y presentaciones sin vueltas.",
+  alternates: { canonical: "/" },
+  openGraph: {
+    title: "Pet shop online en CABA | Patitas Inquietas",
+    description: "Alimento balanceado, arena y esenciales para perros y gatos, con una compra simple y ayuda humana.",
+    type: "website",
+    locale: "es_AR",
+    siteName: "Patitas Inquietas",
+    images: [{
+      url: "/brand/landing/hero-pets-playful-v1.png",
+      width: 1774,
+      height: 887,
+      alt: "Un perro y un gato asomándose juntos",
+    }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Pet shop online en CABA | Patitas Inquietas",
+    description: "Alimento balanceado, arena y esenciales para perros y gatos en CABA.",
+    images: ["/brand/landing/hero-pets-playful-v1.png"],
+  },
+};
+
+const categories = [
+  {
+    title: "Alimento para perros",
+    copy: "Seco, húmedo y presentaciones para cada etapa.",
+    image: "/brand/landing/categories/dog-food.png",
+    alt: "Perro junto a un plato de alimento",
+    links: [["Ver alimentos", "/perros/alimentos"]],
+  },
+  {
+    title: "Alimento para gatos",
+    copy: "Opciones para gatitos, adultos y seniors.",
+    image: "/brand/landing/categories/cat-food.png",
+    alt: "Gato junto a un plato de alimento",
+    links: [["Ver alimentos", "/gatos/alimentos"]],
+  },
+  {
+    title: "Arena e higiene",
+    copy: "Lo necesario para mantener su espacio limpio.",
+    image: "/brand/landing/categories/cat-hygiene.png",
+    alt: "Gato junto a una bandeja sanitaria limpia",
+    links: [["Ver arena", "/gatos/arena"]],
+  },
+  {
+    title: "Snacks y premios",
+    copy: "Premios para perros y gatos, sin catálogo infinito.",
+    image: "/brand/landing/categories/snacks.png",
+    alt: "Perro y gato junto a snacks para mascotas",
+    links: [["Para perros", "/perros/snacks"], ["Para gatos", "/gatos/snacks"]],
+  },
+  {
+    title: "Bolsitas y esenciales",
+    copy: "Lo de todos los días para paseos y rutinas.",
+    image: "/brand/landing/categories/walk-essentials.png",
+    alt: "Perro listo para salir de paseo",
+    links: [["Ver esenciales", "/perros/bolsas"]],
+  },
 ] as const;
 
-const faqs = [
-  ["¿Tengo que suscribirme para comprar?", "No. Podés comprar una sola vez y, si querés, guardar un recordatorio para volver a reponer cuando tenga sentido."],
-  ["¿El cálculo de duración es exacto?", "Es una estimación. Usamos primero la tabla del fabricante y mostramos cuando solo contamos con una referencia general."],
-  ["¿Me van a cobrar automáticamente?", "No en esta etapa. El recordatorio no guarda una tarjeta ni genera una compra sin que la confirmes."],
-  ["¿Dónde entregan?", "La cobertura inicial es CABA. El costo, el plazo y la disponibilidad se muestran cuando la operación está configurada para tu dirección."],
-] as const;
+const valueProps: ReadonlyArray<readonly [PatitasIconName, string, string]> = [
+  ["shopping-bag", "Encontrá rápido lo de siempre", "Marca, etapa y presentación sin vueltas."],
+  ["box", "Recibilo sin cargar bolsas", "Alimento y esenciales directo a tu casa en CABA."],
+  ["calendar", "Calculá cuánto puede durarte", "Usamos la recomendación del fabricante cuando está disponible."],
+];
+
+const preferredBrandOrder = ["excellent", "pro plan", "old prince", "royal canin", "vital can", "dog chow", "cat chow"];
+
+function availableBrands(brands: Brand[]): Brand[] {
+  return brands.sort((left, right) => {
+    const leftIndex = preferredBrandOrder.indexOf(left.name.toLocaleLowerCase("es-AR"));
+    const rightIndex = preferredBrandOrder.indexOf(right.name.toLocaleLowerCase("es-AR"));
+    if (leftIndex !== -1 || rightIndex !== -1) {
+      return (leftIndex === -1 ? preferredBrandOrder.length : leftIndex) - (rightIndex === -1 ? preferredBrandOrder.length : rightIndex);
+    }
+    return left.name.localeCompare(right.name, "es-AR");
+  }).slice(0, 8);
+}
 
 export default async function Home() {
-  const [featuredResult, foodResult] = await Promise.all([
-    safeCatalogCall(() => getProducts({ featured: true, perPage: 4 })),
-    safeCatalogCall(() => getProducts({ category: "alimentos", perPage: 100 })),
+  const [featuredResult, brandsResult] = await Promise.all([
+    safeCatalogCall(() => getProducts({ featured: true, perPage: 8 })),
+    safeCatalogCall(() => getBrands()),
   ]);
-  const featuredProducts = featuredResult.ok ? featuredResult.data.items : [];
-  const foodProducts = foodResult.ok ? foodResult.data.items : [];
-
+  const featuredProducts = featuredResult.ok && featuredResult.data.items.length
+    ? featuredResult.data.items.slice(0, 8)
+    : [];
+  const brands = availableBrands(brandsResult.ok ? brandsResult.data : []);
   return (
     <>
       <a href="#contenido" className="fixed left-4 top-4 z-[100] -translate-y-24 rounded-xl bg-brand-yellow px-4 py-3 font-semibold text-ink transition-transform focus-visible:translate-y-0">Ir al contenido</a>
-      <div className="bg-brand-blue px-4 py-2 text-center text-xs font-semibold text-white sm:text-sm">
-        <div className="container-shell flex items-center justify-center gap-2"><span aria-hidden="true">✦</span><span>Calculá cuánto dura lo que come tu mascota y reponé cuando toque.</span></div>
-      </div>
-      <SiteHeader minimal />
+      <SiteHeader />
       <main id="contenido">
-        <section className="overflow-hidden bg-cream py-12 sm:py-16 lg:py-24">
-          <div className="container-shell grid items-center gap-12 lg:grid-cols-[1.02fr_0.98fr] lg:gap-16">
-            <div>
-              <p className="mb-5 inline-flex items-center gap-2 rounded-full bg-soft-yellow px-3 py-1.5 text-xs font-bold uppercase tracking-[0.12em] text-ink"><Clock size={15} weight="bold" aria-hidden="true" />Tranquilidad para todos los días</p>
-              <h1 className="display-heading max-w-3xl text-5xl sm:text-6xl lg:text-[4.75rem]">Nunca más te quedes sin comida para tu mascota.</h1>
-              <p className="mt-6 max-w-2xl text-lg leading-8 text-muted sm:text-xl">Calculamos cuánto debería durar su alimento y te ayudamos a reponerlo antes de que se termine. Sin cargar bolsas pesadas y sin suscripciones obligatorias.</p>
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row"><Link href="#plan-quiz" className="inline-flex min-h-14 items-center justify-center gap-2 rounded-xl bg-brand-blue px-6 font-semibold text-white hover:bg-[#0048dc]">Calcular cuánto dura <ArrowRight size={19} weight="bold" /></Link><Link href="/perros" className="inline-flex min-h-14 items-center justify-center rounded-xl border border-border bg-white px-6 font-semibold text-ink hover:border-brand-blue">Ver catálogo</Link></div>
-              <div className="mt-8 flex flex-wrap gap-x-6 gap-y-3 text-sm font-semibold text-ink"><span className="flex items-center gap-2"><Check size={17} weight="bold" className="text-brand-blue" />Compra única o recordatorio</span><span className="flex items-center gap-2"><Check size={17} weight="bold" className="text-brand-blue" />Datos claros antes de elegir</span></div>
-            </div>
-            <div className="relative mx-auto w-full max-w-xl lg:pt-4">
-              <div className="absolute -left-7 top-2 size-24 rounded-full bg-brand-yellow sm:size-32" aria-hidden="true" />
-              <div className="relative ml-auto overflow-hidden rounded-[2rem] bg-brand-blue p-6 text-white shadow-[0_24px_65px_rgba(0,85,255,0.22)] sm:p-9">
-                <div className="absolute -right-20 -top-20 size-64 rounded-full border-[32px] border-white/10" aria-hidden="true" />
-                <div className="relative flex items-start justify-between gap-5 border-b border-white/20 pb-6"><div><p className="text-xs font-bold uppercase tracking-[0.14em] text-white/60">Ejemplo de reposición</p><p className="mt-3 font-display text-3xl font-semibold leading-none sm:text-4xl">La bolsa de Rocky</p></div><Package size={46} weight="duotone" className="shrink-0 text-brand-yellow" aria-hidden="true" /></div>
-                <div className="relative grid grid-cols-2 gap-5 py-7"><div><p className="text-xs font-bold uppercase tracking-[0.1em] text-white/60">Peso</p><p className="mt-2 font-display text-3xl font-semibold">12 kg</p></div><div><p className="text-xs font-bold uppercase tracking-[0.1em] text-white/60">Duración</p><p className="mt-2 font-display text-3xl font-semibold">≈ 39 días</p></div></div>
-                <div className="relative rounded-2xl bg-white p-5 text-ink"><p className="text-sm text-muted">Próxima reposición estimada</p><p className="mt-2 font-display text-3xl font-semibold">29 de septiembre</p><p className="mt-3 text-xs leading-5 text-muted">Ejemplo ilustrativo. El resultado real depende del alimento y los datos de tu mascota.</p></div>
+        <section className="relative isolate overflow-hidden bg-[#f7f0ea]">
+          <div className="container-shell relative z-10 flex py-8 sm:py-10 lg:min-h-[clamp(30rem,38vw,38rem)] lg:items-center lg:py-12">
+            <div className="max-w-xl">
+              <h1 className="display-heading max-w-3xl text-4xl sm:text-5xl lg:text-[4.25rem]">Que no te falte lo de siempre.</h1>
+              <p className="mt-4 max-w-2xl text-base leading-7 text-muted sm:text-lg">Tu pet shop online en CABA para comprar alimento balanceado, arena y esenciales para perros y gatos.</p>
+              <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+                <Link href="/buscar?category=alimentos" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-brand-blue px-6 font-semibold text-white hover:bg-[#0048dc]">Comprar alimento <ArrowRight size={19} weight="bold" /></Link>
+                <Link href="/calculadora-alimento" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-border bg-white px-6 font-semibold text-ink hover:border-brand-blue"><Calculator size={19} weight="bold" /> Calcular cuánto necesita</Link>
               </div>
             </div>
           </div>
-        </section>
-
-        <section id="plan-quiz" className="scroll-mt-20 bg-brand-blue py-14 sm:py-20">
-          <div className="container-shell grid items-start gap-10 lg:grid-cols-[0.7fr_1.3fr] lg:gap-16">
-            <div className="text-white lg:sticky lg:top-28"><p className="text-sm font-bold uppercase tracking-[0.14em] text-brand-yellow">Tu primera Patitas</p><h2 className="display-heading mt-4 text-4xl sm:text-5xl">Una compra pensada para su ritmo.</h2><p className="mt-5 max-w-md text-lg leading-8 text-white/75">Respondé tres cosas sobre tu mascota y entendé qué presentación te conviene antes de agregarla al carrito.</p><div className="mt-8 border-t border-white/20 pt-5 text-sm leading-6 text-white/70"><p className="flex items-start gap-2"><ShieldCheck size={20} className="mt-0.5 shrink-0 text-brand-yellow" aria-hidden="true" />La recomendación es orientativa y siempre muestra de dónde sale el cálculo.</p></div></div>
-            <LandingPlanQuiz products={foodProducts} />
+          <div className="relative aspect-[16/9] w-full sm:aspect-[2/1] lg:absolute lg:inset-0 lg:aspect-auto">
+            <Image src="/brand/landing/hero-pets-playful-v1.png" alt="Un perro y un gato asomándose juntos" fill priority sizes="100vw" className="object-cover object-right lg:object-contain" />
           </div>
         </section>
 
-        <section className="bg-white py-14 sm:py-20"><div className="container-shell"><div className="max-w-2xl"><p className="text-sm font-bold uppercase tracking-[0.14em] text-brand-blue">La diferencia está en el después</p><h2 className="display-heading mt-4 text-4xl sm:text-5xl">Comprar alimento también puede sacarte una preocupación de encima.</h2></div><div className="mt-10 grid gap-7 border-t border-border pt-8 sm:grid-cols-2 lg:grid-cols-4">{valueProps.map(([Icon, title, text]) => <article key={title}><Icon size={31} weight="duotone" className="text-brand-blue" aria-hidden="true" /><h3 className="mt-7 font-display text-2xl font-semibold">{title}</h3><p className="mt-3 text-muted">{text}</p></article>)}</div></div></section>
+        <section className="bg-white py-14 sm:py-20" aria-labelledby="categories-title">
+          <div className="container-shell">
+            <div className="max-w-3xl"><h2 id="categories-title" className="display-heading text-4xl sm:text-5xl">Encontrá lo que tu mascota necesita.</h2><p className="mt-4 max-w-2xl text-lg leading-7 text-muted">Alimento, arena, snacks y esenciales para perros y gatos, sin perderte entre cientos de opciones.</p></div>
+            <div className="mt-9 grid grid-cols-2 gap-3 lg:grid-cols-5 lg:gap-4">
+              {categories.map((category, index) => (
+                <article key={category.title} className={`${index === categories.length - 1 ? "col-span-2 lg:col-span-1" : ""} overflow-hidden rounded-2xl bg-catalog-canvas`}>
+                  <div className="relative aspect-[2/3]">
+                    <Image src={category.image} alt={category.alt} fill sizes="(min-width: 1024px) 19vw, 50vw" className="object-cover object-[center_55%]" />
+                  </div>
+                  <div className="p-4 sm:p-5"><h3 className="font-display text-xl font-semibold leading-6 sm:text-2xl">{category.title}</h3><p className="mt-2 text-sm leading-6 text-muted">{category.copy}</p><div className="mt-4 flex flex-wrap gap-x-4 gap-y-2">{category.links.map(([label, href]) => <Link key={href} href={href} className="text-sm font-semibold text-brand-blue underline-offset-4 hover:underline">{label} →</Link>)}</div></div>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
 
-        <section className="bg-soft-blue py-14 sm:py-20"><div className="container-shell grid items-center gap-10 lg:grid-cols-[0.85fr_1.15fr]"><div><p className="text-sm font-bold uppercase tracking-[0.14em] text-brand-blue">Así se siente el recordatorio</p><h2 className="display-heading mt-4 text-4xl sm:text-5xl">Te avisamos. Vos decidís.</h2><p className="mt-5 max-w-xl text-lg leading-8 text-muted">La idea es que el aviso llegue antes del apuro, para que puedas confirmar, esperar un poco o volver a comprar cuando realmente lo necesites.</p><p className="mt-5 text-sm font-semibold text-muted">Ejemplo ilustrativo de una futura integración por WhatsApp.</p></div><div className="mx-auto w-full max-w-md rounded-[2rem] bg-white p-4 shadow-[0_18px_50px_rgba(0,26,78,0.12)] sm:p-5"><div className="rounded-[1.5rem] bg-[#e9f7ed] p-4"><div className="flex items-center gap-3 border-b border-black/10 pb-4"><div className="flex size-10 items-center justify-center rounded-full bg-[#25d366] text-white"><WhatsappLogo size={24} weight="fill" aria-hidden="true" /></div><div><p className="font-semibold">Patitas Inquietas</p><p className="text-xs text-muted">Ejemplo de aviso</p></div></div><div className="mt-5 space-y-3 text-sm leading-6"><div className="max-w-[88%] rounded-2xl rounded-tl-sm bg-white p-3 text-ink shadow-sm">Hola, Alejandro. A Rocky le quedan aproximadamente 5 días de alimento. ¿Querés revisar su próxima reposición?</div><div className="ml-auto max-w-[78%] rounded-2xl rounded-tr-sm bg-[#dcf8c6] p-3 text-ink shadow-sm">Sí, quiero ver la bolsa de Rocky.</div><button type="button" disabled className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-brand-blue px-4 font-semibold text-white opacity-90">Ver recompra <ArrowRight size={17} weight="bold" /></button></div></div></div></div></section>
+        {featuredProducts.length ? (
+          <section className="bg-catalog-canvas py-14 sm:py-20" aria-labelledby="featured-title">
+            <div className="container-shell"><div className="flex flex-wrap items-end justify-between gap-5"><div><h2 id="featured-title" className="display-heading text-4xl sm:text-5xl">Productos destacados.</h2><p className="mt-4 max-w-xl text-muted">Una selección corta de alimento y esenciales disponibles en el catálogo.</p></div><Link href="/buscar" className="inline-flex items-center gap-2 font-semibold text-brand-blue underline-offset-4 hover:underline">Ver todos <ArrowRight size={18} weight="bold" /></Link></div><div className="mt-9"><ProductGrid products={featuredProducts} variant="featured" /></div></div>
+          </section>
+        ) : null}
 
-        <section className="bg-cream py-14 sm:py-20"><div className="container-shell"><div className="flex flex-wrap items-end justify-between gap-5"><div><p className="text-sm font-bold uppercase tracking-[0.14em] text-brand-blue">Para empezar hoy</p><h2 className="display-heading mt-4 text-4xl sm:text-5xl">Una selección breve, lo importante claro.</h2><p className="mt-4 max-w-xl text-muted">Alimento y esenciales para comprar lo que tu mascota ya conoce.</p></div><Link href="/perros" className="inline-flex items-center gap-2 font-semibold text-brand-blue hover:underline">Ver catálogo completo <ArrowRight size={18} weight="bold" /></Link></div><div className="mt-9"><ProductGrid products={featuredProducts} emptyCopy={featuredResult.ok ? "Todavía no hay productos destacados con precio, imagen y disponibilidad pública." : "No pudimos consultar el catálogo. Volvé a intentar en unos minutos."} /></div></div></section>
+        {brands.length ? (
+          <section className="bg-white py-14 sm:py-20" aria-labelledby="brands-title">
+            <div className="container-shell"><div className="flex flex-wrap items-end justify-between gap-5"><div><h2 id="brands-title" className="display-heading text-4xl sm:text-5xl">Las marcas que ya conocen.</h2><p className="mt-4 max-w-xl text-muted">Entrá directo a los productos publicados de cada marca.</p></div><Link href="/marcas" className="font-semibold text-brand-blue underline-offset-4 hover:underline">Ver todas las marcas →</Link></div><div className="mt-9 grid grid-cols-2 border-l border-t border-border sm:grid-cols-4">{brands.map((brand) => <Link key={brand.id} href={`/marcas/${brand.slug}`} className="group flex min-h-28 items-center justify-center border-b border-r border-border bg-white p-5 text-center hover:bg-soft-blue">{brand.logoUrl ? <Image unoptimized src={brand.logoUrl} alt={brand.name} width={180} height={64} className="max-h-12 w-auto max-w-full object-contain" /> : <span className="font-display text-xl font-semibold group-hover:text-brand-blue">{brand.name}</span>}<span className="sr-only">Ver productos {brand.name}</span></Link>)}</div></div>
+          </section>
+        ) : null}
 
-        <section className="bg-white py-14 sm:py-20"><div className="container-shell grid gap-10 lg:grid-cols-[0.8fr_1.2fr]"><div><p className="text-sm font-bold uppercase tracking-[0.14em] text-brand-blue">Preguntas frecuentes</p><h2 className="display-heading mt-4 text-4xl sm:text-5xl">Claro antes de comprar.</h2></div><div className="divide-y divide-border border-y border-border">{faqs.map(([question, answer]) => <details key={question} className="group py-5"><summary className="flex cursor-pointer list-none items-center justify-between gap-6 font-display text-xl font-semibold marker:hidden"><span>{question}</span><span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-soft-blue text-brand-blue transition-transform group-open:rotate-90"><ArrowRight size={17} weight="bold" aria-hidden="true" /></span></summary><p className="max-w-2xl pt-4 leading-7 text-muted">{answer}</p></details>)}</div></div></section>
+        <section className="bg-cream py-14 sm:py-20" aria-labelledby="value-title">
+          <div className="container-shell"><h2 id="value-title" className="display-heading max-w-2xl text-4xl sm:text-5xl">Comprar lo de siempre, más simple.</h2><div className="mt-9 grid gap-x-10 gap-y-9 border-t border-border pt-8 md:grid-cols-3">{valueProps.map(([iconName, title, text]) => <article key={title}><PatitasIcon name={iconName} className="size-9" /><h3 className="mt-6 font-display text-2xl font-semibold leading-7">{title}</h3><p className="mt-3 max-w-sm leading-6 text-muted">{text}</p></article>)}</div></div>
+        </section>
 
-        <section className="bg-brand-blue py-14 text-white sm:py-20"><div className="container-shell flex flex-col items-start justify-between gap-8 md:flex-row md:items-end"><div><p className="text-sm font-bold uppercase tracking-[0.14em] text-brand-yellow">Cuando quieras empezar</p><h2 className="display-heading mt-4 max-w-2xl text-4xl sm:text-5xl">Vos cuidás de ellos. Nosotros te ayudamos a acordarte.</h2></div><Link href="#plan-quiz" className="inline-flex min-h-14 shrink-0 items-center gap-2 rounded-xl bg-brand-yellow px-6 font-semibold text-ink hover:bg-[#f1df00]">Armar mi plan <ArrowRight size={19} weight="bold" /></Link></div></section>
+        <section className="bg-brand-blue py-14 text-white sm:py-20" aria-labelledby="calculator-title">
+          <div className="container-shell grid items-center gap-8 lg:grid-cols-[1fr_auto] lg:gap-14"><div><h2 id="calculator-title" className="display-heading max-w-3xl text-4xl sm:text-5xl">¿Cuánto alimento necesita tu mascota?</h2><p className="mt-5 max-w-2xl text-lg leading-8 text-white/75">Calculá cuánto consume y cuánto puede durarte una bolsa. Cuando está disponible, usamos la recomendación del fabricante.</p></div><Link href="/calculadora-alimento" className="inline-flex min-h-14 items-center justify-center gap-2 rounded-xl bg-brand-yellow px-6 font-semibold text-ink hover:bg-[#f1df00]">Probar calculadora <ArrowRight size={19} weight="bold" /></Link></div>
+        </section>
+
+        <FAQ />
       </main>
       <SiteFooter />
     </>

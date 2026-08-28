@@ -32,4 +32,13 @@ export function catalogPath(species: Species, segments: string[] = []) {
   return `/${species === "dog" ? "perros" : "gatos"}${segments.length ? `/${segments.join("/")}` : ""}`;
 }
 
+export function categorySlugsForSpecies(species: Species) {
+  return new Set(routes.filter((route) => route.species === species && route.category).map((route) => route.category));
+}
+
+export function categoryPathForSpecies(species: Species, category: string) {
+  const route = routes.find((item) => item.species === species && item.category === category);
+  return route ? catalogPath(species, route.segments) : null;
+}
+
 export const indexableCatalogRoutes = routes;

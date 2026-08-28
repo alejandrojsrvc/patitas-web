@@ -17,14 +17,18 @@ export function AddToCartButton({
   const { addItem } = useCart();
   const [added, setAdded] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
   const disabled = !variant.fulfillment.purchasable;
 
   async function add() {
     setLoading(true);
+    setError(false);
     try {
       await addItem(variant.id, quantity);
       setAdded(true);
       window.setTimeout(() => setAdded(false), 1600);
+    } catch {
+      setError(true);
     } finally {
       setLoading(false);
     }
@@ -35,10 +39,10 @@ export function AddToCartButton({
       type="button"
       disabled={disabled || loading}
       onClick={add}
-      className={`inline-flex items-center justify-center gap-2 rounded-xl bg-brand-blue font-semibold whitespace-nowrap text-white transition-colors hover:bg-[#0048dc] disabled:cursor-not-allowed disabled:bg-[#a8b9dc] ${compact ? "min-h-10 min-w-24 px-2 text-[11px] sm:px-3 sm:text-xs" : "min-h-13 px-5"}`}
+      className={`inline-flex items-center justify-center gap-2 rounded-xl bg-brand-blue font-semibold whitespace-nowrap text-white transition-colors hover:bg-[#0048dc] disabled:cursor-not-allowed disabled:bg-[#a8b9dc] ${compact ? "min-h-10 min-w-24 px-2 text-[11px] sm:px-3 sm:text-xs" : "min-h-14 w-full px-8 text-base"}`}
     >
       {added ? <Check size={18} weight="bold" aria-hidden="true" /> : <ShoppingCartSimple size={18} weight="bold" aria-hidden="true" />}
-      {disabled ? "Sin stock" : loading ? "Guardando…" : added ? "Agregado" : "Agregar"}
+      {disabled ? "Sin stock" : loading ? "Guardando…" : added ? "Agregado" : error ? "Reintentar" : "Comprar"}
     </button>
   );
 }

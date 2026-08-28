@@ -20,6 +20,16 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Old Prince catalog scraper
+
+The offline scraper reads the dog category and then each product detail from Old Prince. It writes a JSON snapshot with the product name, inferred catalog attributes, ingredients, presentations, feeding table, guaranteed analysis and image URLs:
+
+```bash
+pnpm scrape:old-prince -- --output /tmp/old-prince-catalog.json
+```
+
+The source site does not publish SKU or prices, so the snapshot does not invent those commercial fields. Use `--limit 2` for a small verification run and `--delay-ms 500` to keep a pause between detail requests.
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:

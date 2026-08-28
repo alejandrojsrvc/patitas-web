@@ -25,6 +25,7 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   cacheComponents: true,
+  allowedDevOrigins: ["patitasinquietas.local"],
   async headers() {
     return [
       {

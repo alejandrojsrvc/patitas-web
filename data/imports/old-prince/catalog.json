@@ -1,0 +1,469 @@
+{
+  "source": {
+    "categoryUrl": "https://oldprince.com.ar/categoria-producto/perros/",
+    "scrapedAt": "2026-08-23T02:22:51.590Z",
+    "userAgent": "PatitasCatalogImporter/1.0 (+https://oldprince.com.ar/)"
+  },
+  "products": [
+    {
+      "name": "Old Prince Equilibrium Adultos Control de peso Pollo y Arroz",
+      "slug": "perros-old-prince-equilibrium-adultos-razas-pequenas-pollo-y-arroz-2",
+      "url": "https://oldprince.com.ar/producto/perros-old-prince-equilibrium-adultos-razas-pequenas-pollo-y-arroz-2/",
+      "brand": "Old Prince",
+      "species": "dog",
+      "category": "DRY_FOOD",
+      "lifeStage": "adult",
+      "breedSize": null,
+      "line": "Equilibrium",
+      "ingredients": "Harina de pollo, arroz, gluten de maíz, trigo, germen de maíz desgrasado, arveja, grasa animal (pollo- cerdo), aceite de pescado (fuente de omega 3), fuente de fibra insoluble (celulosa en polvo), hidrolizado de menudencia vacunas, levadura de cerveza, nucleótidos de levadura, pulpa de remolacha (fuente de fructo-oligosacáridos – FOS), zeolita, colágeno hidrolizado, extracto de yucca schidigera, manano-oligosacáridos – MOS, carbonato de calcio, metionina, propionato de calcio, ácido propiónico, glucosamina, pirofosfato ácido de sodio, antioxidantes naturales: extracto de romero, vitamina C, condroitin sulfato, L-carnitina, taurina, polifenoles, luteína, betacaroteno, licopeno, vitaminas: A, D3, E, K, B1, B2, B6, B12, ácido fólico, ácido nicotínico, pantotenato de calcio, biotina, colina, minerales: zinc (óxido de zinc), hierro (sulfato ferroso), manganeso (óxido de manganeso), cobre (sulfato de cobre), yodo (iodato de calcio), selenio (levadura de selenio).",
+      "presentations": [
+        {
+          "label": "3 Kg",
+          "weightGrams": 3000
+        },
+        {
+          "label": "15 Kg",
+          "weightGrams": 15000
+        }
+      ],
+      "feedingGuide": {
+        "title": "Cantidad diaria recomendada",
+        "headers": [
+          "Peso del animal",
+          "Mantenimiento",
+          "Reducción de peso"
+        ],
+        "rows": [
+          {
+            "animalWeight": {
+              "minKg": 2,
+              "maxKg": 5,
+              "source": "2 - 5 kg"
+            },
+            "values": [
+              "75 - 140 g",
+              "55 - 110 g"
+            ],
+            "sourceCells": [
+              "2 - 5 kg",
+              "75 - 140 g",
+              "55 - 110 g"
+            ]
+          },
+          {
+            "animalWeight": {
+              "minKg": 6,
+              "maxKg": 10,
+              "source": "6 - 10 kg"
+            },
+            "values": [
+              "160 - 230 g",
+              "120 - 170 g"
+            ],
+            "sourceCells": [
+              "6 - 10 kg",
+              "160 - 230 g",
+              "120 - 170 g"
+            ]
+          },
+          {
+            "animalWeight": {
+              "minKg": 11,
+              "maxKg": 20,
+              "source": "11 - 20 kg"
+            },
+            "values": [
+              "240 - 360 g",
+              "180 - 270 g"
+            ],
+            "sourceCells": [
+              "11 - 20 kg",
+              "240 - 360 g",
+              "180 - 270 g"
+            ]
+          },
+          {
+            "animalWeight": {
+              "minKg": 21,
+              "maxKg": 30,
+              "source": "21 - 30 kg"
+            },
+            "values": [
+              "370 - 470 g",
+              "280 - 350 g"
+            ],
+            "sourceCells": [
+              "21 - 30 kg",
+              "370 - 470 g",
+              "280 - 350 g"
+            ]
+          },
+          {
+            "animalWeight": {
+              "minKg": 31,
+              "maxKg": 40,
+              "source": "31 - 40 kg"
+            },
+            "values": [
+              "480 - 570 g",
+              "360 - 430 g"
+            ],
+            "sourceCells": [
+              "31 - 40 kg",
+              "480 - 570 g",
+              "360 - 430 g"
+            ]
+          },
+          {
+            "animalWeight": {
+              "minKg": 41,
+              "maxKg": 50,
+              "source": "41 - 50 kg"
+            },
+            "values": [
+              "580 - 660 g",
+              "440 - 500 g"
+            ],
+            "sourceCells": [
+              "41 - 50 kg",
+              "580 - 660 g",
+              "440 - 500 g"
+            ]
+          },
+          {
+            "animalWeight": {
+              "minKg": 51,
+              "maxKg": null,
+              "source": "51 Kg o más"
+            },
+            "values": [
+              "670 g o más",
+              "510 g o más"
+            ],
+            "sourceCells": [
+              "51 Kg o más",
+              "670 g o más",
+              "510 g o más"
+            ]
+          }
+        ]
+      },
+      "composition": {
+        "title": "Composicion centesimal",
+        "headers": [
+          "",
+          "Minimo",
+          "Máximo"
+        ],
+        "rows": [
+          {
+            "ingredient": "Proteína",
+            "minimum": "30 %",
+            "maximum": "",
+            "sourceCells": [
+              "Proteína",
+              "30 %",
+              ""
+            ]
+          },
+          {
+            "ingredient": "Extracto etéreo",
+            "minimum": "8 %",
+            "maximum": "",
+            "sourceCells": [
+              "Extracto etéreo",
+              "8 %",
+              ""
+            ]
+          },
+          {
+            "ingredient": "Humedad",
+            "minimum": "",
+            "maximum": "12%",
+            "sourceCells": [
+              "Humedad",
+              "",
+              "12%"
+            ]
+          },
+          {
+            "ingredient": "Fibra cruda",
+            "minimum": "",
+            "maximum": "6,5 %",
+            "sourceCells": [
+              "Fibra cruda",
+              "",
+              "6,5 %"
+            ]
+          },
+          {
+            "ingredient": "Minerales totales",
+            "minimum": "",
+            "maximum": "7 %",
+            "sourceCells": [
+              "Minerales totales",
+              "",
+              "7 %"
+            ]
+          },
+          {
+            "ingredient": "Calcio",
+            "minimum": "0,9 %",
+            "maximum": "1,2 %",
+            "sourceCells": [
+              "Calcio",
+              "0,9 %",
+              "1,2 %"
+            ]
+          },
+          {
+            "ingredient": "Fósforo",
+            "minimum": "0,6 %",
+            "maximum": "0,9 %",
+            "sourceCells": [
+              "Fósforo",
+              "0,6 %",
+              "0,9 %"
+            ]
+          },
+          {
+            "ingredient": "Energía metabolizable",
+            "minimum": "TC: 3400",
+            "maximum": "BS: 3864",
+            "sourceCells": [
+              "Energía metabolizable",
+              "TC: 3400",
+              "BS: 3864"
+            ]
+          }
+        ]
+      },
+      "images": [
+        {
+          "url": "https://oldprince.com.ar/wp-content/uploads/2023/06/Mockup_OP-Equilibrium-Light-3.png",
+          "altText": "Old Prince Equilibrium Adultos Control de peso Pollo y Arroz"
+        }
+      ]
+    },
+    {
+      "name": "Old Prince Equilibrium Adultos Medianos y Grandes Pollo y Arroz",
+      "slug": "perros-old-prince-equilibrium-adultos-medianos-y-grandes-pollo-y-arro",
+      "url": "https://oldprince.com.ar/producto/perros-old-prince-equilibrium-adultos-medianos-y-grandes-pollo-y-arro/",
+      "brand": "Old Prince",
+      "species": "dog",
+      "category": "DRY_FOOD",
+      "lifeStage": "adult",
+      "breedSize": "medium_large",
+      "line": "Equilibrium",
+      "ingredients": "Harina de pollo, arroz, gluten de maíz, germen de maíz desgrasado, aceite de pollo , aceite de pescado (fuente de omega), hidrolizado de menudencias porcinas y aviares, pulpa de remolacha (fuente de fructo-oligosacáridos – FOS), fibra insoluble (celulosa), levadura de cerveza, zeolita, extracto de yucca schidigera, manano-oli-gosacáridos – MOS, dipropionato de calcio, ácido propiónico, pirofosfato ácido de sodio, glucosamina, condroitin sulfato, metionina, antioxidantes naturales: extracto de romero, ácido cítrico, vitamina C, betacaroteno, licopeno, luteína, polifenoles, vitaminas: A, D3, E, K, B1, B2, B6, B12, ácido fólico, ácido nicotínico, pantotenato de calcio, biotina, colina, minerales: zinc, hierro, cobre, manganeso, yodo, selenio",
+      "presentations": [
+        {
+          "label": "3 Kg",
+          "weightGrams": 3000
+        },
+        {
+          "label": "7.5 Kg",
+          "weightGrams": 7500
+        },
+        {
+          "label": "15 Kg",
+          "weightGrams": 15000
+        },
+        {
+          "label": "20 Kg",
+          "weightGrams": 20000
+        }
+      ],
+      "feedingGuide": {
+        "title": "Cantidad diaria recomendada",
+        "headers": [
+          "Peso del animal",
+          "Gramos de alimento"
+        ],
+        "rows": [
+          {
+            "animalWeight": {
+              "minKg": 5,
+              "maxKg": 10,
+              "source": "5 - 10 kg."
+            },
+            "values": [
+              "110 - 180 g."
+            ],
+            "sourceCells": [
+              "5 - 10 kg.",
+              "110 - 180 g."
+            ]
+          },
+          {
+            "animalWeight": {
+              "minKg": 11,
+              "maxKg": 20,
+              "source": "11 - 20 kg."
+            },
+            "values": [
+              "190 -280 g."
+            ],
+            "sourceCells": [
+              "11 - 20 kg.",
+              "190 -280 g."
+            ]
+          },
+          {
+            "animalWeight": {
+              "minKg": 21,
+              "maxKg": 30,
+              "source": "21 - 30 kg."
+            },
+            "values": [
+              "290 - 370 g."
+            ],
+            "sourceCells": [
+              "21 - 30 kg.",
+              "290 - 370 g."
+            ]
+          },
+          {
+            "animalWeight": {
+              "minKg": 31,
+              "maxKg": 40,
+              "source": "31 - 40 kg."
+            },
+            "values": [
+              "380 - 450 g."
+            ],
+            "sourceCells": [
+              "31 - 40 kg.",
+              "380 - 450 g."
+            ]
+          },
+          {
+            "animalWeight": {
+              "minKg": 41,
+              "maxKg": 50,
+              "source": "41 - 50 kg."
+            },
+            "values": [
+              "460 - 520 g."
+            ],
+            "sourceCells": [
+              "41 - 50 kg.",
+              "460 - 520 g."
+            ]
+          },
+          {
+            "animalWeight": {
+              "minKg": 51,
+              "maxKg": 51,
+              "source": "51 o más"
+            },
+            "values": [
+              "530 g. o más"
+            ],
+            "sourceCells": [
+              "51 o más",
+              "530 g. o más"
+            ]
+          }
+        ]
+      },
+      "composition": {
+        "title": "Composicion centesimal",
+        "headers": [
+          "",
+          "Minimo",
+          "Máximo"
+        ],
+        "rows": [
+          {
+            "ingredient": "Humedad",
+            "minimum": "",
+            "maximum": "12 %",
+            "sourceCells": [
+              "Humedad",
+              "",
+              "12 %"
+            ]
+          },
+          {
+            "ingredient": "Extracto etéreo",
+            "minimum": "14 %",
+            "maximum": "",
+            "sourceCells": [
+              "Extracto etéreo",
+              "14 %",
+              ""
+            ]
+          },
+          {
+            "ingredient": "Proteína",
+            "minimum": "26 %",
+            "maximum": "",
+            "sourceCells": [
+              "Proteína",
+              "26 %",
+              ""
+            ]
+          },
+          {
+            "ingredient": "Fibra cruda",
+            "minimum": "",
+            "maximum": "3,5 %",
+            "sourceCells": [
+              "Fibra cruda",
+              "",
+              "3,5 %"
+            ]
+          },
+          {
+            "ingredient": "Minerales totales",
+            "minimum": "",
+            "maximum": "8 %",
+            "sourceCells": [
+              "Minerales totales",
+              "",
+              "8 %"
+            ]
+          },
+          {
+            "ingredient": "Calcio",
+            "minimum": "1,0 %",
+            "maximum": "1,5 %",
+            "sourceCells": [
+              "Calcio",
+              "1,0 %",
+              "1,5 %"
+            ]
+          },
+          {
+            "ingredient": "Fósforo",
+            "minimum": "0,6 %",
+            "maximum": "1,2 %",
+            "sourceCells": [
+              "Fósforo",
+              "0,6 %",
+              "1,2 %"
+            ]
+          },
+          {
+            "ingredient": "Energía metabolizable",
+            "minimum": "EM 85 TC: 3326",
+            "maximum": "BS: 3780",
+            "sourceCells": [
+              "Energía metabolizable",
+              "EM 85 TC: 3326",
+              "BS: 3780"
+            ]
+          }
+        ]
+      },
+      "images": [
+        {
+          "url": "https://oldprince.com.ar/wp-content/uploads/2023/06/Mockup_Equilibrium-Adulto-MyG-1.png",
+          "altText": "Old Prince Equilibrium Adultos Medianos y Grandes Pollo y Arroz"
+        }
+      ]
+    }
+  ],
+  "warnings": []
+}

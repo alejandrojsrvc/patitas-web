@@ -7,15 +7,17 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
 export function OrganizationJsonLd() {
   const data = {
     "@context": "https://schema.org",
-    "@type": "Organization",
+    "@type": ["Organization", "OnlineStore"],
     name: "Patitas Inquietas",
     url: siteUrl,
     logo: `${siteUrl}/brand/patitas-logo-principal.png`,
-    description: "Tienda online de consumibles para perros y gatos con cálculo y recordatorios de reposición.",
-    areaServed: {
-      "@type": "City",
-      name: "Buenos Aires",
-    },
+    description: "Pet shop online de alimento balanceado, arena y esenciales para perros y gatos en CABA.",
+    areaServed: [
+      { "@type": "City", name: "Ciudad Autónoma de Buenos Aires", alternateName: "CABA" },
+      { "@type": "Country", name: "Argentina", identifier: "AR" },
+    ],
+    serviceArea: { "@type": "City", name: "Ciudad Autónoma de Buenos Aires", alternateName: "CABA" },
+    knowsAbout: ["alimento para perros", "alimento para gatos", "reposición de alimento para mascotas"],
     sameAs: [],
   };
 
@@ -33,7 +35,7 @@ export function WebsiteJsonLd() {
     "@type": "WebSite",
     name: "Patitas Inquietas",
     url: siteUrl,
-    description: "Comprá alimento, arena y esenciales y calculá cuándo conviene reponerlos.",
+    description: "Comprá alimento balanceado, arena y esenciales para perros y gatos en CABA.",
     inLanguage: "es-AR",
     potentialAction: {
       "@type": "SearchAction",

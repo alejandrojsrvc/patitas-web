@@ -10,9 +10,10 @@
   --soft-yellow: #fff9c7;
   --border: #e8e8e3;
   --white: #ffffff;
-  --catalog-canvas: #f3f5f7;
-  --catalog-soft: #e9edf1;
-  --catalog-line: #dfe4e9;
+  --catalog-canvas: #fafaf8;
+  --catalog-page: #f5f5f5;
+  --catalog-soft: #f5f5f2;
+  --catalog-line: #e7e7e1;
 }
 
 @theme inline {
@@ -26,10 +27,11 @@
   --color-border: var(--border);
   --color-surface: var(--white);
   --color-catalog-canvas: var(--catalog-canvas);
+  --color-catalog-page: var(--catalog-page);
   --color-catalog-soft: var(--catalog-soft);
   --color-catalog-line: var(--catalog-line);
   --font-sans: var(--font-sn-pro);
-  --font-display: var(--font-bricolage);
+  --font-display: var(--font-sn-pro);
 }
 
 * {
@@ -101,7 +103,7 @@ button:disabled {
 }
 
 .display-heading {
-  font-family: var(--font-bricolage), Arial, sans-serif;
+  font-family: var(--font-sn-pro), Arial, sans-serif;
   font-weight: 600;
   letter-spacing: -0.035em;
   line-height: 0.98;

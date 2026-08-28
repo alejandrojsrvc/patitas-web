@@ -1,8 +1,9 @@
-import { ArrowDown, ArrowUp, Sparkle, TextAa } from "@phosphor-icons/react/ssr";
+import { ArrowDown, ArrowUp, Check, Sparkle, TextAa } from "@phosphor-icons/react/ssr";
 import Form from "next/form";
 import Link from "next/link";
 
-import type { Brand, Category, Product, ProductPage, Species } from "@/domain/catalog/types";
+import { categorySlugsForSpecies } from "@/data/catalog-routes";
+import type { Brand, Category, ProductPage, Species } from "@/domain/catalog/types";
 import { formatWeight } from "@/lib/catalog-formatters";
 import { catalogHref, type CatalogSearchParams } from "@/lib/catalog-search-params";
 import { ProductGrid } from "./product-grid";
@@ -15,7 +16,6 @@ export function CatalogResults({
   description,
   current,
   categories = [],
-  filterProducts,
   pathname,
 }: {
   result: ProductPage;
@@ -25,29 +25,28 @@ export function CatalogResults({
   description: string;
   current: CatalogSearchParams;
   categories?: Category[];
-  filterProducts?: Product[];
   pathname: string;
 }) {
-  const selectedBrand = first(current.brand);
-  const selectedStage = first(current.lifeStage);
-  const selectedWeight = first(current.weightGrams);
-  const availableProducts = filterProducts ?? result.items;
+  const selectedBrands = values(current.brand);
+  const selectedStages = values(current.lifeStage);
+  const selectedWeights = values(current.weightGrams);
+  const availableProducts = result.items;
   const weights = [...new Set([
-    ...availableProducts.flatMap((product) => product.variants.map((variant) => variant.weightGrams).filter((weight): weight is number => Boolean(weight))),
-    ...[Number(selectedWeight)].filter((weight) => Number.isInteger(weight) && weight > 0),
+    ...(result.meta.facets?.weightGrams ?? availableProducts.flatMap((product) => product.variants.map((variant) => variant.weightGrams).filter((weight): weight is number => Boolean(weight)))),
+    ...selectedWeights.map(Number).filter((weight) => Number.isInteger(weight) && weight > 0),
   ])].sort((a, b) => a - b);
-  const availableStages = [...new Set(availableProducts.map((product) => product.lifeStage).filter((stage): stage is string => Boolean(stage)))];
-  const stages = [...new Set([...availableStages, ...[selectedStage].filter((stage): stage is string => Boolean(stage))])]
+  const availableStages = result.meta.facets?.lifeStages ?? [...new Set(availableProducts.map((product) => product.lifeStage).filter((stage): stage is string => Boolean(stage)))];
+  const stages = [...new Set([...availableStages, ...selectedStages])]
     .sort((left, right) => stageOrder.indexOf(left) - stageOrder.indexOf(right));
-  const availableBrandSlugs = new Set(availableProducts.map((product) => product.brand.slug));
-  const visibleBrands = filterProducts ? brands.filter((brand) => availableBrandSlugs.has(brand.slug) || brand.slug === selectedBrand) : brands;
-  const flatCategories = flattenCategories(categories);
+  const visibleBrands = brands;
+  const categorySlugs = species ? categorySlugsForSpecies(species) : null;
+  const flatCategories = flattenCategories(categories).filter((category) => !categorySlugs || categorySlugs.has(category.slug));
 
   const selectedSpecies = first(current.species);
   const selectedMinPrice = first(current.minPrice);
   const selectedMaxPrice = first(current.maxPrice);
   return (
-    <main id="contenido" className="bg-catalog-canvas pb-20">
+    <main id="contenido" className="bg-catalog-page pb-20">
       <section className="bg-catalog-soft py-8 sm:py-12 lg:py-16">
         <div className="container-shell flex justify-center text-center">
           <div className="max-w-3xl">
@@ -61,26 +60,26 @@ export function CatalogResults({
       <section className="container-shell py-5 sm:py-8 lg:py-12">
         <div className="grid items-start gap-4 lg:grid-cols-[260px_minmax(0,1fr)] lg:gap-10">
           <aside className="self-start" aria-label="Filtros del catálogo">
-            <details open className="group rounded-xl bg-white">
+            <details open className="group rounded-xl bg-catalog-soft">
               <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-3 px-4 font-semibold marker:content-none lg:hidden">
                 <span>Filtros</span>
                 <span className="text-xs font-normal text-muted">Mostrar / ocultar</span>
               </summary>
               <div className="p-4 pt-0 lg:p-5">
-                <div className="hidden items-center justify-between gap-3 border-b border-catalog-line pb-4 lg:flex">
+                <div className="hidden items-center justify-between gap-3 pb-4 lg:flex">
                   <h2 className="font-display text-xl font-semibold">Filtros</h2>
                   <Link href={pathname} scroll={false} className="text-xs font-semibold text-brand-blue hover:underline">Limpiar</Link>
                 </div>
-                <div className="flex items-center justify-end border-b border-catalog-line pb-3 lg:hidden">
+                <div className="flex items-center justify-end pb-3 lg:hidden">
                   <Link href={pathname} scroll={false} className="text-xs font-semibold text-brand-blue hover:underline">Limpiar filtros</Link>
                 </div>
                 <div>
-                  {!species ? <FilterOptionList label="Especie" name="species" value={selectedSpecies} options={[["dog", "Perros"], ["cat", "Gatos"]]} current={current} pathname={pathname} /> : null}
-                  {flatCategories.length ? <FilterOptionList label="Categoría" name="category" value={first(current.category)} options={flatCategories.map((category) => [category.slug, category.label])} current={current} pathname={pathname} /> : null}
-                  <FilterOptionList label="Marca" name="brand" value={selectedBrand} options={visibleBrands.map((brand) => [brand.slug, brand.name])} current={current} pathname={pathname} />
-                  <FilterOptionList label="Etapa" name="lifeStage" value={selectedStage} options={stages.map((stage) => [stage, stageCopy(stage)])} current={current} pathname={pathname} />
-                  <FilterOptionList label="Presentación" name="weightGrams" value={selectedWeight} options={weights.map((weight) => [String(weight), formatWeight(weight) ?? String(weight)])} current={current} pathname={pathname} />
-                  <Form action={pathname} scroll={false} className="border-t border-catalog-line pt-4">
+                  {!species ? <FilterOptionList label="Especie" name="species" values={selectedSpecies ? [selectedSpecies] : []} options={[["dog", "Perros"], ["cat", "Gatos"]]} current={current} pathname={pathname} /> : null}
+                  {flatCategories.length ? <FilterOptionList label="Categoría" name="category" values={first(current.category) ? [first(current.category)!] : []} options={flatCategories.map((category) => [category.slug, category.label])} current={current} pathname={pathname} /> : null}
+                  <FilterOptionList label="Marca" name="brand" values={selectedBrands} multiple options={visibleBrands.map((brand) => [brand.slug, brand.name])} current={current} pathname={pathname} />
+                  <FilterOptionList label="Etapa" name="lifeStage" values={selectedStages} multiple options={stages.map((stage) => [stage, stageCopy(stage)])} current={current} pathname={pathname} />
+                  <FilterOptionList label="Presentación" name="weightGrams" values={selectedWeights} multiple options={weights.map((weight) => [String(weight), formatWeight(weight) ?? String(weight)])} current={current} pathname={pathname} />
+                  <Form action={pathname} scroll={false} className="pt-4">
                     <PreservedSearchParams current={current} omit={["minPrice", "maxPrice", "page"]} />
                     <details open={Boolean(selectedMinPrice || selectedMaxPrice)} className="group">
                       <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 font-semibold marker:content-none">Precio <span className="text-xs font-normal text-muted">Abrir</span></summary>
@@ -116,20 +115,23 @@ export function CatalogResults({
   );
 }
 
-function FilterOptionList({ label, name, value, options, current, pathname }: { label: string; name: string; value?: string; options: Array<readonly [string, string]>; current: CatalogSearchParams; pathname: string }) {
+function FilterOptionList({ label, name, values: selectedValues, multiple = false, options, current, pathname }: { label: string; name: string; values: string[]; multiple?: boolean; options: Array<readonly [string, string]>; current: CatalogSearchParams; pathname: string }) {
   return (
     <fieldset className="py-4">
       <legend className="font-display text-[1.05rem] font-semibold">{label}</legend>
       <div className="mt-2 grid gap-1">
-        <FilterOption label="Todos" selected={!value} href={catalogHref(pathname, current, { [name]: undefined, page: 1 })} />
-        {options.map(([optionValue, optionLabel]) => <FilterOption key={optionValue} label={optionLabel} selected={value === optionValue} href={catalogHref(pathname, current, { [name]: optionValue, page: 1 })} />)}
+        {options.map(([optionValue, optionLabel]) => {
+          const selected = selectedValues.includes(optionValue);
+          const nextValues = multiple ? (selected ? selectedValues.filter((value) => value !== optionValue) : [...selectedValues, optionValue]) : [optionValue];
+          return <FilterOption key={optionValue} label={optionLabel} selected={selected} href={catalogHref(pathname, current, { [name]: nextValues, page: 1 })} />;
+        })}
       </div>
     </fieldset>
   );
 }
 
 function FilterOption({ label, selected, href }: { label: string; selected: boolean; href: string }) {
-  return <Link href={href} scroll={false} aria-current={selected ? "page" : undefined} className={`flex min-h-10 items-center rounded-xl px-3 text-sm transition-colors ${selected ? "bg-brand-blue/10 font-semibold text-brand-blue" : "text-muted hover:bg-catalog-canvas hover:text-ink"}`}>{label}</Link>;
+  return <Link href={href} scroll={false} role="checkbox" aria-checked={selected} aria-current={selected ? "page" : undefined} className={`flex min-h-10 items-center gap-2 rounded-xl px-3 text-sm transition-colors ${selected ? "bg-white font-semibold text-brand-blue" : "text-muted hover:bg-white/70 hover:text-ink"}`}><span aria-hidden="true" className={`flex size-4 shrink-0 items-center justify-center rounded border ${selected ? "border-brand-blue bg-brand-blue text-white" : "border-catalog-line bg-white"}`}>{selected ? <Check size={11} weight="bold" /> : null}</span>{label}</Link>;
 }
 
 function SortOptions({ current, pathname }: { current: CatalogSearchParams; pathname: string }) {
@@ -142,7 +144,7 @@ function PreservedSearchParams({ current, omit }: { current: CatalogSearchParams
   return <>{Object.entries(current).flatMap(([key, rawValue]) => { if (omit.includes(key)) return []; const values = Array.isArray(rawValue) ? rawValue : rawValue ? [rawValue] : []; return values.map((value, index) => <input key={`${key}-${index}-${value}`} type="hidden" name={key} value={value} />); })}</>;
 }
 
-function Pagination({ result, pathname, current }: { result: ProductPage; pathname: string; current: CatalogSearchParams }) {
+export function Pagination({ result, pathname, current }: { result: ProductPage; pathname: string; current: CatalogSearchParams }) {
   return (
     <nav aria-label="Paginación del catálogo" className="mt-10 flex items-center justify-center gap-3">
       <Link aria-disabled={result.meta.page <= 1} tabIndex={result.meta.page <= 1 ? -1 : undefined} href={catalogHref(pathname, current, { page: Math.max(1, result.meta.page - 1) })} scroll={false} className={`rounded-xl px-4 py-3 text-sm font-semibold ${result.meta.page <= 1 ? "pointer-events-none opacity-40" : "bg-white shadow-[0_4px_12px_rgba(24,33,43,0.05)] hover:text-brand-blue"}`}>Anterior</Link>
@@ -153,6 +155,7 @@ function Pagination({ result, pathname, current }: { result: ProductPage; pathna
 }
 
 const first = (input: string | string[] | undefined) => Array.isArray(input) ? input[0] : input;
+const values = (input: string | string[] | number[] | undefined) => Array.isArray(input) ? input.map(String) : input ? [String(input)] : [];
 
 const stageOrder = ["puppy", "kitten", "adult", "senior"];
 const stageCopy = (stage: string) => ({ puppy: "Cachorro", kitten: "Gatito", adult: "Adulto", senior: "Senior" } as Record<string, string>)[stage] ?? stage;

@@ -9,7 +9,9 @@ const first = (input: string | string[] | undefined) =>
   Array.isArray(input) ? input[0] : input;
 
 const list = (input: string | string[] | undefined) =>
-  input ? (Array.isArray(input) ? input : [input]) : undefined;
+  input
+    ? [...new Set((Array.isArray(input) ? input : [input]).flatMap((value) => value.split(",").map((item) => item.trim()).filter(Boolean)))]
+    : undefined;
 
 const positiveInteger = (input: string | string[] | undefined) => {
   const parsed = Number(first(input) ?? 1);
@@ -58,7 +60,7 @@ export function productFiltersFromSearchParams(
 export function catalogHref(
   pathname: string,
   searchParams: CatalogSearchParams,
-  changes: Record<string, string | number | undefined>,
+  changes: Record<string, string | number | string[] | undefined>,
 ) {
   const params = new URLSearchParams();
   for (const [key, value] of Object.entries(searchParams)) {
@@ -68,7 +70,8 @@ export function catalogHref(
   }
   for (const [key, value] of Object.entries(changes)) {
     params.delete(key);
-    if (value !== undefined && value !== "") params.set(key, String(value));
+    if (Array.isArray(value)) value.forEach((item) => params.append(key, item));
+    else if (value !== undefined && value !== "") params.set(key, String(value));
   }
   const query = params.toString();
   return query ? `${pathname}?${query}` : pathname;

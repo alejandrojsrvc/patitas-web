@@ -1,0 +1,46 @@
+import assert from "node:assert/strict";
+import test from "node:test";
+
+import type { Product } from "@/domain/catalog/types";
+import { selectInitialVariant, variantAvailabilityCopy } from "./catalog-variants.ts";
+
+function product(statuses: Array<["IN_STOCK" | "ON_REQUEST" | "OUT_OF_STOCK", boolean]>): Product {
+  return {
+    id: "product",
+    name: "Producto",
+    slug: "producto",
+    description: null,
+    line: null,
+    species: "dog",
+    lifeStage: "adult",
+    breedSize: null,
+    brand: { id: "brand", name: "Marca", slug: "marca", description: null, seoTitle: null, seoDescription: null, logoUrl: null },
+    category: null,
+    media: [],
+    offers: [],
+    variants: statuses.map(([status, purchasable], index) => ({
+      id: `variant-${index}`,
+      sku: `SKU-${index}`,
+      presentation: `${index + 1} kg`,
+      weightGrams: (index + 1) * 1000,
+      salePrice: String(index + 1),
+      compareAtPrice: null,
+      currency: "ARS",
+      fulfillment: { status, purchasable, leadTimeHours: null },
+    })),
+  };
+}
+
+test("selecciona primero una variante en stock y comprable", () => {
+  assert.equal(selectInitialVariant(product([["OUT_OF_STOCK", false], ["IN_STOCK", true]])).id, "variant-1");
+});
+
+test("prioriza bajo pedido cuando no hay stock inmediato", () => {
+  assert.equal(selectInitialVariant(product([["OUT_OF_STOCK", false], ["ON_REQUEST", true]])).id, "variant-1");
+});
+
+test("resume disponibilidad de un producto agrupado", () => {
+  assert.equal(variantAvailabilityCopy(product([["OUT_OF_STOCK", false], ["IN_STOCK", true]])), "Hay presentaciones disponibles");
+  assert.equal(variantAvailabilityCopy(product([["OUT_OF_STOCK", false], ["ON_REQUEST", true]])), "Disponible bajo pedido");
+  assert.equal(variantAvailabilityCopy(product([["OUT_OF_STOCK", false]])), "Sin stock");
+});

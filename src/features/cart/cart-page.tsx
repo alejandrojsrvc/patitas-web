@@ -47,6 +47,7 @@ export function CartPageContent() {
               <div className="min-w-0">
                 <Link href={`/producto/${item.slug}`} className="mt-1 block font-display text-lg font-semibold leading-5 hover:text-brand-blue sm:text-xl sm:leading-6">{item.productName}</Link>
                 <p className="mt-1 text-sm text-muted">{item.presentation ?? "Presentación estándar"}</p>
+                <p className="mt-1 text-sm text-muted">{formatMoney(Number(item.unitPrice))} por unidad</p>
                 <div className="mt-4 flex flex-wrap items-center gap-3">
                   <div className="inline-flex items-center rounded-lg bg-catalog-canvas" aria-label={`Cantidad de ${item.productName}`}>
                     <button type="button" onClick={() => updateQuantity(item.variantId, item.quantity - 1)} aria-label="Restar una unidad" className="flex size-10 items-center justify-center rounded-lg hover:bg-brand-blue/10"><Minus size={15} weight="bold" /></button>

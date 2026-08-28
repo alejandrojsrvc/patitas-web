@@ -8,6 +8,7 @@ import type {
   ProductFilters,
   ProductPage,
   PublicOffer,
+  ReplenishmentLeadInput,
 } from "@/domain/catalog/types";
 
 const apiUrl = (process.env.PATITAS_API_URL ?? "http://127.0.0.1:3000/api/v1").replace(/\/$/, "");
@@ -71,6 +72,10 @@ export const catalogApi = {
     lifeStage?: string;
     attributes?: Record<string, string>;
   }) => request<FoodDurationResult>("/calculator/food-duration", {
+    method: "POST",
+    body: JSON.stringify(input),
+  }),
+  captureReplenishmentLead: (input: ReplenishmentLeadInput) => request<{ id: string; status: string }>("/replenishment-leads", {
     method: "POST",
     body: JSON.stringify(input),
   }),

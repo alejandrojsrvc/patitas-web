@@ -10,7 +10,7 @@ import { formatMoney } from "@/lib/catalog-formatters";
 import { useCart } from "@/features/cart/cart-context";
 
 type CheckoutStep = 1 | 2 | 3;
-type PaymentMethod = "SIMULATED_CARD" | "SIMULATED_TRANSFER" | "SIMULATED_CASH";
+type PaymentMethod = "MERCADO_PAGO";
 type SubmittedOrder = { order: OrderSummary; guest: boolean };
 
 const steps = [
@@ -18,14 +18,16 @@ const steps = [
   { id: 2 as const, label: "Dirección", Icon: MapPin },
   { id: 3 as const, label: "Envío y pago", Icon: CreditCard },
 ];
+const termsVersion = "2026-08-26";
 
 export function CheckoutForm({ initialSession, initialShippingOptions = [] }: { initialSession: CheckoutSession | null; initialShippingOptions?: ShippingOption[] }) {
   const { cart, items, refresh } = useCart();
   const formRef = useRef<HTMLFormElement>(null);
+  const confirmIdempotencyKey = useRef<string | null>(null);
   const [session, setSession] = useState<CheckoutSession | null>(initialSession);
   const [shippingOptions, setShippingOptions] = useState<ShippingOption[]>(initialShippingOptions);
   const [selectedShippingOption, setSelectedShippingOption] = useState(initialSession?.shippingOptionId ?? "");
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(initialSession?.paymentMethod ?? "SIMULATED_CARD");
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(initialSession?.paymentMethod ?? "MERCADO_PAGO");
   const [couponCode, setCouponCode] = useState(initialSession?.couponCode ?? "");
   const [couponLoading, setCouponLoading] = useState(false);
   const [step, setStep] = useState<CheckoutStep>(initialSession ? stepFromStage(initialSession.stage) : 1);
@@ -88,7 +90,7 @@ export function CheckoutForm({ initialSession, initialShippingOptions = [] }: { 
       setSession(next);
     } catch (cause) {
       if (isConflict(cause)) await recoverConflict();
-      setPaymentMethod(session.paymentMethod ?? "SIMULATED_CARD");
+      setPaymentMethod(session.paymentMethod ?? "MERCADO_PAGO");
       setError(errorMessage(cause, "No pudimos guardar el método de pago."));
     } finally {
       setLoading(false);
@@ -160,10 +162,26 @@ export function CheckoutForm({ initialSession, initialShippingOptions = [] }: { 
       if (current.paymentMethod !== paymentMethod) {
         current = await requestJson<CheckoutSession>(`/checkout/sessions/${session.id}/payment-method`, { method: "PATCH", body: JSON.stringify({ paymentMethod }) });
       }
-      const result = await requestJson<CheckoutConfirmResult>(`/checkout/sessions/${session.id}/confirm`, { method: "POST" });
-      setSubmitted({ order: result.order, guest: Boolean(result.publicToken) });
-      setSession(null);
-      await refresh();
+      const idempotencyKey = confirmIdempotencyKey.current ?? crypto.randomUUID();
+      confirmIdempotencyKey.current = idempotencyKey;
+      const termsAccepted = form.get("terms") === "on";
+      const result = await requestJson<CheckoutConfirmResult>(`/checkout/sessions/${session.id}/confirm`, {
+        method: "POST",
+        headers: { "Idempotency-Key": idempotencyKey },
+        body: JSON.stringify({ termsAccepted, termsVersion }),
+      });
+      if (!result.payment) {
+        throw new Error("La API todavía no está configurada para iniciar Mercado Pago.");
+      }
+      if (result.payment.status === "APPROVED") {
+        setSubmitted({ order: result.order, guest: Boolean(result.publicToken) });
+        setSession(null);
+        await refresh();
+      } else if (result.payment.redirectUrl) {
+        window.location.assign(result.payment.redirectUrl);
+      } else {
+        throw new Error(result.payment.status === "PENDING" ? "La API no devolvió una URL de pago para continuar con Mercado Pago." : "Mercado Pago rechazó o canceló el inicio del pago.");
+      }
     } catch (cause) {
       if (isConflict(cause)) await recoverConflict();
       setError(errorMessage(cause, "No pudimos confirmar el pedido. Revisá stock, envío y datos."));
@@ -199,9 +217,9 @@ export function CheckoutForm({ initialSession, initialShippingOptions = [] }: { 
 
         <fieldset hidden={step !== 3} className="rounded-xl bg-white p-4 sm:p-7">
           <legend className="px-1 font-display text-xl font-semibold sm:text-2xl">Envío y pago</legend>
-          <p className="mt-2 text-sm text-muted">Elegí la entrega y un método de pago simulado. No pedimos ni guardamos datos reales de tarjeta.</p>{session?.stage === "CONFIRMATION" ? <p className="mt-3 rounded-lg bg-soft-blue p-3 text-sm font-semibold text-ink">Tu checkout está listo. Revisá los datos y confirmá el pedido.</p> : null}
+          <p className="mt-2 text-sm text-muted">Elegí la entrega y continuá a Mercado Pago. Patitas no pide ni guarda datos de tarjeta.</p>{session?.stage === "CONFIRMATION" ? <p className="mt-3 rounded-lg bg-soft-blue p-3 text-sm font-semibold text-ink">Tu checkout está listo. Revisá los datos y confirmá el pedido.</p> : null}
           <div className="mt-6 grid gap-2">{shippingOptions.map((option) => <label key={option.id} className={`flex cursor-pointer items-start gap-3 rounded-xl border p-4 ${selectedShippingOption === option.id ? "border-brand-blue bg-soft-blue" : "border-border bg-white"}`}><input type="radio" name="shippingOption" value={option.id} checked={selectedShippingOption === option.id} onChange={() => setSelectedShippingOption(option.id)} className="mt-1 accent-brand-blue" /><span className="min-w-0 flex-1"><span className="block font-semibold">{option.name}</span>{option.description ? <span className="mt-1 block text-sm text-muted">{option.description}</span> : null}</span><strong className="shrink-0 text-sm tabular-nums">{formatMoney(Number(option.cost))}</strong></label>)}</div>
-          <div className="mt-6 grid gap-2 sm:grid-cols-3">{(["SIMULATED_CARD", "SIMULATED_TRANSFER", "SIMULATED_CASH"] as const).map((method) => <label key={method} className={`flex min-h-12 cursor-pointer items-center gap-2 rounded-xl border px-3 text-sm font-semibold ${paymentMethod === method ? "border-brand-yellow bg-brand-yellow text-ink" : "border-border bg-white"} ${loading ? "cursor-wait opacity-70" : ""}`}><input type="radio" name="paymentMethod" value={method} checked={paymentMethod === method} onChange={() => void selectPaymentMethod(method)} disabled={loading} className="sr-only" />{method === "SIMULATED_CARD" ? "Tarjeta simulada" : method === "SIMULATED_TRANSFER" ? "Transferencia" : "Efectivo"}</label>)}</div>
+          <div className="mt-6"><label className="flex min-h-12 cursor-pointer items-center gap-3 rounded-xl border border-brand-yellow bg-brand-yellow px-4 text-sm font-semibold"><input type="radio" name="paymentMethod" value="MERCADO_PAGO" checked={paymentMethod === "MERCADO_PAGO"} onChange={() => void selectPaymentMethod("MERCADO_PAGO")} disabled={loading} className="accent-brand-blue" />Pagar con Mercado Pago</label></div>
           <div className="mt-6 rounded-xl bg-catalog-canvas p-4"><p className="text-sm font-semibold">¿Tenés un cupón?</p><div className="mt-3 flex gap-2"><input value={couponCode} onChange={(event) => setCouponCode(event.target.value.toUpperCase())} aria-label="Código de cupón" placeholder="Código" className="h-11 min-w-0 flex-1 rounded-lg border border-catalog-line bg-white px-3 uppercase outline-none focus:border-brand-blue" disabled={Boolean(session?.couponCode) || couponLoading} /><button type="button" onClick={() => void applyCoupon()} disabled={!couponCode.trim() || Boolean(session?.couponCode) || couponLoading} className="min-h-11 rounded-lg bg-brand-yellow px-4 text-sm font-semibold text-ink disabled:opacity-50">Aplicar</button></div>{session?.couponCode ? <p className="mt-2 flex items-center justify-between gap-3 text-sm text-muted"><span>Cupón aplicado: <strong className="text-ink">{session.couponCode}</strong></span><button type="button" onClick={() => void clearCoupon()} disabled={couponLoading} className="font-semibold text-brand-blue hover:underline">Quitar</button></p> : null}</div>
           <label className="mt-6 flex items-start gap-3 text-sm leading-6 text-muted"><input name="terms" type="checkbox" required data-step="3" className="mt-1 size-4 accent-brand-blue" /><span>Leí y acepto los <Link href="/terminos" className="font-semibold text-brand-blue underline">términos y condiciones</Link> y la <Link href="/privacidad" className="font-semibold text-brand-blue underline">política de privacidad</Link>.</span></label>
         </fieldset>
