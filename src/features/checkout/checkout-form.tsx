@@ -5,7 +5,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { type FormEvent, type InputHTMLAttributes, useRef, useState } from "react";
 
-import type { CheckoutConfirmResult, CheckoutSession, DeliverySlot, ShippingOption } from "@/domain/checkout/types";
+import type { AvailablePaymentMethod, CheckoutConfirmResult, CheckoutSession, DeliverySlot, ShippingOption } from "@/domain/checkout/types";
+import type { CustomerAddress } from "@/domain/customer/types";
 import { formatMoney } from "@/lib/catalog-formatters";
 import { useCart } from "@/features/cart/cart-context";
 import { isIdempotencyConflict, paymentRedirectUrl } from "@/features/checkout/payment-flow";
@@ -18,7 +19,7 @@ const steps = [
   { id: 3 as const, label: "Pago", Icon: CreditCard },
 ];
 
-export function CheckoutForm({ initialSession, initialShippingOptions = [] }: { initialSession: CheckoutSession | null; initialShippingOptions?: ShippingOption[] }) {
+export function CheckoutForm({ initialSession, initialShippingOptions = [], initialPaymentMethods = [], savedAddresses = [] }: { initialSession: CheckoutSession | null; initialShippingOptions?: ShippingOption[]; initialPaymentMethods?: AvailablePaymentMethod[]; savedAddresses?: CustomerAddress[] }) {
   const { cart, items, refresh } = useCart();
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
@@ -28,14 +29,43 @@ export function CheckoutForm({ initialSession, initialShippingOptions = [] }: { 
   const [session, setSession] = useState<CheckoutSession | null>(initialSession);
   const [shippingOptions, setShippingOptions] = useState<ShippingOption[]>(initialShippingOptions);
   const [selectedShippingOption, setSelectedShippingOption] = useState(initialSession?.shippingOptionId ?? "");
-  const [deliverySlots, setDeliverySlots] = useState<DeliverySlot[]>(initialSession?.deliverySlots ?? []);
-  const [selectedDeliverySlotId, setSelectedDeliverySlotId] = useState(initialSession?.deliverySlotId ?? "");
+  const [deliverySlots, setDeliverySlots] = useState<DeliverySlot[]>(slotsForOption(initialShippingOptions, initialSession?.shippingOptionId));
+  const [selectedDeliverySlotId, setSelectedDeliverySlotId] = useState(initialSession?.shippingDeliverySlot ?? "");
   const [couponCode, setCouponCode] = useState(initialSession?.couponCode ?? "");
   const [couponLoading, setCouponLoading] = useState(false);
   const [step, setStep] = useState<CheckoutStep>(initialSession ? stepFromStage(initialSession.stage) : 1);
   const [loading, setLoading] = useState(false);
   const [paymentState, setPaymentState] = useState<"idle" | "creating-order" | "redirecting">("idle");
   const [error, setError] = useState<string | null>(null);
+  const mercadoPagoAvailable = initialPaymentMethods.some((method) => method.paymentMethod === "MERCADO_PAGO");
+
+  function updateShippingState(next: CheckoutSession, options: ShippingOption[]) {
+    const optionId = next.shippingOptionId ?? options[0]?.id ?? "";
+    const slots = slotsForOption(options, optionId);
+    setSession(next);
+    setShippingOptions(options);
+    setSelectedShippingOption(optionId);
+    setDeliverySlots(slots);
+    setSelectedDeliverySlotId(next.shippingDeliverySlot ?? slots[0]?.id ?? "");
+  }
+
+  async function reloadAndPersistShipping(next: CheckoutSession, preferredOptionId?: string, preferredSlotId?: string) {
+    const options = await requestJson<ShippingOption[]>(`/checkout/sessions/${next.id}/shipping-options`);
+    const preferred = options.find((option) => option.id === next.shippingOptionId)
+      ?? options.find((option) => option.id === preferredOptionId)
+      ?? options[0];
+    if (!preferred) throw new Error("No hay métodos de envío disponibles para esta dirección.");
+    const slotId = preferred.deliverySlots.find((slot) => slot.id === next.shippingDeliverySlot)?.id
+      ?? preferred.deliverySlots.find((slot) => slot.id === preferredSlotId)?.id
+      ?? preferred.deliverySlots[0]?.id;
+    if (!slotId) throw new Error("No hay horarios de entrega disponibles para esta dirección.");
+    const persisted = await requestJson<CheckoutSession>(`/checkout/sessions/${next.id}/shipping-option`, {
+      method: "PATCH",
+      body: JSON.stringify({ shippingOptionId: preferred.id, deliverySlotId: slotId }),
+    });
+    updateShippingState(persisted, options);
+    return persisted;
+  }
 
   async function recoverConflict() {
     await refresh();
@@ -43,10 +73,11 @@ export function CheckoutForm({ initialSession, initialShippingOptions = [] }: { 
     if (!currentSession) return;
     try {
       const latest = await requestJson<CheckoutSession>(`/checkout/sessions/${currentSession.id}`);
-      setSession(latest);
-      if (latest.shippingOptionId) setSelectedShippingOption(latest.shippingOptionId);
-      setDeliverySlots(latest.deliverySlots ?? []);
-      setSelectedDeliverySlotId(latest.deliverySlotId ?? latest.deliverySlots?.find((slot) => slot.available)?.id ?? "");
+      if (latest.stage === "CONTACT") updateShippingState(latest, []);
+      else {
+        const options = await requestJson<ShippingOption[]>(`/checkout/sessions/${latest.id}/shipping-options`);
+        updateShippingState(latest, options);
+      }
     } catch {
       // El error original del paso conserva el mensaje que verá la persona.
     }
@@ -58,7 +89,7 @@ export function CheckoutForm({ initialSession, initialShippingOptions = [] }: { 
     setError(null);
     try {
       const next = await requestJson<CheckoutSession>(`/checkout/sessions/${session.id}/coupon`, { method: "POST", body: JSON.stringify({ code: couponCode.trim() }) });
-      setSession(next);
+      await reloadAndPersistShipping(next, selectedShippingOption, selectedDeliverySlotId);
       setCouponCode(next.couponCode ?? couponCode.trim().toUpperCase());
     } catch (cause) {
       if (isConflict(cause)) await recoverConflict();
@@ -74,7 +105,7 @@ export function CheckoutForm({ initialSession, initialShippingOptions = [] }: { 
     setError(null);
     try {
       const next = await requestJson<CheckoutSession>(`/checkout/sessions/${session.id}/coupon`, { method: "DELETE" });
-      setSession(next);
+      await reloadAndPersistShipping(next, selectedShippingOption, selectedDeliverySlotId);
       setCouponCode("");
     } catch (cause) {
       if (isConflict(cause)) await recoverConflict();
@@ -85,17 +116,16 @@ export function CheckoutForm({ initialSession, initialShippingOptions = [] }: { 
   }
 
   async function selectDeliverySlot(slot: DeliverySlot) {
-    if (!session || loading || !slot.available || slot.id === selectedDeliverySlotId) return;
+    if (!session || loading || !selectedShippingOption || slot.id === selectedDeliverySlotId) return;
     setLoading(true);
     setError(null);
     try {
-      const next = await requestJson<CheckoutSession>(`/checkout/sessions/${session.id}/delivery-slot`, {
+      const next = await requestJson<CheckoutSession>(`/checkout/sessions/${session.id}/shipping-option`, {
         method: "PATCH",
-        body: JSON.stringify({ deliverySlotId: slot.id }),
+        body: JSON.stringify({ shippingOptionId: selectedShippingOption, deliverySlotId: slot.id }),
       });
       setSession(next);
-      setSelectedDeliverySlotId(next.deliverySlotId ?? slot.id);
-      setDeliverySlots(next.deliverySlots ?? deliverySlots);
+      setSelectedDeliverySlotId(next.shippingDeliverySlot ?? slot.id);
     } catch (cause) {
       if (isConflict(cause)) await recoverConflict();
       setError(errorMessage(cause, "No pudimos actualizar el horario de entrega."));
@@ -106,15 +136,23 @@ export function CheckoutForm({ initialSession, initialShippingOptions = [] }: { 
 
   async function selectShippingOption(shippingOptionId: string) {
     if (!session || loading || shippingOptionId === selectedShippingOption) return;
+    const option = shippingOptions.find((item) => item.id === shippingOptionId);
+    const slotId = option?.deliverySlots[0]?.id;
+    if (!option || !slotId) {
+      setError("No hay horarios disponibles para este envío.");
+      return;
+    }
     setSelectedShippingOption(shippingOptionId);
     setLoading(true);
     setError(null);
     try {
       const next = await requestJson<CheckoutSession>(`/checkout/sessions/${session.id}/shipping-option`, {
         method: "PATCH",
-        body: JSON.stringify({ shippingOptionId }),
+        body: JSON.stringify({ shippingOptionId, deliverySlotId: slotId }),
       });
       setSession(next);
+      setDeliverySlots(option.deliverySlots);
+      setSelectedDeliverySlotId(next.shippingDeliverySlot ?? slotId);
     } catch (cause) {
       setSelectedShippingOption(session.shippingOptionId ?? "");
       if (isConflict(cause)) await recoverConflict();
@@ -149,13 +187,7 @@ export function CheckoutForm({ initialSession, initialShippingOptions = [] }: { 
       }
       if (step === 2) {
         const next = await requestJson<CheckoutSession>(`/checkout/sessions/${session.id}/shipping-address`, { method: "PATCH", body: JSON.stringify({ address: { recipientName: `${form.get("firstName") ?? ""} ${form.get("lastName") ?? ""}`.trim(), street: form.get("street"), number: form.get("number"), apartment: form.get("apartment") || "", neighborhood: form.get("neighborhood") || "", city: form.get("city"), province: form.get("province"), postalCode: form.get("postalCode"), reference: form.get("reference") || "" } }) });
-        setSession(next);
-        const options = await requestJson<ShippingOption[]>(`/checkout/sessions/${session.id}/shipping-options`);
-        if (!options.length) throw new Error("No hay métodos de envío disponibles para este pedido.");
-        setShippingOptions(options);
-        setSelectedShippingOption(next.shippingOptionId ?? options[0]?.id ?? "");
-        setDeliverySlots(next.deliverySlots ?? []);
-        setSelectedDeliverySlotId(next.deliverySlotId ?? next.deliverySlots?.find((slot) => slot.available)?.id ?? "");
+        await reloadAndPersistShipping(next);
       }
       setStep((current) => Math.min(3, current + 1) as CheckoutStep);
     } catch (cause) {
@@ -180,6 +212,14 @@ export function CheckoutForm({ initialSession, initialShippingOptions = [] }: { 
       setError(shippingOptions.length ? "Elegí un método de envío para continuar." : "No hay métodos de envío disponibles para este pedido.");
       return;
     }
+    if (!selectedDeliverySlotId) {
+      setError("Elegí un horario de entrega para continuar.");
+      return;
+    }
+    if (!mercadoPagoAvailable) {
+      setError("El pago online no está disponible en este momento. Intentá nuevamente más tarde.");
+      return;
+    }
     if (!validateStep(3)) {
       setError("Aceptá los términos y condiciones para continuar.");
       return;
@@ -191,8 +231,12 @@ export function CheckoutForm({ initialSession, initialShippingOptions = [] }: { 
     let redirecting = false;
     try {
       let current = session;
-      if (current.shippingOptionId !== shippingOptionId) {
-        current = await requestJson<CheckoutSession>(`/checkout/sessions/${session.id}/shipping-option`, { method: "PATCH", body: JSON.stringify({ shippingOptionId }) });
+      if (current.shippingOptionId !== shippingOptionId || current.shippingDeliverySlot !== selectedDeliverySlotId) {
+        current = await requestJson<CheckoutSession>(`/checkout/sessions/${session.id}/shipping-option`, { method: "PATCH", body: JSON.stringify({ shippingOptionId, deliverySlotId: selectedDeliverySlotId }) });
+      }
+      if (current.paymentMethod !== "MERCADO_PAGO") {
+        current = await requestJson<CheckoutSession>(`/checkout/sessions/${session.id}/payment-method`, { method: "PATCH", body: JSON.stringify({ paymentMethod: "MERCADO_PAGO" }) });
+        setSession(current);
       }
       const idempotencyKey = confirmIdempotencyKey.current ?? crypto.randomUUID();
       confirmIdempotencyKey.current = idempotencyKey;
@@ -238,10 +282,22 @@ export function CheckoutForm({ initialSession, initialShippingOptions = [] }: { 
     }
   }
 
-  if (!items.length) return <EmptyCheckout />;
+  const checkoutItems = session?.items ?? items;
+  if (!checkoutItems.length) return <EmptyCheckout />;
+  if (!session) return <MissingCheckoutSession />;
 
-  const contact = splitContactName(session?.contactName);
-  const address = session?.shippingAddress;
+  const contact = splitContactName(session.contactName);
+  const address = session.shippingAddress;
+
+  function fillSavedAddress(addressId: string) {
+    const saved = savedAddresses.find((item) => item.id === addressId);
+    if (!saved || !formRef.current) return;
+    const values: Record<string, string> = { street: saved.street, number: saved.number, apartment: saved.apartment ?? "", city: saved.city, province: saved.province, postalCode: saved.postalCode, reference: saved.reference ?? "" };
+    for (const [name, value] of Object.entries(values)) {
+      const field = formRef.current.elements.namedItem(name);
+      if (field instanceof HTMLInputElement) field.value = value;
+    }
+  }
 
   return (
     <form key={session?.id ?? "checkout"} ref={formRef} onSubmit={submit} className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_340px] lg:gap-8">
@@ -259,6 +315,7 @@ export function CheckoutForm({ initialSession, initialShippingOptions = [] }: { 
         <fieldset hidden={step !== 2} className="rounded-2xl border border-border bg-white p-4 shadow-[0_10px_30px_rgba(22,24,29,0.04)] sm:p-7">
           <legend className="px-1 font-display text-lg font-semibold sm:text-xl">Dirección de entrega</legend>
           <p className="mb-6 mt-2 text-sm text-muted">Indicá dónde querés recibirlo.</p>
+          {savedAddresses.length ? <label className="mb-5 block text-sm font-semibold">Usar una dirección guardada<select defaultValue="" onChange={(event) => fillSavedAddress(event.target.value)} className="mt-2 h-12 w-full rounded-xl border border-catalog-line bg-white px-4 font-normal focus-visible:border-brand-blue focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue"><option value="">Elegir dirección…</option>{savedAddresses.map((saved) => <option key={saved.id} value={saved.id}>{saved.label} — {saved.street} {saved.number}</option>)}</select></label> : null}
           <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_150px]"><Field name="street" label="Calle" formStep={2} defaultValue={address?.street ?? ""} autoComplete="street-address" placeholder="Ej. Avenida Corrientes" /><Field name="number" label="Número" formStep={2} defaultValue={address?.number ?? ""} inputMode="numeric" autoComplete="address-line1" placeholder="1234" /><Field name="apartment" label="Piso / departamento" formStep={2} defaultValue={address?.apartment ?? ""} required={false} autoComplete="address-line2" placeholder="Opcional" /><Field name="postalCode" label="Código postal" formStep={2} defaultValue={address?.postalCode ?? ""} autoComplete="postal-code" placeholder="C1000AAA o 1000" pattern="[A-Za-z]?[0-9]{4}([A-Za-z]{3})?" onInput={(event) => { event.currentTarget.value = event.currentTarget.value.toUpperCase().replace(/[^A-Z0-9]/g, ""); }} /><Field name="neighborhood" label="Barrio / localidad" formStep={2} defaultValue={address?.neighborhood ?? ""} autoComplete="address-level2" required={false} className="sm:col-span-2" placeholder="Ej. Palermo" /><Field name="city" label="Ciudad" formStep={2} defaultValue={address?.city ?? "Buenos Aires"} autoComplete="address-level2" /><Field name="province" label="Provincia" formStep={2} defaultValue={address?.province ?? "Buenos Aires"} autoComplete="address-level1" /><Field name="reference" label="Indicaciones" formStep={2} defaultValue={address?.reference ?? ""} required={false} className="sm:col-span-2" placeholder="Timbre, acceso, referencia…" /></div>
         </fieldset>
 
@@ -270,28 +327,28 @@ export function CheckoutForm({ initialSession, initialShippingOptions = [] }: { 
           <section className="mt-6 rounded-xl border border-catalog-line bg-[#f7f7f5] p-4 sm:p-5" aria-labelledby="delivery-title">
             <div className="flex items-start gap-3">
               <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-soft-blue text-brand-blue"><Truck size={21} weight="bold" aria-hidden="true" /></span>
-              <div className="min-w-0"><h2 id="delivery-title" className="font-display text-lg font-semibold">Entrega a domicilio</h2><p className="mt-1 text-sm text-muted">Todos los envíos se realizan de 13:00 a 21:00.</p></div>
+              <div className="min-w-0"><h2 id="delivery-title" className="font-display text-lg font-semibold">Entrega a domicilio</h2><p className="mt-1 text-sm text-muted">Elegí una de las franjas disponibles para tu dirección.</p></div>
             </div>
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              <div className="rounded-lg border border-border bg-white p-3"><p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted"><Clock size={15} className="text-brand-blue" aria-hidden="true" /> Horario</p><p className="mt-1 font-semibold">13:00 a 21:00</p></div>
-              <div className="rounded-lg border border-border bg-white p-3"><p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted"><CalendarBlank size={15} className="text-brand-blue" aria-hidden="true" /> Llega en</p><p className="mt-1 font-semibold">{session?.shippingEstimate ?? "A confirmar"}</p></div>
+              <div className="rounded-lg border border-border bg-white p-3"><p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted"><Clock size={15} className="text-brand-blue" aria-hidden="true" /> Horario</p><p className="mt-1 font-semibold">{selectedSlot(deliverySlots, selectedDeliverySlotId)?.label ?? "A elegir"}</p></div>
+              <div className="rounded-lg border border-border bg-white p-3"><p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted"><CalendarBlank size={15} className="text-brand-blue" aria-hidden="true" /> Entrega</p><p className="mt-1 font-semibold">{formatDeliveryDate(session.shippingDeliveryDate) ?? session.shippingEstimate ?? "A confirmar"}</p></div>
             </div>
             <div className="mt-4 border-t border-border pt-4"><p className="text-sm font-semibold">Costo de entrega</p>{shippingOptions.length ? <div className="mt-3 grid gap-2">{shippingOptions.map((option) => <label key={option.id} className={`flex cursor-pointer items-center gap-3 rounded-lg border px-4 py-3 transition-colors ${selectedShippingOption === option.id ? "border-brand-blue bg-soft-blue" : "border-border bg-white hover:border-brand-blue/50"}`}><input type="radio" name="shippingOption" value={option.id} checked={selectedShippingOption === option.id} onChange={() => void selectShippingOption(option.id)} disabled={loading} className="accent-brand-blue" /><span className="min-w-0 flex-1"><span className="block font-semibold">Envío a domicilio</span><span className="mt-0.5 block text-sm text-muted">Costo calculado para tu dirección</span></span><strong className="shrink-0 text-sm tabular-nums">{formatMoney(Number(option.cost))}</strong></label>)}</div> : <p className="mt-3 rounded-lg bg-[#fff1f1] p-3 text-sm text-[#8d2020]">No hay opciones disponibles para esta dirección.</p>}</div>
-            {deliverySlots.length ? <div className="mt-4 border-t border-border pt-4"><p className="text-sm font-semibold">Elegí cuándo recibir</p><div className="mt-3 grid gap-2">{deliverySlots.map((slot) => <button key={slot.id} type="button" onClick={() => void selectDeliverySlot(slot)} disabled={loading || !slot.available} className={`flex min-h-14 items-center justify-between gap-3 rounded-lg border px-4 text-left transition-colors ${selectedDeliverySlotId === slot.id ? "border-brand-blue bg-soft-blue" : "border-border bg-white hover:border-brand-blue/50"} disabled:cursor-not-allowed disabled:opacity-50`}><span><span className="block font-semibold">{slot.label}</span><span className="mt-0.5 block text-sm text-muted">{slot.from} a {slot.to}</span></span>{selectedDeliverySlotId === slot.id ? <CheckCircle size={21} weight="fill" className="shrink-0 text-brand-blue" aria-label="Seleccionado" /> : null}</button>)}</div></div> : <p className="mt-4 flex items-start gap-2 border-t border-border pt-4 text-sm text-muted"><Clock size={17} className="mt-0.5 shrink-0 text-brand-blue" aria-hidden="true" />Horario de entrega: 13:00 a 21:00.</p>}
+            {deliverySlots.length ? <div className="mt-4 border-t border-border pt-4"><p className="text-sm font-semibold">Elegí cuándo recibir</p><div className="mt-3 grid gap-2">{deliverySlots.map((slot) => <button key={slot.id} type="button" onClick={() => void selectDeliverySlot(slot)} disabled={loading} className={`flex min-h-14 items-center justify-between gap-3 rounded-lg border px-4 text-left transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue ${selectedDeliverySlotId === slot.id ? "border-brand-blue bg-soft-blue" : "border-border bg-white hover:border-brand-blue/50"} disabled:cursor-not-allowed disabled:opacity-50`}><span><span className="block font-semibold">{slot.label}</span><span className="mt-0.5 block text-sm text-muted">{formatSlotHours(slot)}</span></span>{selectedDeliverySlotId === slot.id ? <CheckCircle size={21} weight="fill" className="shrink-0 text-brand-blue" aria-label="Seleccionado" /> : null}</button>)}</div></div> : <p className="mt-4 flex items-start gap-2 border-t border-border pt-4 text-sm text-muted"><Clock size={17} className="mt-0.5 shrink-0 text-brand-blue" aria-hidden="true" />No hay horarios disponibles para esta dirección.</p>}
           </section>
 
           <section className="mt-6" aria-labelledby="payment-methods-title">
-            <div className="flex items-end justify-between gap-3"><div><h2 id="payment-methods-title" className="font-display text-lg font-semibold">Pago online</h2><p className="mt-1 text-sm text-muted">La plataforma de pago se determina de forma segura al confirmar tu pedido.</p></div><LockKey size={19} className="text-brand-blue" aria-hidden="true" /></div>
+            <div className="flex items-end justify-between gap-3"><div><h2 id="payment-methods-title" className="font-display text-lg font-semibold">Pago online</h2><p className="mt-1 text-sm text-muted">{mercadoPagoAvailable ? "Vas a continuar a Mercado Pago para completar el pago." : "No hay un medio de pago disponible en este momento."}</p></div><LockKey size={19} className="text-brand-blue" aria-hidden="true" /></div>
             <div className="mt-4 flex items-start gap-3 rounded-lg border border-border bg-[#f7f7f5] p-3 text-sm leading-5 text-muted"><ShieldCheck size={19} weight="bold" className="mt-0.5 shrink-0 text-brand-blue" aria-hidden="true" /><p><strong className="font-semibold text-ink">Datos protegidos.</strong><span className="mt-0.5 block">El pago se procesa fuera de Patitas; solo recibimos el estado confirmado por la plataforma.</span></p></div>
           </section>
 
-          <section className="mt-6 rounded-xl border border-border bg-[#f7f7f5] p-4" aria-labelledby="coupon-title"><div className="flex items-center gap-2"><Tag size={18} className="text-brand-blue" aria-hidden="true" /><h2 id="coupon-title" className="text-sm font-semibold">Cupón de descuento</h2></div><div className="mt-3 flex gap-2"><input value={couponCode} onChange={(event) => setCouponCode(event.target.value.toUpperCase())} aria-label="Código de cupón" placeholder="Ingresá tu código" className="h-11 min-w-0 flex-1 rounded-lg border border-catalog-line bg-white px-3 uppercase outline-none focus:border-brand-blue" disabled={Boolean(session?.couponCode) || couponLoading} /><button type="button" onClick={() => void applyCoupon()} disabled={!couponCode.trim() || Boolean(session?.couponCode) || couponLoading} className="min-h-11 rounded-lg border border-ink bg-ink px-4 text-sm font-semibold text-white transition-colors hover:bg-[#303136] disabled:cursor-not-allowed disabled:opacity-50">Aplicar</button></div>{session?.couponCode ? <p className="mt-2 flex items-center justify-between gap-3 text-sm text-muted"><span>Cupón aplicado: <strong className="text-ink">{session.couponCode}</strong></span><button type="button" onClick={() => void clearCoupon()} disabled={couponLoading} className="font-semibold text-brand-blue hover:underline">Quitar</button></p> : null}</section>
+          <section className="mt-6 rounded-xl border border-border bg-[#f7f7f5] p-4" aria-labelledby="coupon-title"><div className="flex items-center gap-2"><Tag size={18} className="text-brand-blue" aria-hidden="true" /><h2 id="coupon-title" className="text-sm font-semibold">Cupón de descuento</h2></div><div className="mt-3 flex gap-2"><input value={couponCode} onChange={(event) => setCouponCode(event.target.value.toUpperCase())} aria-label="Código de cupón" placeholder="Ingresá tu código" className="h-11 min-w-0 flex-1 rounded-lg border border-catalog-line bg-white px-3 uppercase focus-visible:border-brand-blue focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue" disabled={Boolean(session.couponCode) || couponLoading} /><button type="button" onClick={() => void applyCoupon()} disabled={!couponCode.trim() || Boolean(session.couponCode) || couponLoading} className="min-h-11 rounded-lg border border-ink bg-ink px-4 text-sm font-semibold text-white transition-colors hover:bg-[#303136] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue disabled:cursor-not-allowed disabled:opacity-50">Aplicar</button></div>{session.couponCode ? <p className="mt-2 flex items-center justify-between gap-3 text-sm text-muted"><span>Cupón aplicado: <strong className="text-ink">{session.couponCode}</strong></span><button type="button" onClick={() => void clearCoupon()} disabled={couponLoading} className="font-semibold text-brand-blue hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue">Quitar</button></p> : null}</section>
           <label className="mt-6 flex items-start gap-3 text-sm leading-6 text-muted"><input name="terms" type="checkbox" required data-step="3" className="mt-1 size-4 accent-brand-blue" /><span>Leí y acepto los <Link href="/terminos" className="font-semibold text-brand-blue underline">términos y condiciones</Link> y la <Link href="/privacidad" className="font-semibold text-brand-blue underline">política de privacidad</Link>.</span></label>
         </fieldset>
 
         {paymentState !== "idle" ? <p role="status" className="mt-5 rounded-xl bg-soft-blue p-4 text-sm text-ink">{paymentState === "redirecting" ? "Redirigiendo a la plataforma de pago…" : "Procesando el pago…"}</p> : null}
         {error ? <p role="alert" className="mt-5 rounded-xl bg-[#fff1f1] p-4 text-sm text-[#8d2020]">{error}</p> : null}
-        <div className="mt-6 grid grid-cols-2 gap-3 sm:flex sm:items-center sm:justify-between">{step > 1 ? <button type="button" onClick={() => { setStep((current) => Math.max(1, current - 1) as CheckoutStep); setError(null); }} className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-catalog-canvas px-4 font-semibold text-ink transition-colors hover:bg-border sm:w-auto sm:px-5"><ArrowLeft size={17} /> Volver</button> : <span />}{step < 3 ? <button type="button" onClick={() => void goNext()} disabled={loading || !session} className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-brand-blue px-4 font-semibold text-white transition-colors hover:bg-[#0048dc] disabled:opacity-60 sm:w-auto sm:px-5">{loading ? "Guardando…" : "Continuar"}<ArrowRight size={17} weight="bold" /></button> : <button type="submit" disabled={loading || !session} className="inline-flex min-h-13 w-full items-center justify-center gap-3 rounded-xl bg-[#009ee3] px-5 font-semibold text-white shadow-[0_8px_18px_rgba(0,158,227,0.2)] transition-all hover:bg-[#008bc7] hover:shadow-[0_10px_22px_rgba(0,158,227,0.28)] disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto sm:min-w-56"><span className="flex size-8 items-center justify-center rounded-full bg-white/15"><Wallet size={18} weight="bold" aria-hidden="true" /></span><span>{loading ? (paymentState === "redirecting" ? "Redirigiendo…" : "Conectando…") : "Continuar al pago"}</span><ArrowRight size={18} weight="bold" aria-hidden="true" /></button>}</div>
+        <div className="mt-6 grid grid-cols-2 gap-3 sm:flex sm:items-center sm:justify-between">{step > 1 ? <button type="button" onClick={() => { setStep((current) => Math.max(1, current - 1) as CheckoutStep); setError(null); }} className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-catalog-canvas px-4 font-semibold text-ink transition-colors hover:bg-border focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue sm:w-auto sm:px-5"><ArrowLeft size={17} /> Volver</button> : <span />}{step < 3 ? <button type="button" onClick={() => void goNext()} disabled={loading} className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-brand-blue px-4 font-semibold text-white transition-colors hover:bg-[#0048dc] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue disabled:opacity-60 sm:w-auto sm:px-5">{loading ? "Guardando…" : "Continuar"}<ArrowRight size={17} weight="bold" /></button> : <button type="submit" disabled={loading || !mercadoPagoAvailable} className="inline-flex min-h-13 w-full items-center justify-center gap-3 rounded-xl bg-[#009ee3] px-5 font-semibold text-white shadow-[0_8px_18px_rgba(0,158,227,0.2)] transition-[background-color,box-shadow,opacity] hover:bg-[#008bc7] hover:shadow-[0_10px_22px_rgba(0,158,227,0.28)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto sm:min-w-56"><span className="flex size-8 items-center justify-center rounded-full bg-white/15"><Wallet size={18} weight="bold" aria-hidden="true" /></span><span>{loading ? (paymentState === "redirecting" ? "Redirigiendo…" : "Conectando…") : mercadoPagoAvailable ? "Continuar a Mercado Pago" : "Pago no disponible"}</span><ArrowRight size={18} weight="bold" aria-hidden="true" /></button>}</div>
       </div>
 
       <aside className="h-fit rounded-2xl border border-border bg-white p-5 shadow-[0_10px_30px_rgba(22,24,29,0.04)] sm:sticky sm:top-6 sm:p-6" aria-labelledby="checkout-summary-title"><h2 id="checkout-summary-title" className="font-display text-xl font-semibold">Resumen</h2><ul className="mt-5 space-y-3 text-sm">{(session?.items ?? items).map((item) => <li key={item.variantId} className="flex justify-between gap-3"><span className="min-w-0"><span className="block truncate">{item.quantity} × {item.productName}</span><span className="block text-xs text-muted">{item.presentation ?? "Presentación"}</span></span><span className="shrink-0 tabular-nums">{formatMoney(Number(item.lineTotal))}</span></li>)}</ul><div className="mt-5 space-y-2 border-t border-catalog-line pt-5 text-sm"><div className="flex justify-between"><span>Subtotal</span><span>{formatMoney(Number(session?.subtotal ?? cart?.subtotal ?? 0))}</span></div>{session && Number(session.discountTotal) > 0 ? <div className="flex justify-between text-brand-blue"><span>Descuento</span><span>-{formatMoney(Number(session.discountTotal))}</span></div> : null}{session && Number(session.shippingCost) > 0 ? <div className="flex justify-between"><span>Envío</span><span>{formatMoney(Number(session.shippingCost))}</span></div> : null}<div className="flex justify-between border-t border-catalog-line pt-3 font-semibold"><span>Total</span><strong className="font-display text-xl tabular-nums">{formatMoney(Number(session?.total ?? cart?.subtotal ?? 0))}</strong></div></div><p className="mt-4 flex items-start gap-2 text-sm leading-6 text-muted"><LockKey size={18} className="mt-1 shrink-0 text-brand-blue" />Importe y envío calculados por Patitas.</p></aside>
@@ -303,8 +360,30 @@ function EmptyCheckout() {
   return <section className="rounded-xl bg-white p-7 sm:p-10"><h2 className="font-display text-xl font-semibold">Tu carrito está vacío</h2><p className="mt-2 text-muted">Agregá un producto antes de continuar.</p><Link href="/perros" className="mt-6 inline-flex min-h-12 items-center rounded-xl bg-brand-blue px-5 font-semibold text-white">Ver productos</Link></section>;
 }
 
+function MissingCheckoutSession() {
+  return <section className="rounded-xl bg-white p-7 sm:p-10"><h2 className="font-display text-xl font-semibold">No pudimos recuperar este checkout</h2><p className="mt-2 max-w-xl text-muted">Tu carrito sigue disponible. Volvé a iniciarlo para recalcular stock, envío y total antes de pagar.</p><Link href="/checkout/iniciar" className="mt-6 inline-flex min-h-12 items-center rounded-xl bg-brand-blue px-5 font-semibold text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue">Reintentar checkout</Link></section>;
+}
+
 function Field({ name, label, formStep, required = true, className = "", ...props }: { name: string; label: string; formStep: CheckoutStep; required?: boolean; className?: string } & Omit<InputHTMLAttributes<HTMLInputElement>, "name">) {
-  return <label className={`font-semibold ${className}`}>{label}<input name={name} required={required} data-step={formStep} {...props} className="mt-2 h-12 w-full rounded-xl border border-catalog-line bg-white px-4 font-normal outline-none transition-colors placeholder:text-muted/70 focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/10" /></label>;
+  return <label className={`font-semibold ${className}`}>{label}<input name={name} required={required} data-step={formStep} {...props} className="mt-2 h-12 w-full rounded-xl border border-catalog-line bg-white px-4 font-normal transition-colors placeholder:text-muted/70 focus-visible:border-brand-blue focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue" /></label>;
+}
+
+function slotsForOption(options: ShippingOption[], optionId: string | null | undefined) {
+  return (options.find((option) => option.id === optionId) ?? options[0])?.deliverySlots ?? [];
+}
+
+function selectedSlot(slots: DeliverySlot[], slotId: string) {
+  return slots.find((slot) => slot.id === slotId) ?? null;
+}
+
+function formatSlotHours(slot: DeliverySlot) {
+  return `${slot.start} a ${slot.end}`;
+}
+
+function formatDeliveryDate(value: string | null) {
+  if (!value) return null;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : new Intl.DateTimeFormat("es-AR", { weekday: "short", day: "numeric", month: "short", timeZone: "UTC" }).format(date);
 }
 
 async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {

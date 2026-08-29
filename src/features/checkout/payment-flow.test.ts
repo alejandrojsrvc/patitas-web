@@ -26,13 +26,16 @@ const paymentResult = {
 } as unknown as CheckoutConfirmResult;
 
 function order(paymentStatus: OrderSummary["paymentStatus"]): OrderSummary {
-  return { id: "order-1", status: "PENDING_PAYMENT", paymentStatus, subtotal: "10", discountTotal: "0", shippingCost: "0", total: "10", currency: "ARS", contactName: "Cliente", contactEmail: "cliente@example.com", lines: [], createdAt: new Date().toISOString() };
+  const now = new Date().toISOString();
+  return { id: "order-1", status: "PENDING_PAYMENT", paymentStatus, canRetry: paymentStatus === "FAILED", reconciliationRequired: false, reconciliationReason: null, reservationExpiresAt: null, subtotal: "10", discountTotal: "0", shippingCost: "0", total: "10", currency: "ARS", contactName: "Cliente", contactEmail: "cliente@example.com", petName: null, date: now, lines: [], createdAt: now };
 }
 
 test("usa el contrato nuevo de Mercado Pago y su paymentUrl para REDIRECT", () => {
-  assert.equal(paymentResult.payment.provider, "mercadopago");
-  assert.equal(paymentResult.payment.action, "REDIRECT");
-  assert.equal(paymentRedirectUrl(paymentResult.payment), paymentResult.payment.paymentUrl);
+  const payment = paymentResult.payment;
+  assert.ok(payment);
+  assert.equal(payment.provider, "mercadopago");
+  assert.equal(payment.action, "REDIRECT");
+  assert.equal(paymentRedirectUrl(payment), payment.paymentUrl);
   assert.equal(paymentRedirectUrl({ action: "REDIRECT", paymentUrl: null }), null);
   assert.equal(paymentRedirectUrl({ action: "REDIRECT", paymentUrl: "javascript:alert(1)" }), null);
 });

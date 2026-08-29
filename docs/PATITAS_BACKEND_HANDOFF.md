@@ -1,6 +1,6 @@
 # Patitas backend handoff
 
-Este documento describe las capacidades necesarias para convertir la experiencia frontend de Patitas en una operación completa. No forman parte de la implementación frontend actual.
+Este documento separa el contrato que `patitas-web` ya consume de Patitas API de las capacidades operativas que todavía requieren configuración o desarrollo. El backend sigue siendo la fuente de verdad para stock, precios, descuentos, envíos y pagos.
 
 ## Auditoría SEO reproducible
 
@@ -11,6 +11,8 @@ Con el dominio publicado configurado, ejecutar `pnpm seo:audit -- https://domini
 - La homepage prioriza categorías, productos y marcas publicables; la calculadora vive en `/calculadora-alimento`.
 - El cálculo usa el proxy existente `POST /api/calculator`.
 - El catálogo y sus precios vienen de Patitas API.
+- El checkout consume sesiones, opciones y franjas de envío, cupones, métodos de pago y confirmación desde Patitas API.
+- Mi cuenta consume perfil, pedidos, direcciones, mascotas y planes de reposición existentes.
 - La landing no crea planes persistentes, no envía WhatsApp y no dispara cobros.
 - El CTA de WhatsApp solo abre la URL configurada en `NEXT_PUBLIC_WHATSAPP_URL`; no simula mensajes ni automatizaciones.
 - La landing `/pet-shop-caba` comunica una operación exclusivamente online, con cobertura inicial en CABA y sin dirección de tienda física.
@@ -58,14 +60,14 @@ Crear un recurso persistente asociado a una orden, una cuenta o un acceso seguro
 - estado: `ACTIVE`, `PAUSED`, `CANCELLED`, `COMPLETED`
 - timestamps
 
-### Operaciones requeridas
+### Operaciones disponibles en el contrato
 
-- Crear el plan después de una orden confirmada.
-- Consultar planes de una cuenta autenticada.
-- Consultar un plan de invitado mediante token seguro del pedido.
-- Pausar, reactivar, adelantar o cancelar.
-- Crear un carrito de recompra a partir del plan sin cobrar automáticamente.
-- Recalcular o marcar el plan cuando cambia el precio, la presentación o el stock.
+- `GET/POST /api/v1/replenishment-plans` para listar o crear.
+- `GET /api/v1/replenishment-plans/:id` para consultar.
+- `PATCH /api/v1/replenishment-plans/:id/status` para cambiar el estado.
+- `POST /api/v1/replenishment-plans/:id/reorder-cart` para crear el carrito de recompra sin cobrar.
+
+La cuenta web lista planes y permite crear el carrito de recompra. La creación y recalibración guiada dependen del flujo de cálculo y no se exponen como un formulario aislado.
 
 Toda operación debe devolver errores explícitos para variante inexistente, producto no vendible, stock insuficiente y token inválido.
 
@@ -102,11 +104,22 @@ El contrato actual de `POST /api/v1/checkout/sessions/:id/confirm` respeta `Idem
 
 El frontend solo redirige cuando `action` es `REDIRECT` y `paymentUrl` es válida. El retorno del navegador debe permitir consultar el pedido y su `paymentStatus`; no debe marcar la orden como pagada. El webhook continúa siendo la fuente de verdad para el estado externo.
 
+`GET /api/v1/payments/methods` determina los métodos habilitados. La web sólo ofrece Mercado Pago porque su integración es por redirección. Payway no debe mostrarse hasta que el frontend genere y envíe `payment.token`, `paymentMethodId`, `bin` e `installments`; habilitar el proveedor en backend no completa esa tokenización.
+
+Una orden fallida se reintenta con `POST /api/v1/payments/orders/:id/link`, `Idempotency-Key` nuevo y sólo cuando la orden devuelve `canRetry: true` y `reconciliationRequired: false`.
+
 El endpoint público de productos debe agregar a `meta` las facetas `brandSlugs`, `lifeStages` y `weightGrams`, calculadas sin paginación y excluyendo la dimensión que se está filtrando. Esto evita que la tienda descargue todo el catálogo para construir filtros.
 
 ## 3. Envíos y cobertura
 
-Crear una fuente operativa para que el checkout pueda calcular disponibilidad real.
+El checkout consume la fuente operativa existente. El contrato vigente es:
+
+- `GET /api/v1/checkout/sessions/:id/shipping-options` devuelve opciones `{ id, cost, deliverySlots }`.
+- Cada franja devuelve `{ id, label, start, end, date }`.
+- `PATCH /api/v1/checkout/sessions/:id/shipping-option` recibe `shippingOptionId` y `deliverySlotId` opcional.
+- La sesión persiste `shippingDeliverySlot`, `shippingDeliveryDate`, `shippingEstimate` y `shippingCost`.
+
+Las reglas configurables deben contemplar:
 
 - Cobertura por barrio, código postal o polígono configurado.
 - Franjas de entrega y días disponibles.

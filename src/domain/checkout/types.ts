@@ -11,13 +11,15 @@ export type CheckoutSession = {
   contactEmail: string | null;
   contactPhone: string | null;
   shippingAddress: Record<string, string> | null;
+  deliveryInstructions: string | null;
   shippingOptionId: string | null;
+  shippingZoneId: string | null;
   shippingEstimate: string | null;
   shippingCost: string;
-  deliverySlotId?: string | null;
-  deliverySlot?: DeliverySlot | null;
-  deliverySlots?: DeliverySlot[];
+  shippingDeliverySlot: string | null;
+  shippingDeliveryDate: string | null;
   paymentMethod: "MERCADO_PAGO" | "PAYWAY" | null;
+  savedPaymentMethodId: string | null;
   couponCode: string | null;
   orderId: string | null;
   subtotal: string;
@@ -29,21 +31,22 @@ export type CheckoutSession = {
 
 export type ShippingOption = {
   id: string;
-  name: string;
-  description?: string | null;
   cost: string;
-  active: boolean;
-  displayOrder: number;
+  deliverySlots: DeliverySlot[];
 };
 
 export type DeliverySlot = {
   id: string;
   date: string;
   label: string;
-  from: string;
-  to: string;
-  timezone: string;
-  available: boolean;
+  start: string;
+  end: string;
+};
+
+export type AvailablePaymentMethod = {
+  provider: "mercadopago" | "payway" | "simulated";
+  paymentMethod: "MERCADO_PAGO" | "PAYWAY" | "SIMULATED_CARD";
+  priority: number;
 };
 
 export type CheckoutCreateResult = {
