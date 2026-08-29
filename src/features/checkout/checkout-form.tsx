@@ -1,38 +1,40 @@
 "use client";
 
-import { ArrowLeft, ArrowRight, CheckCircle, ClipboardText, CreditCard, MapPin, Truck, UserCircle } from "@phosphor-icons/react";
+import { ArrowLeft, ArrowRight, CalendarBlank, CheckCircle, Clock, CreditCard, LockKey, MapPin, ShieldCheck, Tag, Truck, UserCircle, Wallet } from "@phosphor-icons/react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { type FormEvent, type InputHTMLAttributes, useRef, useState } from "react";
 
-import type { CheckoutConfirmResult, CheckoutSession, ShippingOption } from "@/domain/checkout/types";
-import type { OrderSummary } from "@/domain/customer/types";
+import type { CheckoutConfirmResult, CheckoutSession, DeliverySlot, ShippingOption } from "@/domain/checkout/types";
 import { formatMoney } from "@/lib/catalog-formatters";
 import { useCart } from "@/features/cart/cart-context";
+import { isIdempotencyConflict, paymentRedirectUrl } from "@/features/checkout/payment-flow";
 
 type CheckoutStep = 1 | 2 | 3;
-type PaymentMethod = "MERCADO_PAGO";
-type SubmittedOrder = { order: OrderSummary; guest: boolean };
 
 const steps = [
   { id: 1 as const, label: "Tus datos", Icon: UserCircle },
   { id: 2 as const, label: "Dirección", Icon: MapPin },
-  { id: 3 as const, label: "Envío y pago", Icon: CreditCard },
+  { id: 3 as const, label: "Pago", Icon: CreditCard },
 ];
-const termsVersion = "2026-08-26";
 
 export function CheckoutForm({ initialSession, initialShippingOptions = [] }: { initialSession: CheckoutSession | null; initialShippingOptions?: ShippingOption[] }) {
   const { cart, items, refresh } = useCart();
+  const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
   const confirmIdempotencyKey = useRef<string | null>(null);
+  const submittingRef = useRef(false);
+  const advancingStepRef = useRef(false);
   const [session, setSession] = useState<CheckoutSession | null>(initialSession);
   const [shippingOptions, setShippingOptions] = useState<ShippingOption[]>(initialShippingOptions);
   const [selectedShippingOption, setSelectedShippingOption] = useState(initialSession?.shippingOptionId ?? "");
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(initialSession?.paymentMethod ?? "MERCADO_PAGO");
+  const [deliverySlots, setDeliverySlots] = useState<DeliverySlot[]>(initialSession?.deliverySlots ?? []);
+  const [selectedDeliverySlotId, setSelectedDeliverySlotId] = useState(initialSession?.deliverySlotId ?? "");
   const [couponCode, setCouponCode] = useState(initialSession?.couponCode ?? "");
   const [couponLoading, setCouponLoading] = useState(false);
   const [step, setStep] = useState<CheckoutStep>(initialSession ? stepFromStage(initialSession.stage) : 1);
-  const [submitted, setSubmitted] = useState<SubmittedOrder | null>(null);
   const [loading, setLoading] = useState(false);
+  const [paymentState, setPaymentState] = useState<"idle" | "creating-order" | "redirecting">("idle");
   const [error, setError] = useState<string | null>(null);
 
   async function recoverConflict() {
@@ -43,6 +45,8 @@ export function CheckoutForm({ initialSession, initialShippingOptions = [] }: { 
       const latest = await requestJson<CheckoutSession>(`/checkout/sessions/${currentSession.id}`);
       setSession(latest);
       if (latest.shippingOptionId) setSelectedShippingOption(latest.shippingOptionId);
+      setDeliverySlots(latest.deliverySlots ?? []);
+      setSelectedDeliverySlotId(latest.deliverySlotId ?? latest.deliverySlots?.find((slot) => slot.available)?.id ?? "");
     } catch {
       // El error original del paso conserva el mensaje que verá la persona.
     }
@@ -80,18 +84,41 @@ export function CheckoutForm({ initialSession, initialShippingOptions = [] }: { 
     }
   }
 
-  async function selectPaymentMethod(nextMethod: PaymentMethod) {
-    setPaymentMethod(nextMethod);
-    if (!session || session.paymentMethod === nextMethod || loading) return;
+  async function selectDeliverySlot(slot: DeliverySlot) {
+    if (!session || loading || !slot.available || slot.id === selectedDeliverySlotId) return;
     setLoading(true);
     setError(null);
     try {
-      const next = await requestJson<CheckoutSession>(`/checkout/sessions/${session.id}/payment-method`, { method: "PATCH", body: JSON.stringify({ paymentMethod: nextMethod }) });
+      const next = await requestJson<CheckoutSession>(`/checkout/sessions/${session.id}/delivery-slot`, {
+        method: "PATCH",
+        body: JSON.stringify({ deliverySlotId: slot.id }),
+      });
       setSession(next);
+      setSelectedDeliverySlotId(next.deliverySlotId ?? slot.id);
+      setDeliverySlots(next.deliverySlots ?? deliverySlots);
     } catch (cause) {
       if (isConflict(cause)) await recoverConflict();
-      setPaymentMethod(session.paymentMethod ?? "MERCADO_PAGO");
-      setError(errorMessage(cause, "No pudimos guardar el método de pago."));
+      setError(errorMessage(cause, "No pudimos actualizar el horario de entrega."));
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function selectShippingOption(shippingOptionId: string) {
+    if (!session || loading || shippingOptionId === selectedShippingOption) return;
+    setSelectedShippingOption(shippingOptionId);
+    setLoading(true);
+    setError(null);
+    try {
+      const next = await requestJson<CheckoutSession>(`/checkout/sessions/${session.id}/shipping-option`, {
+        method: "PATCH",
+        body: JSON.stringify({ shippingOptionId }),
+      });
+      setSession(next);
+    } catch (cause) {
+      setSelectedShippingOption(session.shippingOptionId ?? "");
+      if (isConflict(cause)) await recoverConflict();
+      setError(errorMessage(cause, "No pudimos actualizar el envío."));
     } finally {
       setLoading(false);
     }
@@ -109,7 +136,8 @@ export function CheckoutForm({ initialSession, initialShippingOptions = [] }: { 
   }
 
   async function goNext() {
-    if (!validateStep(step) || !session) return;
+    if (loading || advancingStepRef.current || !validateStep(step) || !session) return;
+    advancingStepRef.current = true;
     setLoading(true);
     setError(null);
     try {
@@ -126,18 +154,22 @@ export function CheckoutForm({ initialSession, initialShippingOptions = [] }: { 
         if (!options.length) throw new Error("No hay métodos de envío disponibles para este pedido.");
         setShippingOptions(options);
         setSelectedShippingOption(next.shippingOptionId ?? options[0]?.id ?? "");
+        setDeliverySlots(next.deliverySlots ?? []);
+        setSelectedDeliverySlotId(next.deliverySlotId ?? next.deliverySlots?.find((slot) => slot.available)?.id ?? "");
       }
       setStep((current) => Math.min(3, current + 1) as CheckoutStep);
     } catch (cause) {
       if (isConflict(cause)) await recoverConflict();
       setError(errorMessage(cause, "No pudimos guardar este paso."));
     } finally {
+      advancingStepRef.current = false;
       setLoading(false);
     }
   }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (loading || submittingRef.current) return;
     if (!session) {
       setError("Estamos recuperando la sesión del checkout. Esperá un momento e intentá nuevamente.");
       return;
@@ -152,45 +184,60 @@ export function CheckoutForm({ initialSession, initialShippingOptions = [] }: { 
       setError("Aceptá los términos y condiciones para continuar.");
       return;
     }
+    submittingRef.current = true;
     setLoading(true);
+    setPaymentState("creating-order");
     setError(null);
+    let redirecting = false;
     try {
       let current = session;
       if (current.shippingOptionId !== shippingOptionId) {
         current = await requestJson<CheckoutSession>(`/checkout/sessions/${session.id}/shipping-option`, { method: "PATCH", body: JSON.stringify({ shippingOptionId }) });
       }
-      if (current.paymentMethod !== paymentMethod) {
-        current = await requestJson<CheckoutSession>(`/checkout/sessions/${session.id}/payment-method`, { method: "PATCH", body: JSON.stringify({ paymentMethod }) });
-      }
       const idempotencyKey = confirmIdempotencyKey.current ?? crypto.randomUUID();
       confirmIdempotencyKey.current = idempotencyKey;
-      const termsAccepted = form.get("terms") === "on";
       const result = await requestJson<CheckoutConfirmResult>(`/checkout/sessions/${session.id}/confirm`, {
         method: "POST",
         headers: { "Idempotency-Key": idempotencyKey },
-        body: JSON.stringify({ termsAccepted, termsVersion }),
+        // Nest actualmente acepta únicamente {} para Mercado Pago. La
+        // aceptación de términos se valida localmente en este formulario.
+        body: JSON.stringify({}),
       });
       if (!result.payment) {
-        throw new Error("La API todavía no está configurada para iniciar Mercado Pago.");
+        // Una sesión completada cuya orden ya está pagada puede no incluir
+        // una nueva iniciación de pago. La pantalla de resultado consulta la
+        // Order y decide el estado real.
+        router.replace("/checkout/resultado");
+        return;
       }
-      if (result.payment.status === "APPROVED") {
-        setSubmitted({ order: result.order, guest: Boolean(result.publicToken) });
-        setSession(null);
-        await refresh();
-      } else if (result.payment.redirectUrl) {
-        window.location.assign(result.payment.redirectUrl);
+      if (result.payment.action === "REDIRECT") {
+        const paymentUrl = paymentRedirectUrl(result.payment);
+        if (!paymentUrl) {
+          throw Object.assign(new Error("La plataforma de pago no devolvió una URL válida."), { code: "PAYMENT_PROVIDER_UNAVAILABLE" });
+        }
+        setPaymentState("redirecting");
+        redirecting = true;
+        window.location.assign(paymentUrl);
       } else {
-        throw new Error(result.payment.status === "PENDING" ? "La API no devolvió una URL de pago para continuar con Mercado Pago." : "Mercado Pago rechazó o canceló el inicio del pago.");
+        // La respuesta de Nest puede indicar el resultado de la operación, pero
+        // la pantalla de resultado siempre vuelve a consultar la Order.
+        router.replace("/checkout/resultado");
       }
     } catch (cause) {
-      if (isConflict(cause)) await recoverConflict();
-      setError(errorMessage(cause, "No pudimos confirmar el pedido. Revisá stock, envío y datos."));
+      if (isIdempotencyConflict(cause)) {
+        setError("Este intento ya fue procesado o usa una clave incompatible. No iniciamos otro pago; revisá el estado del pedido.");
+      } else {
+        confirmIdempotencyKey.current = null;
+        if (isConflict(cause)) await recoverConflict();
+        setError(paymentErrorMessage(cause));
+      }
     } finally {
+      submittingRef.current = false;
       setLoading(false);
+      if (!redirecting) setPaymentState("idle");
     }
   }
 
-  if (submitted) return <Confirmation {...submitted} />;
   if (!items.length) return <EmptyCheckout />;
 
   const contact = splitContactName(session?.contactName);
@@ -200,46 +247,60 @@ export function CheckoutForm({ initialSession, initialShippingOptions = [] }: { 
     <form key={session?.id ?? "checkout"} ref={formRef} onSubmit={submit} className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_340px] lg:gap-8">
       <div>
         <ol className="mb-7 grid grid-cols-3 gap-2" aria-label="Progreso del checkout">
-          {steps.map(({ id, label, Icon }) => <li key={id} aria-current={step === id ? "step" : undefined} className={`relative flex min-w-0 items-center gap-2 border-b-2 pb-3 text-sm ${step >= id ? "border-brand-blue font-semibold text-ink" : "border-catalog-line text-muted"}`}><span className={`flex size-8 shrink-0 items-center justify-center rounded-full ${step >= id ? "bg-brand-yellow text-ink" : "bg-catalog-soft text-muted"}`}>{step > id ? <CheckCircle size={17} weight="bold" aria-hidden="true" /> : <Icon size={17} weight={step === id ? "bold" : "regular"} aria-hidden="true" />}</span><span className="hidden sm:inline">{label}</span></li>)}
+          {steps.map(({ id, label, Icon }) => <li key={id} aria-current={step === id ? "step" : undefined} className={`relative flex min-w-0 items-center gap-2 border-b-2 pb-3 text-sm ${step >= id ? "border-brand-blue font-semibold text-ink" : "border-catalog-line text-muted"}`}><span className={`flex size-8 shrink-0 items-center justify-center rounded-full ${step >= id ? "bg-brand-blue text-white" : "border border-border bg-catalog-canvas text-muted"}`}>{step > id ? <CheckCircle size={17} weight="bold" aria-hidden="true" /> : <Icon size={17} weight={step === id ? "bold" : "regular"} aria-hidden="true" />}</span><span className="hidden sm:inline">{label}</span></li>)}
         </ol>
 
-        <fieldset hidden={step !== 1} className="rounded-xl bg-white p-4 sm:p-7">
-          <legend className="px-1 font-display text-xl font-semibold sm:text-2xl">Tus datos</legend>
-          <p className="mb-6 mt-2 text-sm text-muted">Necesitamos estos datos para identificar el pedido y contactarte.</p>
+        <fieldset hidden={step !== 1} className="rounded-2xl border border-border bg-white p-4 shadow-[0_10px_30px_rgba(22,24,29,0.04)] sm:p-7">
+          <legend className="px-1 font-display text-lg font-semibold sm:text-xl">Tus datos</legend>
+          <p className="mb-6 mt-2 text-sm text-muted">¿A quién contactamos sobre este pedido?</p>
           <div className="grid gap-4 sm:grid-cols-2"><Field name="firstName" label="Nombre" formStep={1} defaultValue={contact.firstName} autoComplete="given-name" /><Field name="lastName" label="Apellido" formStep={1} defaultValue={contact.lastName} autoComplete="family-name" /><Field name="phone" label="Teléfono" formStep={1} defaultValue={session?.contactPhone ?? ""} type="tel" inputMode="tel" autoComplete="tel" placeholder="11 1234-5678" /><Field name="email" label="Correo electrónico" formStep={1} defaultValue={session?.contactEmail ?? ""} type="email" autoComplete="email" placeholder="vos@ejemplo.com" className="sm:col-span-2" /></div>
         </fieldset>
 
-        <fieldset hidden={step !== 2} className="rounded-xl bg-white p-4 sm:p-7">
-          <legend className="px-1 font-display text-xl font-semibold sm:text-2xl">Dirección de entrega</legend>
-          <p className="mb-6 mt-2 text-sm text-muted">Usamos el formato argentino de calle, número, departamento y localidad.</p>
+        <fieldset hidden={step !== 2} className="rounded-2xl border border-border bg-white p-4 shadow-[0_10px_30px_rgba(22,24,29,0.04)] sm:p-7">
+          <legend className="px-1 font-display text-lg font-semibold sm:text-xl">Dirección de entrega</legend>
+          <p className="mb-6 mt-2 text-sm text-muted">Indicá dónde querés recibirlo.</p>
           <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_150px]"><Field name="street" label="Calle" formStep={2} defaultValue={address?.street ?? ""} autoComplete="street-address" placeholder="Ej. Avenida Corrientes" /><Field name="number" label="Número" formStep={2} defaultValue={address?.number ?? ""} inputMode="numeric" autoComplete="address-line1" placeholder="1234" /><Field name="apartment" label="Piso / departamento" formStep={2} defaultValue={address?.apartment ?? ""} required={false} autoComplete="address-line2" placeholder="Opcional" /><Field name="postalCode" label="Código postal" formStep={2} defaultValue={address?.postalCode ?? ""} autoComplete="postal-code" placeholder="C1000AAA o 1000" pattern="[A-Za-z]?[0-9]{4}([A-Za-z]{3})?" onInput={(event) => { event.currentTarget.value = event.currentTarget.value.toUpperCase().replace(/[^A-Z0-9]/g, ""); }} /><Field name="neighborhood" label="Barrio / localidad" formStep={2} defaultValue={address?.neighborhood ?? ""} autoComplete="address-level2" required={false} className="sm:col-span-2" placeholder="Ej. Palermo" /><Field name="city" label="Ciudad" formStep={2} defaultValue={address?.city ?? "Buenos Aires"} autoComplete="address-level2" /><Field name="province" label="Provincia" formStep={2} defaultValue={address?.province ?? "Buenos Aires"} autoComplete="address-level1" /><Field name="reference" label="Indicaciones" formStep={2} defaultValue={address?.reference ?? ""} required={false} className="sm:col-span-2" placeholder="Timbre, acceso, referencia…" /></div>
         </fieldset>
 
-        <fieldset hidden={step !== 3} className="rounded-xl bg-white p-4 sm:p-7">
-          <legend className="px-1 font-display text-xl font-semibold sm:text-2xl">Envío y pago</legend>
-          <p className="mt-2 text-sm text-muted">Elegí la entrega y continuá a Mercado Pago. Patitas no pide ni guarda datos de tarjeta.</p>{session?.stage === "CONFIRMATION" ? <p className="mt-3 rounded-lg bg-soft-blue p-3 text-sm font-semibold text-ink">Tu checkout está listo. Revisá los datos y confirmá el pedido.</p> : null}
-          <div className="mt-6 grid gap-2">{shippingOptions.map((option) => <label key={option.id} className={`flex cursor-pointer items-start gap-3 rounded-xl border p-4 ${selectedShippingOption === option.id ? "border-brand-blue bg-soft-blue" : "border-border bg-white"}`}><input type="radio" name="shippingOption" value={option.id} checked={selectedShippingOption === option.id} onChange={() => setSelectedShippingOption(option.id)} className="mt-1 accent-brand-blue" /><span className="min-w-0 flex-1"><span className="block font-semibold">{option.name}</span>{option.description ? <span className="mt-1 block text-sm text-muted">{option.description}</span> : null}</span><strong className="shrink-0 text-sm tabular-nums">{formatMoney(Number(option.cost))}</strong></label>)}</div>
-          <div className="mt-6"><label className="flex min-h-12 cursor-pointer items-center gap-3 rounded-xl border border-brand-yellow bg-brand-yellow px-4 text-sm font-semibold"><input type="radio" name="paymentMethod" value="MERCADO_PAGO" checked={paymentMethod === "MERCADO_PAGO"} onChange={() => void selectPaymentMethod("MERCADO_PAGO")} disabled={loading} className="accent-brand-blue" />Pagar con Mercado Pago</label></div>
-          <div className="mt-6 rounded-xl bg-catalog-canvas p-4"><p className="text-sm font-semibold">¿Tenés un cupón?</p><div className="mt-3 flex gap-2"><input value={couponCode} onChange={(event) => setCouponCode(event.target.value.toUpperCase())} aria-label="Código de cupón" placeholder="Código" className="h-11 min-w-0 flex-1 rounded-lg border border-catalog-line bg-white px-3 uppercase outline-none focus:border-brand-blue" disabled={Boolean(session?.couponCode) || couponLoading} /><button type="button" onClick={() => void applyCoupon()} disabled={!couponCode.trim() || Boolean(session?.couponCode) || couponLoading} className="min-h-11 rounded-lg bg-brand-yellow px-4 text-sm font-semibold text-ink disabled:opacity-50">Aplicar</button></div>{session?.couponCode ? <p className="mt-2 flex items-center justify-between gap-3 text-sm text-muted"><span>Cupón aplicado: <strong className="text-ink">{session.couponCode}</strong></span><button type="button" onClick={() => void clearCoupon()} disabled={couponLoading} className="font-semibold text-brand-blue hover:underline">Quitar</button></p> : null}</div>
+        <fieldset hidden={step !== 3} className="rounded-2xl border border-border bg-white p-4 shadow-[0_10px_30px_rgba(22,24,29,0.04)] sm:p-7">
+          <legend className="px-1 font-display text-lg font-semibold sm:text-xl">Pago</legend>
+          <p className="mt-2 max-w-xl text-sm leading-6 text-muted">Revisá la entrega y elegí un medio de pago.</p>
+          {session?.stage === "CONFIRMATION" ? <p className="mt-4 rounded-lg bg-[#f3f5f7] p-3 text-sm font-semibold text-ink">Todo listo para confirmar.</p> : null}
+
+          <section className="mt-6 rounded-xl border border-catalog-line bg-[#f7f7f5] p-4 sm:p-5" aria-labelledby="delivery-title">
+            <div className="flex items-start gap-3">
+              <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-soft-blue text-brand-blue"><Truck size={21} weight="bold" aria-hidden="true" /></span>
+              <div className="min-w-0"><h2 id="delivery-title" className="font-display text-lg font-semibold">Entrega a domicilio</h2><p className="mt-1 text-sm text-muted">Todos los envíos se realizan de 13:00 a 21:00.</p></div>
+            </div>
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              <div className="rounded-lg border border-border bg-white p-3"><p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted"><Clock size={15} className="text-brand-blue" aria-hidden="true" /> Horario</p><p className="mt-1 font-semibold">13:00 a 21:00</p></div>
+              <div className="rounded-lg border border-border bg-white p-3"><p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted"><CalendarBlank size={15} className="text-brand-blue" aria-hidden="true" /> Llega en</p><p className="mt-1 font-semibold">{session?.shippingEstimate ?? "A confirmar"}</p></div>
+            </div>
+            <div className="mt-4 border-t border-border pt-4"><p className="text-sm font-semibold">Costo de entrega</p>{shippingOptions.length ? <div className="mt-3 grid gap-2">{shippingOptions.map((option) => <label key={option.id} className={`flex cursor-pointer items-center gap-3 rounded-lg border px-4 py-3 transition-colors ${selectedShippingOption === option.id ? "border-brand-blue bg-soft-blue" : "border-border bg-white hover:border-brand-blue/50"}`}><input type="radio" name="shippingOption" value={option.id} checked={selectedShippingOption === option.id} onChange={() => void selectShippingOption(option.id)} disabled={loading} className="accent-brand-blue" /><span className="min-w-0 flex-1"><span className="block font-semibold">Envío a domicilio</span><span className="mt-0.5 block text-sm text-muted">Costo calculado para tu dirección</span></span><strong className="shrink-0 text-sm tabular-nums">{formatMoney(Number(option.cost))}</strong></label>)}</div> : <p className="mt-3 rounded-lg bg-[#fff1f1] p-3 text-sm text-[#8d2020]">No hay opciones disponibles para esta dirección.</p>}</div>
+            {deliverySlots.length ? <div className="mt-4 border-t border-border pt-4"><p className="text-sm font-semibold">Elegí cuándo recibir</p><div className="mt-3 grid gap-2">{deliverySlots.map((slot) => <button key={slot.id} type="button" onClick={() => void selectDeliverySlot(slot)} disabled={loading || !slot.available} className={`flex min-h-14 items-center justify-between gap-3 rounded-lg border px-4 text-left transition-colors ${selectedDeliverySlotId === slot.id ? "border-brand-blue bg-soft-blue" : "border-border bg-white hover:border-brand-blue/50"} disabled:cursor-not-allowed disabled:opacity-50`}><span><span className="block font-semibold">{slot.label}</span><span className="mt-0.5 block text-sm text-muted">{slot.from} a {slot.to}</span></span>{selectedDeliverySlotId === slot.id ? <CheckCircle size={21} weight="fill" className="shrink-0 text-brand-blue" aria-label="Seleccionado" /> : null}</button>)}</div></div> : <p className="mt-4 flex items-start gap-2 border-t border-border pt-4 text-sm text-muted"><Clock size={17} className="mt-0.5 shrink-0 text-brand-blue" aria-hidden="true" />Horario de entrega: 13:00 a 21:00.</p>}
+          </section>
+
+          <section className="mt-6" aria-labelledby="payment-methods-title">
+            <div className="flex items-end justify-between gap-3"><div><h2 id="payment-methods-title" className="font-display text-lg font-semibold">Pago online</h2><p className="mt-1 text-sm text-muted">La plataforma de pago se determina de forma segura al confirmar tu pedido.</p></div><LockKey size={19} className="text-brand-blue" aria-hidden="true" /></div>
+            <div className="mt-4 flex items-start gap-3 rounded-lg border border-border bg-[#f7f7f5] p-3 text-sm leading-5 text-muted"><ShieldCheck size={19} weight="bold" className="mt-0.5 shrink-0 text-brand-blue" aria-hidden="true" /><p><strong className="font-semibold text-ink">Datos protegidos.</strong><span className="mt-0.5 block">El pago se procesa fuera de Patitas; solo recibimos el estado confirmado por la plataforma.</span></p></div>
+          </section>
+
+          <section className="mt-6 rounded-xl border border-border bg-[#f7f7f5] p-4" aria-labelledby="coupon-title"><div className="flex items-center gap-2"><Tag size={18} className="text-brand-blue" aria-hidden="true" /><h2 id="coupon-title" className="text-sm font-semibold">Cupón de descuento</h2></div><div className="mt-3 flex gap-2"><input value={couponCode} onChange={(event) => setCouponCode(event.target.value.toUpperCase())} aria-label="Código de cupón" placeholder="Ingresá tu código" className="h-11 min-w-0 flex-1 rounded-lg border border-catalog-line bg-white px-3 uppercase outline-none focus:border-brand-blue" disabled={Boolean(session?.couponCode) || couponLoading} /><button type="button" onClick={() => void applyCoupon()} disabled={!couponCode.trim() || Boolean(session?.couponCode) || couponLoading} className="min-h-11 rounded-lg border border-ink bg-ink px-4 text-sm font-semibold text-white transition-colors hover:bg-[#303136] disabled:cursor-not-allowed disabled:opacity-50">Aplicar</button></div>{session?.couponCode ? <p className="mt-2 flex items-center justify-between gap-3 text-sm text-muted"><span>Cupón aplicado: <strong className="text-ink">{session.couponCode}</strong></span><button type="button" onClick={() => void clearCoupon()} disabled={couponLoading} className="font-semibold text-brand-blue hover:underline">Quitar</button></p> : null}</section>
           <label className="mt-6 flex items-start gap-3 text-sm leading-6 text-muted"><input name="terms" type="checkbox" required data-step="3" className="mt-1 size-4 accent-brand-blue" /><span>Leí y acepto los <Link href="/terminos" className="font-semibold text-brand-blue underline">términos y condiciones</Link> y la <Link href="/privacidad" className="font-semibold text-brand-blue underline">política de privacidad</Link>.</span></label>
         </fieldset>
 
+        {paymentState !== "idle" ? <p role="status" className="mt-5 rounded-xl bg-soft-blue p-4 text-sm text-ink">{paymentState === "redirecting" ? "Redirigiendo a la plataforma de pago…" : "Procesando el pago…"}</p> : null}
         {error ? <p role="alert" className="mt-5 rounded-xl bg-[#fff1f1] p-4 text-sm text-[#8d2020]">{error}</p> : null}
-        <div className="mt-6 grid grid-cols-2 gap-3 sm:flex sm:justify-between">{step > 1 ? <button type="button" onClick={() => { setStep((current) => Math.max(1, current - 1) as CheckoutStep); setError(null); }} className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-catalog-canvas px-4 font-semibold text-ink sm:w-auto sm:px-5"><ArrowLeft size={17} /> Volver</button> : <span />}{step < 3 ? <button type="button" onClick={() => void goNext()} disabled={loading || !session} className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-brand-blue px-4 font-semibold text-white hover:bg-[#0048dc] disabled:opacity-60 sm:w-auto sm:px-5">{loading ? "Guardando…" : "Continuar"}<ArrowRight size={17} weight="bold" /></button> : <button type="submit" disabled={loading || !session} className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-brand-blue px-4 font-semibold text-white hover:bg-[#0048dc] disabled:opacity-60 sm:w-auto sm:px-5">{loading ? "Confirmando…" : "Confirmar pedido"}<ClipboardText size={18} weight="bold" /></button>}</div>
+        <div className="mt-6 grid grid-cols-2 gap-3 sm:flex sm:items-center sm:justify-between">{step > 1 ? <button type="button" onClick={() => { setStep((current) => Math.max(1, current - 1) as CheckoutStep); setError(null); }} className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-catalog-canvas px-4 font-semibold text-ink transition-colors hover:bg-border sm:w-auto sm:px-5"><ArrowLeft size={17} /> Volver</button> : <span />}{step < 3 ? <button type="button" onClick={() => void goNext()} disabled={loading || !session} className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-brand-blue px-4 font-semibold text-white transition-colors hover:bg-[#0048dc] disabled:opacity-60 sm:w-auto sm:px-5">{loading ? "Guardando…" : "Continuar"}<ArrowRight size={17} weight="bold" /></button> : <button type="submit" disabled={loading || !session} className="inline-flex min-h-13 w-full items-center justify-center gap-3 rounded-xl bg-[#009ee3] px-5 font-semibold text-white shadow-[0_8px_18px_rgba(0,158,227,0.2)] transition-all hover:bg-[#008bc7] hover:shadow-[0_10px_22px_rgba(0,158,227,0.28)] disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto sm:min-w-56"><span className="flex size-8 items-center justify-center rounded-full bg-white/15"><Wallet size={18} weight="bold" aria-hidden="true" /></span><span>{loading ? (paymentState === "redirecting" ? "Redirigiendo…" : "Conectando…") : "Continuar al pago"}</span><ArrowRight size={18} weight="bold" aria-hidden="true" /></button>}</div>
       </div>
 
-      <aside className="h-fit rounded-xl bg-white p-5 sm:p-6" aria-labelledby="checkout-summary-title"><h2 id="checkout-summary-title" className="font-display text-2xl font-semibold">Tu pedido</h2><ul className="mt-5 space-y-3 text-sm">{(session?.items ?? items).map((item) => <li key={item.variantId} className="flex justify-between gap-3"><span className="min-w-0"><span className="block truncate">{item.quantity} × {item.productName}</span><span className="block text-xs text-muted">{item.presentation ?? "Presentación"}</span></span><span className="shrink-0 tabular-nums">{formatMoney(Number(item.lineTotal))}</span></li>)}</ul><div className="mt-5 space-y-2 border-t border-catalog-line pt-5 text-sm"><div className="flex justify-between"><span>Subtotal</span><span>{formatMoney(Number(session?.subtotal ?? cart?.subtotal ?? 0))}</span></div>{session && Number(session.discountTotal) > 0 ? <div className="flex justify-between text-brand-blue"><span>Descuento</span><span>-{formatMoney(Number(session.discountTotal))}</span></div> : null}{session && Number(session.shippingCost) > 0 ? <div className="flex justify-between"><span>Envío</span><span>{formatMoney(Number(session.shippingCost))}</span></div> : null}<div className="flex justify-between border-t border-catalog-line pt-3 font-semibold"><span>Total actual</span><strong className="font-display text-xl tabular-nums">{formatMoney(Number(session?.total ?? cart?.subtotal ?? 0))}</strong></div></div><p className="mt-4 flex items-start gap-2 text-sm leading-6 text-muted"><Truck size={18} className="mt-1 shrink-0 text-brand-blue" />El backend vuelve a validar stock, envío, promociones y total al confirmar.</p></aside>
+      <aside className="h-fit rounded-2xl border border-border bg-white p-5 shadow-[0_10px_30px_rgba(22,24,29,0.04)] sm:sticky sm:top-6 sm:p-6" aria-labelledby="checkout-summary-title"><h2 id="checkout-summary-title" className="font-display text-xl font-semibold">Resumen</h2><ul className="mt-5 space-y-3 text-sm">{(session?.items ?? items).map((item) => <li key={item.variantId} className="flex justify-between gap-3"><span className="min-w-0"><span className="block truncate">{item.quantity} × {item.productName}</span><span className="block text-xs text-muted">{item.presentation ?? "Presentación"}</span></span><span className="shrink-0 tabular-nums">{formatMoney(Number(item.lineTotal))}</span></li>)}</ul><div className="mt-5 space-y-2 border-t border-catalog-line pt-5 text-sm"><div className="flex justify-between"><span>Subtotal</span><span>{formatMoney(Number(session?.subtotal ?? cart?.subtotal ?? 0))}</span></div>{session && Number(session.discountTotal) > 0 ? <div className="flex justify-between text-brand-blue"><span>Descuento</span><span>-{formatMoney(Number(session.discountTotal))}</span></div> : null}{session && Number(session.shippingCost) > 0 ? <div className="flex justify-between"><span>Envío</span><span>{formatMoney(Number(session.shippingCost))}</span></div> : null}<div className="flex justify-between border-t border-catalog-line pt-3 font-semibold"><span>Total</span><strong className="font-display text-xl tabular-nums">{formatMoney(Number(session?.total ?? cart?.subtotal ?? 0))}</strong></div></div><p className="mt-4 flex items-start gap-2 text-sm leading-6 text-muted"><LockKey size={18} className="mt-1 shrink-0 text-brand-blue" />Importe y envío calculados por Patitas.</p></aside>
     </form>
   );
 }
 
-function Confirmation({ order, guest }: SubmittedOrder) {
-  const orderHref = guest ? `/pedido/${order.id}` : `/mi-cuenta/pedidos/${order.id}`;
-  return <section className="rounded-xl bg-white p-7 sm:p-10" aria-live="polite"><CheckCircle size={42} weight="duotone" className="text-brand-blue" aria-hidden="true" /><h2 className="mt-5 font-display text-3xl font-semibold">Recibimos tu pedido</h2><p className="mt-3 max-w-xl text-lg leading-7 text-muted">La API creó el pedido <strong className="text-ink">{order.id}</strong> por {formatMoney(Number(order.total))}.</p><p className="mt-3 text-sm text-muted">Stock, precios, envío y promociones fueron validados por el backend.</p><div className="mt-7 flex flex-wrap gap-3"><Link href={orderHref} className="inline-flex min-h-12 items-center gap-2 rounded-xl bg-brand-blue px-5 font-semibold text-white">Ver pedido <ArrowRight size={18} weight="bold" /></Link><Link href="/perros" className="inline-flex min-h-12 items-center gap-2 rounded-xl bg-catalog-canvas px-5 font-semibold text-ink">Seguir comprando</Link></div></section>;
-}
-
 function EmptyCheckout() {
-  return <section className="rounded-xl bg-white p-7 sm:p-10"><h2 className="font-display text-2xl font-semibold">Tu carrito está vacío</h2><p className="mt-2 text-muted">Agregá un producto antes de continuar.</p><Link href="/perros" className="mt-6 inline-flex min-h-12 items-center rounded-xl bg-brand-blue px-5 font-semibold text-white">Ver productos</Link></section>;
+  return <section className="rounded-xl bg-white p-7 sm:p-10"><h2 className="font-display text-xl font-semibold">Tu carrito está vacío</h2><p className="mt-2 text-muted">Agregá un producto antes de continuar.</p><Link href="/perros" className="mt-6 inline-flex min-h-12 items-center rounded-xl bg-brand-blue px-5 font-semibold text-white">Ver productos</Link></section>;
 }
 
 function Field({ name, label, formStep, required = true, className = "", ...props }: { name: string; label: string; formStep: CheckoutStep; required?: boolean; className?: string } & Omit<InputHTMLAttributes<HTMLInputElement>, "name">) {
@@ -249,7 +310,7 @@ function Field({ name, label, formStep, required = true, className = "", ...prop
 async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`/api/commerce${path}`, { ...init, headers: { ...(init?.body ? { "Content-Type": "application/json" } : {}), ...init?.headers } });
   const payload = await response.json().catch(() => null) as T | { message?: string } | null;
-  if (!response.ok) throw Object.assign(new Error(payload && typeof payload === "object" && "message" in payload ? payload.message : "Patitas API no pudo completar el paso."), { status: response.status });
+  if (!response.ok) throw Object.assign(new Error(payload && typeof payload === "object" && "message" in payload ? payload.message : "Patitas API no pudo completar el paso."), { status: response.status, code: payload && typeof payload === "object" && "code" in payload ? payload.code : undefined });
   return payload as T;
 }
 
@@ -270,4 +331,16 @@ function splitContactName(name: string | null | undefined) {
 
 function errorMessage(cause: unknown, fallback: string) {
   return cause instanceof Error ? cause.message : fallback;
+}
+
+function paymentErrorMessage(cause: unknown) {
+  if (cause && typeof cause === "object" && "code" in cause) {
+    if (cause.code === "PAYMENT_PROVIDER_UNAVAILABLE") return "La pasarela de pago no está disponible en este momento. Intentá nuevamente en unos minutos.";
+    if (cause.code === "PAYMENT_IDEMPOTENCY_CONFLICT") return "Este intento de pago ya existe. Consultá el estado del pedido antes de volver a intentarlo.";
+  }
+  const message = errorMessage(cause, "No pudimos confirmar el pedido. Revisá stock, envío y datos.");
+  if (/ya está pagado|ya fue pagado/i.test(message)) return "Este pedido ya figura como pagado.";
+  if (/expiró|expirada|expirado/i.test(message)) return "La sesión u orden expiró. Volvé al carrito para iniciar un checkout nuevo.";
+  if (/proveedor|pasarela|disponible/i.test(message)) return "La pasarela de pago no está disponible en este momento. Intentá nuevamente en unos minutos.";
+  return message;
 }

@@ -11,7 +11,7 @@ import type {
   ReplenishmentLeadInput,
 } from "@/domain/catalog/types";
 
-const apiUrl = (process.env.PATITAS_API_URL ?? "http://127.0.0.1:3000/api/v1").replace(/\/$/, "");
+const apiUrl = (process.env.PATITAS_API_URL ?? "http://api.patitasinquietas.local/api/v1").replace(/\/$/, "");
 
 export class PatitasApiError extends Error {
   constructor(

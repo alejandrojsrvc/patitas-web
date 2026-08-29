@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test src/features/build-plan/utils/calculations.test.ts src/lib/catalog-variants.test.ts src/lib/catalog-search-params.test.ts src/data/catalog-routes.test.ts",
+    "test": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test src/features/build-plan/utils/calculations.test.ts src/lib/catalog-variants.test.ts src/lib/catalog-search-params.test.ts src/data/catalog-routes.test.ts src/features/checkout/payment-flow.test.ts src/infrastructure/api/commerce-headers.test.ts src/payment-secrets.test.ts",
+    "typecheck": "tsc --noEmit",
     "seo:audit": "node scripts/seo-audit.mjs",
     "test:scraper": "node --test scripts/scrape-old-prince.test.mjs",
     "scrape:old-prince": "node scripts/scrape-old-prince.mjs"

@@ -1,4 +1,5 @@
 import type { CartItem } from "@/domain/cart/types";
+import type { OrderSummary } from "@/domain/customer/types";
 
 export type CheckoutSession = {
   id: string;
@@ -11,8 +12,12 @@ export type CheckoutSession = {
   contactPhone: string | null;
   shippingAddress: Record<string, string> | null;
   shippingOptionId: string | null;
+  shippingEstimate: string | null;
   shippingCost: string;
-  paymentMethod: "MERCADO_PAGO" | null;
+  deliverySlotId?: string | null;
+  deliverySlot?: DeliverySlot | null;
+  deliverySlots?: DeliverySlot[];
+  paymentMethod: "MERCADO_PAGO" | "PAYWAY" | null;
   couponCode: string | null;
   orderId: string | null;
   subtotal: string;
@@ -27,7 +32,18 @@ export type ShippingOption = {
   name: string;
   description?: string | null;
   cost: string;
-  estimatedDays?: number | null;
+  active: boolean;
+  displayOrder: number;
+};
+
+export type DeliverySlot = {
+  id: string;
+  date: string;
+  label: string;
+  from: string;
+  to: string;
+  timezone: string;
+  available: boolean;
 };
 
 export type CheckoutCreateResult = {
@@ -35,12 +51,33 @@ export type CheckoutCreateResult = {
   token?: string;
 };
 
+export type PaymentInitiationStatus =
+  | "APPROVED"
+  | "PENDING"
+  | "PROCESSING"
+  | "REJECTED"
+  | "CANCELLED"
+  | "EXPIRED"
+  | "FAILED"
+  | "PARTIALLY_REFUNDED"
+  | "REFUNDED"
+  | "CHARGED_BACK";
+
+type CheckoutConfirmOrder = Omit<OrderSummary, "paymentStatus"> & {
+  // Nest echoes the provider initiation status in this response. The later
+  // Order query uses the persisted Order.paymentStatus contract.
+  paymentStatus: OrderSummary["paymentStatus"] | PaymentInitiationStatus;
+};
+
 export type CheckoutConfirmResult = {
-  order: import("@/domain/customer/types").OrderSummary;
-  payment: {
-    provider: "MERCADO_PAGO";
-    status: "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED" | "EXPIRED";
-    redirectUrl: string | null;
+  order: CheckoutConfirmOrder;
+  payment?: {
+    provider: "mercadopago" | "payway" | "simulated";
+    action: "REDIRECT" | "NONE" | "RETRY";
+    paymentUrl: string | null;
+    externalId: string | null;
+    status: PaymentInitiationStatus;
+    expiresAt: string | null;
   };
   publicToken?: string;
 };

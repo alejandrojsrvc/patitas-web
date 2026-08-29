@@ -44,7 +44,15 @@ export type CustomerAddressInput = {
 export type OrderSummary = {
   id: string;
   status: string;
-  paymentStatus: string;
+  paymentStatus:
+    | "UNPAID"
+    | "PENDING"
+    | "PROCESSING"
+    | "PAID"
+    | "FAILED"
+    | "PARTIALLY_REFUNDED"
+    | "REFUNDED"
+    | "CHARGED_BACK";
   subtotal: string;
   discountTotal: string;
   shippingCost: string;

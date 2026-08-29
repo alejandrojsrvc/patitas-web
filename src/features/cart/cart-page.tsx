@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, Minus, Plus, Trash, Truck } from "@phosphor-icons/react";
+import { ArrowRight, Minus, Plus, Trash, Truck, WarningCircle } from "@phosphor-icons/react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -8,14 +8,19 @@ import { ProductImage } from "@/components/catalog/product-image";
 import { formatMoney } from "@/lib/catalog-formatters";
 import { useCart } from "./cart-context";
 
-export function CartPageContent() {
-  const { items, subtotal, updateQuantity, removeItem, loading, error } = useCart();
+export function CartPageContent({ checkoutMessage }: { checkoutMessage?: string }) {
+  const { items, subtotal, updateQuantity, removeItem, refresh, loading, error } = useCart();
 
   if (loading && !items.length) return <section className="rounded-xl bg-white p-8 text-center text-muted">Cargando tu carrito…</section>;
+
+  if (error && !items.length) {
+    return <section className="rounded-xl bg-white px-6 py-12 text-center sm:px-12 sm:py-16" role="alert"><div className="mx-auto flex size-14 items-center justify-center rounded-full bg-[#fff1f1] text-[#8d2020]"><WarningCircle size={28} weight="duotone" aria-hidden="true" /></div><h2 className="mt-5 font-display text-3xl font-semibold">No pudimos cargar tu carrito</h2><p className="mx-auto mt-2 max-w-md text-muted">{checkoutMessage ?? error}</p><div className="mt-7 flex flex-col justify-center gap-3 sm:flex-row"><button type="button" onClick={() => void refresh()} className="inline-flex min-h-12 items-center justify-center rounded-xl bg-brand-blue px-5 font-semibold text-white hover:bg-[#0048dc]">Reintentar</button><Link href="/mi-cuenta" className="inline-flex min-h-12 items-center justify-center rounded-xl bg-catalog-canvas px-5 font-semibold text-ink hover:text-brand-blue">Revisar sesión</Link></div></section>;
+  }
 
   if (!items.length) {
     return (
       <section className="rounded-xl bg-white px-6 py-12 text-center sm:px-12 sm:py-16">
+        {checkoutMessage ? <p role="alert" className="mx-auto mb-6 max-w-md rounded-lg bg-[#fff8e5] p-3 text-sm text-[#765400]">{checkoutMessage}</p> : null}
         <Image src="/brand/patitas-isotipo.png" alt="" width={736} height={876} className="mx-auto h-20 w-auto opacity-35" />
         <h2 className="mt-5 font-display text-3xl font-semibold">Tu carrito está vacío</h2>
         <p className="mx-auto mt-2 max-w-md text-muted">Elegí lo que consume tu perro o gato y volvé cuando quieras.</p>
@@ -29,6 +34,7 @@ export function CartPageContent() {
 
   return (
     <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_340px] lg:gap-8">
+      {checkoutMessage ? <p role="alert" className="col-span-full rounded-lg bg-[#fff8e5] p-3 text-sm text-[#765400]">{checkoutMessage}</p> : null}
       <section aria-labelledby="cart-items-title">
         <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
           <div>

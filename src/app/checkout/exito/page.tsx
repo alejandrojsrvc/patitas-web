@@ -1,32 +1,28 @@
 import type { Metadata } from "next";
-import { CheckCircle } from "@phosphor-icons/react/ssr";
-import Link from "next/link";
+import { cookies } from "next/headers";
 
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
+import { PaymentOrderView } from "@/features/orders/payment-order-view";
+import { authCookieNames } from "@/lib/auth-cookies";
 
 export const metadata: Metadata = {
-  title: "Estado del pedido | Patitas Inquietas",
+  title: "Estado del pago | Patitas Inquietas",
   robots: { index: false, follow: false },
 };
 
-export default function CheckoutSuccessPage() {
-  return (
-    <>
-      <SiteHeader />
-      <main id="contenido" className="container-shell flex min-h-[70vh] items-center py-16">
-        <div className="max-w-2xl rounded-2xl bg-soft-blue p-8 sm:p-12">
-          <CheckCircle size={44} weight="duotone" className="text-brand-blue" />
-          <h1 className="display-heading mt-6 text-5xl">Recibimos tu pedido.</h1>
-          <p className="mt-5 text-lg text-muted">Patitas API recibió la solicitud y va a validar stock, cobertura y datos de entrega.</p>
-          <p className="mt-3 text-sm text-muted">El estado final del pago se confirma con Mercado Pago y el webhook de Patitas. No tomamos el retorno del navegador como prueba única de pago.</p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <Link href="/mi-cuenta/pedidos" className="inline-flex min-h-13 items-center rounded-xl bg-brand-blue px-5 font-semibold text-white">Ver mis pedidos</Link>
-            <Link href="/" className="inline-flex min-h-13 items-center rounded-xl border border-border bg-white px-5 font-semibold">Volver al inicio</Link>
-          </div>
-        </div>
-      </main>
-      <SiteFooter />
-    </>
-  );
+export default async function CheckoutSuccessPage({ searchParams }: { searchParams: Promise<{ orderId?: string }> }) {
+  const query = await searchParams;
+  const cookieStore = await cookies();
+  const orderId = cookieStore.get(authCookieNames.orderId)?.value ?? query.orderId;
+
+  return <CheckoutResultLayout orderId={orderId} />;
+}
+
+function CheckoutResultLayout({ orderId }: { orderId?: string }) {
+  return <><SiteHeader /><main id="contenido" className="container-shell min-h-[70vh] py-7 sm:py-12"><h1 className="display-heading mb-7 text-4xl sm:mb-10 sm:text-6xl">Estado de tu pago</h1>{orderId ? <PaymentOrderView orderId={orderId} /> : <MissingOrder />}</main><SiteFooter /></>;
+}
+
+function MissingOrder() {
+  return <section className="mx-auto max-w-2xl rounded-xl bg-white p-7 sm:p-10"><p role="alert" className="rounded-xl bg-[#fff1f1] p-4 text-[#8d2020]">No encontramos la orden de este pago. Volvé al carrito o contactá a soporte para revisar tu pedido.</p></section>;
 }

@@ -39,11 +39,14 @@ export function CartProvider(props: CartProviderProps) {
 
 function PathAwareCartProvider(props: CartProviderProps) {
   const pathname = usePathname();
+  const hasInitialCart = props.initialCart !== null && props.initialCart !== undefined;
 
   return (
     <CartStateProvider
       {...props}
-      skipRefreshForPath={pathname.startsWith("/checkout") || pathname === "/carrito"}
+      // El carrito solo omite la segunda consulta cuando SSR entregó datos.
+      // Si SSR no pudo leerlo, la hidratación debe recuperarlo desde el BFF.
+      skipRefreshForPath={pathname.startsWith("/checkout") || (pathname === "/carrito" && hasInitialCart)}
     />
   );
 }

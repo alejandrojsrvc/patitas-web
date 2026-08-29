@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 
 import { authApi } from "@/infrastructure/api/auth-api";
 import { requestCommerce } from "@/infrastructure/api/commerce-api";
+import { buildCommerceHeaders } from "@/infrastructure/api/commerce-headers";
 import { authCookieNames, clearAuthCookies, clearScopedToken, setAuthCookies, setScopedToken } from "@/lib/auth-cookies";
 
 type Context = { params: Promise<{ resource: string[] }> };
@@ -24,8 +25,10 @@ async function handle(request: Request, context: Context, method: string) {
   const cartToken = cookieStore.get(authCookieNames.cartToken)?.value;
   const checkoutToken = cookieStore.get(authCookieNames.checkoutToken)?.value;
   const orderToken = cookieStore.get(authCookieNames.orderToken)?.value;
+  const orderId = cookieStore.get(authCookieNames.orderId)?.value;
   const visitorId = cookieStore.get(authCookieNames.visitorId)?.value ?? crypto.randomUUID();
   const body = method === "GET" || method === "DELETE" ? undefined : await request.text();
+  const idempotencyKey = request.headers.get("Idempotency-Key") ?? undefined;
 
   let currentAccessToken: string | null | undefined = accessToken;
   let refreshedSession = null;
@@ -53,9 +56,18 @@ async function handle(request: Request, context: Context, method: string) {
         currentAccessToken = null;
       }
     }
+    // Si la sesión autenticada expiró o el merge no puede completarse,
+    // el carrito anónimo sigue siendo recuperable con su X-Cart-Token.
+    const mergeSucceeded = upstream.ok;
+    if (!upstream.ok && cartToken) {
+      currentAccessToken = null;
+      upstream = await requestCommerce("/cart", {
+        headers: { "X-Cart-Token": cartToken },
+      });
+    }
     if (upstream.ok) {
       const payload = await upstream.json();
-      return writeResponse(payload, upstream.status, { refreshedSession, clearCartToken: true, visitorId });
+      return writeResponse(payload, upstream.status, { refreshedSession, clearCartToken: mergeSucceeded, visitorId });
     }
     const payload = await upstream.json().catch(() => null);
     return writeResponse(payload, upstream.status, { refreshedSession, clearAuth: upstream.status === 401, visitorId });
@@ -64,7 +76,7 @@ async function handle(request: Request, context: Context, method: string) {
   upstream = await requestCommerce(path, {
     method,
     body,
-    headers: buildHeaders(path, currentAccessToken, cartToken, checkoutToken, orderToken, visitorId),
+    headers: buildCommerceHeaders({ path, accessToken: currentAccessToken, cartToken, checkoutToken, orderToken, visitorId, idempotencyKey }),
   });
 
   if (upstream.status === 401 && currentAccessToken && refreshToken) {
@@ -76,7 +88,7 @@ async function handle(request: Request, context: Context, method: string) {
         upstream = await requestCommerce(path, {
           method,
           body,
-          headers: buildHeaders(path, currentAccessToken, cartToken, checkoutToken, orderToken, visitorId),
+          headers: buildCommerceHeaders({ path, accessToken: currentAccessToken, cartToken, checkoutToken, orderToken, visitorId, idempotencyKey }),
         });
       }
     } catch {
@@ -90,20 +102,12 @@ async function handle(request: Request, context: Context, method: string) {
     clearAuth: upstream.status === 401,
     setCartToken: typeof payload?.cartToken === "string" ? payload.cartToken : undefined,
     setCheckoutToken: !currentAccessToken && typeof payload?.token === "string" ? payload.token : undefined,
-    setOrderToken: !currentAccessToken && typeof payload?.publicToken === "string" ? payload.publicToken : undefined,
+    setOrderToken: typeof payload?.publicToken === "string" ? payload.publicToken : undefined,
+    setOrderId: typeof payload?.order?.id === "string" ? payload.order.id : typeof payload?.orderId === "string" ? payload.orderId : orderId,
     clearCheckoutToken: typeof payload?.order === "object" && payload?.order !== null,
     clearCartToken: path === "/cart/merge" && upstream.ok,
     visitorId,
   });
-}
-
-function buildHeaders(path: string, accessToken: string | null | undefined, cartToken: string | undefined, checkoutToken: string | undefined, orderToken: string | undefined, visitorId: string) {
-  const headers: Record<string, string> = { "X-Visitor-Id": visitorId };
-  if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
-  if (!accessToken && cartToken && (path === "/cart" || path.startsWith("/cart/items/") || path === "/checkout/sessions")) headers["X-Cart-Token"] = cartToken;
-  if (!accessToken && checkoutToken && path.startsWith("/checkout/sessions/")) headers["X-Checkout-Token"] = checkoutToken;
-  if (orderToken && path.startsWith("/checkout/orders/")) headers["X-Order-Token"] = orderToken;
-  return headers;
 }
 
 function writeResponse(payload: unknown, status: number, options: {
@@ -112,6 +116,7 @@ function writeResponse(payload: unknown, status: number, options: {
   setCartToken?: string;
   setCheckoutToken?: string;
   setOrderToken?: string;
+  setOrderId?: string;
   clearCartToken?: boolean;
   clearCheckoutToken?: boolean;
   visitorId: string;
@@ -122,6 +127,7 @@ function writeResponse(payload: unknown, status: number, options: {
   if (options.setCartToken) setScopedToken(response, "cartToken", options.setCartToken);
   if (options.setCheckoutToken) setScopedToken(response, "checkoutToken", options.setCheckoutToken);
   if (options.setOrderToken) setScopedToken(response, "orderToken", options.setOrderToken);
+  if (options.setOrderId) setScopedToken(response, "orderId", options.setOrderId);
   if (options.clearCartToken) clearScopedToken(response, "cartToken");
   if (options.clearCheckoutToken) clearScopedToken(response, "checkoutToken");
   setScopedToken(response, "visitorId", options.visitorId);
@@ -137,6 +143,7 @@ function isAllowed(path: string, method: string) {
   if (path === "/recently-viewed" && method === "GET") return true;
   if (/^\/products\/[^/]+\/view$/.test(path) && method === "POST") return true;
   if (/^\/checkout\/orders\/[^/]+$/.test(path) && method === "GET") return true;
+  if (/^\/payments\/orders\/[^/]+\/link$/.test(path) && method === "POST") return true;
   if (path === "/checkout/sessions" && method === "POST") return true;
   if (/^\/checkout\/sessions\/[^/]+(\/[^/]+)?$/.test(path) && ["GET", "POST", "PATCH", "DELETE"].includes(method)) return true;
   return false;

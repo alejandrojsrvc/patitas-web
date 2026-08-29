@@ -7,6 +7,7 @@ export const authCookieNames = {
   cartToken: "patitas-cart-token",
   checkoutToken: "patitas-checkout-token",
   orderToken: "patitas-order-token",
+  orderId: "patitas-order-id",
   visitorId: "patitas-visitor-id",
 } as const;
 

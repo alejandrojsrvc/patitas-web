@@ -85,21 +85,22 @@ El frontend necesita recibir únicamente URL de pago, estado de orden y mensajes
 
 ### Contrato consumido por `patitas-web`
 
-Para cerrar el flujo de Checkout Pro, `POST /api/v1/checkout/sessions/:id/confirm` debe aceptar `termsAccepted` y `termsVersion`, respetar `Idempotency-Key` y devolver:
+El contrato actual de `POST /api/v1/checkout/sessions/:id/confirm` respeta `Idempotency-Key` y acepta `{}` para Mercado Pago (o `payment` únicamente para Payway). Devuelve:
 
 ```json
 {
   "order": {},
   "payment": {
-    "provider": "MERCADO_PAGO",
+    "provider": "mercadopago",
+    "action": "REDIRECT",
     "status": "PENDING",
-    "redirectUrl": "https://www.mercadopago.com.ar/checkout/v1/redirect"
+    "paymentUrl": "https://www.mercadopago.com.ar/checkout/v1/redirect"
   },
   "publicToken": "token-de-consulta-para-invitado"
 }
 ```
 
-`redirectUrl` puede ser `null` únicamente cuando el pago ya está `APPROVED`. El retorno del navegador debe permitir consultar el pedido y su `paymentStatus`; no debe marcar la orden como pagada. El webhook continúa siendo la fuente de verdad para aprobado, pendiente, rechazado, cancelado y expirado.
+El frontend solo redirige cuando `action` es `REDIRECT` y `paymentUrl` es válida. El retorno del navegador debe permitir consultar el pedido y su `paymentStatus`; no debe marcar la orden como pagada. El webhook continúa siendo la fuente de verdad para el estado externo.
 
 El endpoint público de productos debe agregar a `meta` las facetas `brandSlugs`, `lifeStages` y `weightGrams`, calculadas sin paginación y excluyendo la dimensión que se está filtrando. Esto evita que la tienda descargue todo el catálogo para construir filtros.
 
