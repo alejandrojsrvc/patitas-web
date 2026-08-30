@@ -47,17 +47,17 @@ export function CatalogResults({
   const selectedMaxPrice = first(current.maxPrice);
   return (
     <main id="contenido" className="bg-catalog-page pb-20">
-      <section className="bg-catalog-soft py-8 sm:py-12 lg:py-16">
-        <div className="container-shell flex justify-center text-center">
-          <div className="max-w-3xl">
-            {species ? <nav aria-label="Migas de pan" className="mb-5 flex justify-center overflow-x-auto text-xs text-muted no-scrollbar sm:text-sm"><ol className="flex shrink-0 items-center gap-2"><li><Link href="/" className="hover:text-brand-blue hover:underline">Inicio</Link></li><li aria-hidden="true">/</li><li className="font-semibold text-ink" aria-current="page">{title}</li></ol></nav> : null}
-            <h1 className="display-heading text-3xl sm:text-5xl lg:text-6xl">{title}</h1>
-            <p className="mx-auto mt-4 max-w-2xl text-sm leading-6 text-muted sm:mt-5 sm:text-lg sm:leading-normal">{description}</p>
+      <section className="border-b border-catalog-line bg-white py-5 sm:py-7">
+        <div className="container-shell">
+          <div className="max-w-4xl">
+            {species ? <nav aria-label="Migas de pan" className="mb-3 overflow-x-auto text-xs text-muted no-scrollbar"><ol className="flex shrink-0 items-center gap-2"><li><Link href="/" className="hover:text-brand-blue hover:underline">Inicio</Link></li><li aria-hidden="true">/</li><li className="font-semibold text-ink" aria-current="page">{title}</li></ol></nav> : null}
+            <h1 className="display-heading text-3xl sm:text-4xl">{title}</h1>
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-muted sm:text-base">{description}</p>
           </div>
         </div>
       </section>
 
-      <section className="container-shell py-5 sm:py-8 lg:py-12">
+      <section className="container-shell py-5 sm:py-7 lg:py-9">
         <div className="grid items-start gap-4 lg:grid-cols-[260px_minmax(0,1fr)] lg:gap-10">
           <aside className="self-start" aria-label="Filtros del catálogo">
             <details open className="group rounded-xl bg-catalog-soft">

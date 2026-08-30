@@ -41,9 +41,15 @@ export function MobileNav({ searchQuery }: { searchQuery?: string }) {
     async function loadUserName() {
       try {
         const authResponse = await fetch("/api/auth/me");
-        if (!authResponse.ok) return;
+        if (!authResponse.ok) {
+          setUserName(null);
+          return;
+        }
         const auth = await authResponse.json().catch(() => null);
-        if (!auth || !("id" in auth)) return;
+        if (!auth || !("id" in auth)) {
+          setUserName(null);
+          return;
+        }
 
         const profileResponse = await fetch("/api/commerce/me/customer");
         if (profileResponse.ok) {
@@ -53,19 +59,21 @@ export function MobileNav({ searchQuery }: { searchQuery?: string }) {
           }
         }
       } catch {
-        // Silently ignore
+        setUserName(null);
       }
     }
     void loadUserName();
+    window.addEventListener("patitas-auth-changed", loadUserName);
+    return () => window.removeEventListener("patitas-auth-changed", loadUserName);
   }, []);
 
   return (
     <div className="lg:hidden">
-      <button ref={triggerRef} type="button" onClick={() => setIsOpen((value) => !value)} aria-expanded={isOpen} aria-controls="mobile-menu" aria-label={isOpen ? "Cerrar menú" : "Abrir menú"} className="touch-target flex items-center justify-center rounded-xl text-white hover:bg-white/15">
+      <button ref={triggerRef} type="button" onClick={() => setIsOpen((value) => !value)} aria-expanded={isOpen} aria-controls="mobile-menu" aria-label={isOpen ? "Cerrar menú" : "Abrir menú"} className="touch-target flex items-center justify-center rounded-xl text-ink hover:bg-catalog-soft">
         {isOpen ? <X size={22} weight="bold" /> : <List size={23} weight="bold" />}
       </button>
       {isOpen ? (
-        <div id="mobile-menu" className="absolute inset-x-0 top-full max-h-[calc(100svh-4rem)] overflow-y-auto border-b border-black/5 bg-catalog-canvas px-3 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 shadow-[0_16px_40px_rgba(23,23,23,0.10)] sm:px-4">
+        <div id="mobile-menu" className="absolute inset-x-0 top-full max-h-[calc(100svh-4.25rem)] overflow-y-auto border-b border-black/5 bg-catalog-canvas px-3 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 shadow-[0_16px_40px_rgba(23,23,23,0.10)] sm:px-4">
           <form action="/buscar" className="relative mb-3">
             <label htmlFor="mobile-search" className="sr-only">Buscar productos</label>
             <MagnifyingGlass size={18} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted" />

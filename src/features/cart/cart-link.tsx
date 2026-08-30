@@ -16,7 +16,7 @@ export function CartLink({ mobile = false }: { mobile?: boolean }) {
       aria-label={`Carrito${count ? `, ${count} ${itemLabel}, total ${totalLabel}` : " vacío"}`}
       className={mobile
         ? "flex min-h-12 items-center gap-3 rounded-xl px-3 font-semibold text-ink hover:bg-soft-blue"
-        : "relative inline-flex min-h-10 shrink-0 items-center gap-2 rounded-xl px-2 text-white hover:bg-white/15"}
+        : "relative inline-flex min-h-10 shrink-0 items-center gap-2 rounded-xl px-2 text-ink hover:bg-catalog-soft"}
     >
       <span className={mobile ? "inline" : "sr-only"}>Carrito</span>
       <span className="relative inline-flex size-7 shrink-0 items-center justify-center">

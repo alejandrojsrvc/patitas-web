@@ -49,9 +49,15 @@ export function SiteHeader({ searchQuery, minimal = false }: { searchQuery?: str
     async function loadUser() {
       try {
         const authResponse = await fetch("/api/auth/me");
-        if (!authResponse.ok) return;
+        if (!authResponse.ok) {
+          if (!cancelled) setHeaderUser(null);
+          return;
+        }
         const auth = (await authResponse.json().catch(() => null)) as AuthUser | { message?: string } | null;
-        if (!auth || !("id" in auth)) return;
+        if (!auth || !("id" in auth)) {
+          if (!cancelled) setHeaderUser(null);
+          return;
+        }
 
         const [profileResult, addressesResult] = await Promise.all([
           fetch("/api/commerce/me/customer").then((r) => (r.ok ? r.json() : null)).catch(() => null),
@@ -66,7 +72,7 @@ export function SiteHeader({ searchQuery, minimal = false }: { searchQuery?: str
           setHeaderUser({ user: auth, profile, defaultAddress });
         }
       } catch {
-        // Silently ignore
+        if (!cancelled) setHeaderUser(null);
       }
     }
 
@@ -90,29 +96,41 @@ export function SiteHeader({ searchQuery, minimal = false }: { searchQuery?: str
 
   return (
     <>
-      {/* Header principal */}
-      <header className="sticky top-0 z-50 bg-brand-blue border-t border-white/10">
-        <div className="container-shell relative flex h-16 items-center gap-2 sm:gap-3">
+      <header className="sticky top-0 z-50 border-b border-catalog-line bg-white shadow-[0_8px_24px_rgba(23,23,23,0.05)]">
+        {!minimal ? (
+          <div className="hidden bg-store-navy text-white md:block">
+            <div className="container-shell flex h-7 items-center justify-between text-[11px] font-semibold tracking-[0.02em]">
+              <p>Envíos en CABA</p>
+              <div className="flex items-center gap-5 text-white/75">
+                <Link href="/envios" className="hover:text-white">Cómo enviamos</Link>
+                <Link href="/contacto" className="hover:text-white">Ayuda</Link>
+              </div>
+            </div>
+          </div>
+        ) : null}
+        <div className="container-shell flex h-[4.25rem] items-center gap-3 sm:gap-5 lg:h-[4.5rem]">
           <Link href="/" aria-label="Patitas Inquietas, ir al inicio" translate="no" className="shrink-0">
-            <Image src="/brand/patitas-logo-horizontal.png" alt="Patitas Inquietas" width={220} height={24} priority sizes="(min-width: 1024px) 160px, 148px" className="h-auto w-[136px] brightness-0 invert sm:w-[148px] lg:w-40" />
+            <Image src="/brand/patitas-logo-horizontal.png" alt="Patitas Inquietas" width={220} height={24} priority sizes="(min-width: 1024px) 164px, 142px" className="h-auto w-[136px] sm:w-[148px] lg:w-[164px]" />
           </Link>
 
           {!minimal ? (
-            <form action="/buscar" className="absolute left-1/2 top-1/2 hidden w-[min(30vw,24rem)] -translate-x-1/2 -translate-y-1/2 lg:block">
+            <form action="/buscar" className="mx-auto hidden w-full max-w-[32rem] lg:block">
               <label htmlFor="desktop-search" className="sr-only">Buscar productos</label>
-              <MagnifyingGlass size={18} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted" aria-hidden="true" />
-              <input id="desktop-search" name="q" type="search" defaultValue={searchQuery} placeholder="Buscar productos" className="h-11 w-full rounded-xl border border-border bg-white pl-10 pr-3 text-sm text-ink placeholder:text-muted outline-none focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/15" />
+              <div className="relative">
+                <MagnifyingGlass size={18} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted" aria-hidden="true" />
+                <input id="desktop-search" name="q" type="search" defaultValue={searchQuery} placeholder="Buscar alimento, marca o producto" className="h-11 w-full rounded-xl border border-catalog-line bg-catalog-soft pl-11 pr-4 text-sm text-ink placeholder:text-muted outline-none transition-colors focus:border-brand-blue focus:bg-white" />
+              </div>
             </form>
           ) : null}
 
           <div className="ml-auto hidden items-center gap-2 lg:flex">
-            <Link href="/mi-cuenta" aria-label="Mi cuenta" className="inline-flex items-center gap-2 rounded-xl px-2 py-1.5 text-white hover:bg-white/15">
+            <Link href="/mi-cuenta" aria-label="Mi cuenta" className="inline-flex items-center gap-2 rounded-xl px-2 py-1.5 text-ink hover:bg-catalog-soft">
               <UserCircle size={23} weight="bold" aria-hidden="true" />
               {displayName ? (
                 <div className="hidden xl:block">
                   <span className="block truncate text-xs font-semibold leading-tight">{displayName}</span>
                   {displayAddress ? (
-                    <span className="flex items-center gap-1 truncate text-[10px] leading-tight text-white/70">
+                    <span className="flex items-center gap-1 truncate text-[10px] leading-tight text-muted">
                       <MapPin size={10} aria-hidden="true" />
                       {displayAddress}
                     </span>
@@ -132,10 +150,10 @@ export function SiteHeader({ searchQuery, minimal = false }: { searchQuery?: str
         </div>
       </header>
 
-      {/* Línea 3: Categorías con dropdowns */}
       {!minimal ? (
-        <nav aria-label="Categorías" className="hidden border-b border-border bg-white lg:block">
-          <div className="container-shell flex items-center gap-1 py-0 text-sm font-semibold">
+        <nav aria-label="Categorías" className="hidden border-t border-catalog-line bg-white lg:block">
+          <div className="container-shell flex h-10 items-center gap-1 text-[13px] font-semibold">
+            <Link href="/buscar" className="mr-2 inline-flex h-7 items-center rounded-lg bg-brand-yellow px-3 text-ink hover:bg-[#f1df00]">Todos los productos</Link>
             {navItems.map((item) => (
               <NavItem key={item.href} item={item} />
             ))}
@@ -170,7 +188,7 @@ function NavItem({ item }: { item: (typeof navItems)[number] }) {
 
   if (!("children" in item)) {
     return (
-      <Link href={item.href} className="whitespace-nowrap px-3 py-2.5 text-muted hover:text-brand-blue hover:underline underline-offset-4">
+      <Link href={item.href} className="whitespace-nowrap px-3 py-2 text-ink hover:text-brand-blue">
         {item.label}
       </Link>
     );
@@ -182,13 +200,23 @@ function NavItem({ item }: { item: (typeof navItems)[number] }) {
       className="relative"
       onMouseEnter={() => { cancelClose(); setOpen(true); }}
       onMouseLeave={scheduleClose}
+      onFocus={() => { cancelClose(); setOpen(true); }}
+      onBlur={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget)) setOpen(false);
+      }}
+      onKeyDown={(event) => {
+        if (event.key === "Escape") {
+          setOpen(false);
+          navRef.current?.querySelector<HTMLAnchorElement>("a")?.focus();
+        }
+      }}
     >
-      <Link href={item.href} className="inline-flex items-center gap-1 whitespace-nowrap px-3 py-2.5 text-muted hover:text-brand-blue hover:underline underline-offset-4">
+      <Link href={item.href} aria-expanded={open} aria-haspopup="menu" className="inline-flex items-center gap-1 whitespace-nowrap px-3 py-2 text-ink hover:text-brand-blue">
         {item.label}
         <CaretDown size={14} className={`transition-transform duration-150 ${open ? "rotate-180" : ""}`} />
       </Link>
       {open ? (
-        <div className="absolute left-0 top-full z-50 min-w-[200px] rounded-xl border border-border bg-white p-1.5 shadow-lg">
+        <div className="absolute left-0 top-full z-50 min-w-[210px] rounded-xl bg-white p-2 shadow-[0_14px_36px_rgba(23,23,23,0.14)]">
           {item.children.map(([label, href]) => (
             <Link key={href} href={href} className="block whitespace-nowrap rounded-lg px-3 py-2 text-sm text-ink hover:bg-soft-blue hover:text-brand-blue">
               {label}

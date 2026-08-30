@@ -43,31 +43,31 @@ export function SiteFooter() {
   const whatsappUrl = process.env.NEXT_PUBLIC_WHATSAPP_URL?.trim();
 
   return (
-    <footer className="border-t border-border bg-ink py-14 text-white sm:py-18">
+    <footer className="border-t border-catalog-line bg-[#f0eee9] py-12 text-ink sm:py-16">
       <div className="container-shell grid gap-12 lg:grid-cols-[1.2fr_2fr]">
         <div className="max-w-sm">
-          <Image src="/brand/patitas-logo-horizontal.png" alt="Patitas Inquietas" width={220} height={24} className="h-auto w-44 brightness-0 invert" />
-          <p className="mt-5 text-sm leading-6 text-white/70">Alimento balanceado, arena y esenciales para perros y gatos en CABA.</p>
-          {whatsappUrl ? <a href={whatsappUrl} target="_blank" rel="noreferrer" className="mt-5 inline-flex text-sm font-semibold text-white underline-offset-4 hover:underline">Hablar por WhatsApp →</a> : null}
+          <Image src="/brand/patitas-logo-horizontal.png" alt="Patitas Inquietas" width={220} height={24} className="h-auto w-44" />
+          <p className="mt-5 text-sm leading-6 text-muted">Alimento balanceado, arena y esenciales para perros y gatos en CABA.</p>
+          {whatsappUrl ? <a href={whatsappUrl} target="_blank" rel="noreferrer" className="mt-5 inline-flex text-sm font-semibold text-brand-blue underline-offset-4 hover:underline">Hablar por WhatsApp →</a> : null}
         </div>
         <div className="grid grid-cols-2 gap-9 md:grid-cols-4">
           {groups.map((group) => (
             <nav key={group.title} aria-label={group.title}>
               <h2 className="font-display text-lg font-semibold">{group.title}</h2>
-              <ul className="mt-4 space-y-3 text-sm text-white/65">
-                {group.links.map(([label, href]) => <li key={`${label}-${href}`}><Link href={href} className="underline-offset-4 hover:text-white hover:underline">{label}</Link></li>)}
+              <ul className="mt-4 space-y-3 text-sm text-muted">
+                {group.links.map(([label, href]) => <li key={`${label}-${href}`}><Link href={href} className="underline-offset-4 hover:text-brand-blue hover:underline">{label}</Link></li>)}
               </ul>
             </nav>
           ))}
         </div>
       </div>
-      <div className="container-shell mt-12 flex flex-col gap-4 border-t border-white/15 pt-6">
+      <div className="container-shell mt-12 flex flex-col gap-4 border-t border-[#d6d2ca] pt-6">
         <div className="flex flex-col gap-3 sm:flex-row sm:justify-between">
-          <p className="text-xs text-white/55">© 2026 Patitas Inquietas</p>
-          <p className="text-xs text-white/55">Buenos Aires, Argentina</p>
+          <p className="text-xs text-muted">© 2026 Patitas Inquietas</p>
+          <p className="text-xs text-muted">Buenos Aires, Argentina</p>
         </div>
         <div className="flex items-center gap-3">
-          <span className="text-xs text-white/40">Medios de pago:</span>
+          <span className="text-xs text-muted">Medios de pago:</span>
           <div className="flex items-center gap-2">
             <MercadoPagoIcon className="h-8 w-auto" />
             <VisaIcon className="h-8 w-auto" />
