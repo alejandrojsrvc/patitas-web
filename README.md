@@ -16,6 +16,17 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
+## Universal Links and App Links
+
+The storefront serves the association documents at:
+
+- `/.well-known/apple-app-site-association`
+- `/.well-known/assetlinks.json`
+
+It also provides web fallbacks for `/auth/confirm` and `/auth/reset-password`, preserving the email token when opening the `patitas://` scheme.
+
+Set `ANDROID_APP_CERTIFICATE_SHA256` in the deployed environment to the SHA-256 fingerprint of the Android distribution certificate. Multiple fingerprints can be comma-separated. When the variable is empty, `assetlinks.json` returns an empty list and Android does not claim the domain.
+
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
