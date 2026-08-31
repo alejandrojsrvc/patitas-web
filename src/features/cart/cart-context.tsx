@@ -1,61 +1,38 @@
 "use client";
 
-import { createContext, Suspense, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { usePathname } from "next/navigation";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import type { Cart, CartItem } from "@/domain/cart/types";
+import type { StorefrontCartSummary } from "@/domain/storefront/types";
+
+type CartSeed = Cart | StorefrontCartSummary | null;
 
 type CartContextValue = {
   cart: Cart | null;
   items: CartItem[];
   count: number;
   subtotal: number;
+  hasState: boolean;
   loading: boolean;
   error: string | null;
   refresh: () => Promise<void>;
   addItem: (variantId: string, quantity?: number) => Promise<void>;
   updateQuantity: (variantId: string, quantity: number) => Promise<void>;
   removeItem: (variantId: string) => Promise<void>;
+  hydrate: (cart: CartSeed) => void;
 };
 
 const CartContext = createContext<CartContextValue | null>(null);
 
 type CartProviderProps = {
   children: React.ReactNode;
-  initialCart?: Cart | null;
-  skipInitialRefresh?: boolean;
+  initialCart?: CartSeed;
 };
 
-type CartStateProviderProps = CartProviderProps & {
-  skipRefreshForPath?: boolean;
-};
-
-export function CartProvider(props: CartProviderProps) {
-  return (
-    <Suspense fallback={<CartStateProvider {...props} />}>
-      <PathAwareCartProvider {...props} />
-    </Suspense>
-  );
-}
-
-function PathAwareCartProvider(props: CartProviderProps) {
-  const pathname = usePathname();
-  const hasInitialCart = props.initialCart !== null && props.initialCart !== undefined;
-
-  return (
-    <CartStateProvider
-      {...props}
-      // El carrito solo omite la segunda consulta cuando SSR entregó datos.
-      // Si SSR no pudo leerlo, la hidratación debe recuperarlo desde el BFF.
-      skipRefreshForPath={pathname.startsWith("/checkout") || (pathname === "/carrito" && hasInitialCart)}
-    />
-  );
-}
-
-function CartStateProvider({ children, initialCart = null, skipInitialRefresh = false, skipRefreshForPath = false }: CartStateProviderProps) {
-  const [cart, setCart] = useState<Cart | null>(initialCart);
-  const [loading, setLoading] = useState(!skipInitialRefresh);
+export function CartProvider({ children, initialCart = null }: CartProviderProps) {
+  const [cartState, setCartState] = useState<CartSeed>(initialCart);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const shouldSkipInitialRefresh = skipInitialRefresh || skipRefreshForPath;
+  const cart = isFullCart(cartState) ? cartState : null;
 
   const requestCart = useCallback(async (path: string, init?: RequestInit) => {
     const response = await fetch(`/api/commerce${path}`, {
@@ -66,12 +43,12 @@ function CartStateProvider({ children, initialCart = null, skipInitialRefresh = 
     if (response.status === 409) {
       const latest = await fetch("/api/commerce/cart");
       const latestPayload = await latest.json().catch(() => null) as Cart | null;
-      if (latest.ok && latestPayload && "items" in latestPayload) setCart(latestPayload);
+      if (latest.ok && latestPayload && "items" in latestPayload) setCartState(latestPayload);
     }
     if (!response.ok || !payload || !("items" in payload)) {
       throw new Error(payload && "message" in payload ? payload.message : "No pudimos actualizar el carrito.");
     }
-    setCart(payload);
+    setCartState(payload);
   }, []);
 
   const refresh = useCallback(async () => {
@@ -81,18 +58,6 @@ function CartStateProvider({ children, initialCart = null, skipInitialRefresh = 
     catch (cause) { setError(cause instanceof Error ? cause.message : "No pudimos cargar el carrito."); }
     finally { setLoading(false); }
   }, [requestCart]);
-
-  useEffect(() => {
-    if (shouldSkipInitialRefresh) {
-      const onAuthChanged = () => { void refresh(); };
-      window.addEventListener("patitas-auth-changed", onAuthChanged);
-      return () => window.removeEventListener("patitas-auth-changed", onAuthChanged);
-    }
-    const timer = window.setTimeout(() => { void refresh(); }, 0);
-    const onAuthChanged = () => { void refresh(); };
-    window.addEventListener("patitas-auth-changed", onAuthChanged);
-    return () => { window.clearTimeout(timer); window.removeEventListener("patitas-auth-changed", onAuthChanged); };
-  }, [refresh, shouldSkipInitialRefresh]);
 
   const addItem = useCallback(async (variantId: string, quantity = 1) => {
     await requestCart(`/cart/items/${encodeURIComponent(variantId)}`, { method: "PUT", body: JSON.stringify({ quantity }) });
@@ -108,24 +73,49 @@ function CartStateProvider({ children, initialCart = null, skipInitialRefresh = 
   }, [requestCart]);
 
   const items = useMemo(() => cart?.items ?? [], [cart]);
+  const count = cart
+    ? items.reduce((total, item) => total + item.quantity, 0)
+    : isCartSummary(cartState) ? cartState.itemCount : 0;
+  const subtotal = Number(cartState?.subtotal ?? 0);
+  const hydrate = useCallback((nextCart: CartSeed) => setCartState(nextCart), []);
   const value = useMemo<CartContextValue>(() => ({
     cart,
     items,
-    count: items.reduce((total, item) => total + item.quantity, 0),
-    subtotal: Number(cart?.subtotal ?? 0),
+    count,
+    subtotal,
+    hasState: cartState !== null,
     loading,
     error,
     refresh,
     addItem,
     updateQuantity,
     removeItem,
-  }), [addItem, cart, error, items, loading, refresh, removeItem, updateQuantity]);
+    hydrate,
+  }), [addItem, cart, cartState, count, error, hydrate, items, loading, refresh, removeItem, subtotal, updateQuantity]);
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
+}
+
+export function CartHydrator({ cart }: { cart: CartSeed }) {
+  const { hydrate } = useCart();
+
+  useEffect(() => {
+    hydrate(cart);
+  }, [cart, hydrate]);
+
+  return null;
 }
 
 export function useCart() {
   const value = useContext(CartContext);
   if (!value) throw new Error("useCart debe usarse dentro de CartProvider.");
   return value;
+}
+
+function isFullCart(cart: CartSeed): cart is Cart {
+  return Boolean(cart && "items" in cart);
+}
+
+function isCartSummary(cart: CartSeed): cart is StorefrontCartSummary {
+  return Boolean(cart && "itemCount" in cart);
 }

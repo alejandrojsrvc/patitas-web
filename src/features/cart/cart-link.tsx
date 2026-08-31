@@ -2,11 +2,14 @@
 
 import { ShoppingCartSimple } from "@phosphor-icons/react";
 import Link from "next/link";
+import type { StorefrontCartSummary } from "@/domain/storefront/types";
 import { formatMoney } from "@/lib/catalog-formatters";
 import { useCart } from "./cart-context";
 
-export function CartLink({ mobile = false }: { mobile?: boolean }) {
-  const { count, subtotal } = useCart();
+export function CartLink({ mobile = false, initialSummary }: { mobile?: boolean; initialSummary?: StorefrontCartSummary }) {
+  const cart = useCart();
+  const count = cart.hasState ? cart.count : initialSummary?.itemCount ?? 0;
+  const subtotal = cart.hasState ? cart.subtotal : Number(initialSummary?.subtotal ?? 0);
   const itemLabel = count === 1 ? "producto" : "productos";
   const totalLabel = formatMoney(subtotal);
 

@@ -43,14 +43,14 @@
 html {
   scroll-behavior: auto;
   scroll-padding-top: 6rem;
-  background: var(--cream);
+  background: var(--white);
   overscroll-behavior-x: none;
 }
 
 body {
   min-height: 100vh;
   overflow-x: hidden;
-  background: var(--cream);
+  background: var(---white) ;
   color: var(--ink);
   font-family: var(--font-sn-pro), Arial, sans-serif;
   font-size: 1rem;

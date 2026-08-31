@@ -1,5 +1,7 @@
 import type { CartItem } from "@/domain/cart/types";
 import type { OrderSummary } from "@/domain/customer/types";
+import type { CustomerAddress } from "@/domain/customer/types";
+import type { StorefrontShell } from "@/domain/storefront/types";
 
 export type CheckoutSession = {
   id: string;
@@ -83,4 +85,22 @@ export type CheckoutConfirmResult = {
     expiresAt: string | null;
   };
   publicToken?: string;
+};
+
+export type CheckoutMutationResult = {
+  session: CheckoutSession;
+  shippingOptions: ShippingOption[];
+};
+
+export type CheckoutScreen = CheckoutMutationResult & {
+  shell: StorefrontShell;
+  paymentMethods: AvailablePaymentMethod[];
+  savedAddresses: CustomerAddress[];
+};
+
+export type CheckoutConflict = {
+  statusCode: 409;
+  code: "CHECKOUT_CONFLICT";
+  message: string;
+  currentState?: CheckoutMutationResult;
 };

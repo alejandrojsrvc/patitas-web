@@ -112,8 +112,8 @@ export default async function Home() {
       <a href="#contenido" className="fixed left-4 top-4 z-[100] -translate-y-24 rounded-xl bg-brand-yellow px-4 py-3 font-semibold text-ink transition-transform focus-visible:translate-y-0">Ir al contenido</a>
       <SiteHeader />
       <main id="contenido">
-        <section className="bg-[#f3eee7] py-4 sm:py-6 lg:py-8">
-          <div className="container-shell overflow-hidden rounded-2xl bg-[#e8ded1] lg:grid lg:min-h-[28rem] lg:grid-cols-[0.88fr_1.12fr]">
+        <section className="py-4 sm:py-6 lg:py-8">
+          <div className="container-shell overflow-hidden rounded-2xl bg-white lg:grid lg:min-h-[28rem] lg:grid-cols-[0.88fr_1.12fr]">
             <div className="relative z-10 flex items-center px-5 py-9 sm:px-9 sm:py-12 lg:px-12 lg:py-14">
               <div className="max-w-xl">
                 <h1 className="display-heading max-w-3xl text-4xl sm:text-5xl lg:text-[3.75rem]">Lo que comen, usan y disfrutan. En un solo pedido.</h1>

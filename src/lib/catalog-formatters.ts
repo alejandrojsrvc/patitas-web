@@ -19,11 +19,9 @@ export const pricePerKilogram = (variant: ProductVariant) => {
 };
 
 export const fulfillmentCopy = (variant: ProductVariant) => {
-  if (variant.fulfillment.status === "IN_STOCK") return "Disponible";
-  if (variant.fulfillment.status === "ON_REQUEST") {
-    if (!variant.fulfillment.leadTimeHours) return "Disponible bajo pedido";
-    const days = Math.max(1, Math.ceil(variant.fulfillment.leadTimeHours / 24));
-    return `Bajo pedido · despacho estimado en ${days} ${days === 1 ? "día" : "días"}`;
-  }
+  if (variant.fulfillment.label) return variant.fulfillment.label;
+  if (variant.fulfillment.availability === "TODAY") return "Disponible hoy";
+  if (variant.fulfillment.availability === "TOMORROW") return "Disponible mañana";
+  if (variant.fulfillment.availability === "LATER") return "Disponible bajo pedido";
   return "Sin stock";
 };

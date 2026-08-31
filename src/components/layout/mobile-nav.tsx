@@ -1,6 +1,6 @@
 "use client";
 
-import { List, MagnifyingGlass, UserCircle, X, MapPin } from "@phosphor-icons/react";
+import { List, MapPin, UserCircle, X } from "@phosphor-icons/react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
@@ -20,10 +20,9 @@ const categoryLinks = [
   ["Paseo", "/perros/bolsas"],
 ] as const;
 
-export function MobileNav({ searchQuery }: { searchQuery?: string }) {
+export function MobileNav({ displayName, displayAddress }: { displayName: string | null; displayAddress: string | null }) {
   const [isOpen, setIsOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
-  const [userName, setUserName] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -37,67 +36,33 @@ export function MobileNav({ searchQuery }: { searchQuery?: string }) {
     return () => document.removeEventListener("keydown", close);
   }, [isOpen]);
 
-  useEffect(() => {
-    async function loadUserName() {
-      try {
-        const authResponse = await fetch("/api/auth/me");
-        if (!authResponse.ok) {
-          setUserName(null);
-          return;
-        }
-        const auth = await authResponse.json().catch(() => null);
-        if (!auth || !("id" in auth)) {
-          setUserName(null);
-          return;
-        }
-
-        const profileResponse = await fetch("/api/commerce/me/customer");
-        if (profileResponse.ok) {
-          const profile = await profileResponse.json().catch(() => null);
-          if (profile?.fullName) {
-            setUserName(profile.fullName);
-          }
-        }
-      } catch {
-        setUserName(null);
-      }
-    }
-    void loadUserName();
-    window.addEventListener("patitas-auth-changed", loadUserName);
-    return () => window.removeEventListener("patitas-auth-changed", loadUserName);
-  }, []);
-
   return (
     <div className="lg:hidden">
       <button ref={triggerRef} type="button" onClick={() => setIsOpen((value) => !value)} aria-expanded={isOpen} aria-controls="mobile-menu" aria-label={isOpen ? "Cerrar menú" : "Abrir menú"} className="touch-target flex items-center justify-center rounded-xl text-ink hover:bg-catalog-soft">
         {isOpen ? <X size={22} weight="bold" /> : <List size={23} weight="bold" />}
       </button>
       {isOpen ? (
-        <div id="mobile-menu" className="absolute inset-x-0 top-full max-h-[calc(100svh-4.25rem)] overflow-y-auto border-b border-black/5 bg-catalog-canvas px-3 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 shadow-[0_16px_40px_rgba(23,23,23,0.10)] sm:px-4">
-          <form action="/buscar" className="relative mb-3">
-            <label htmlFor="mobile-search" className="sr-only">Buscar productos</label>
-            <MagnifyingGlass size={18} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted" />
-            <input id="mobile-search" name="q" type="search" defaultValue={searchQuery} placeholder="Buscar alimento, marca o producto" className="h-12 w-full rounded-xl border border-transparent bg-white pl-11 pr-4 outline-none focus:border-brand-blue" />
-          </form>
-
-          <div className="mb-2 flex items-center gap-3 rounded-xl bg-soft-blue px-3 py-2.5">
+        <div id="mobile-menu" className="absolute inset-x-0 top-full max-h-[calc(100svh-8.25rem)] overflow-y-auto border-b border-catalog-line bg-catalog-canvas px-3 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 sm:px-4">
+          <Link href="/mi-cuenta" onClick={() => setIsOpen(false)} className="mb-2 flex items-center gap-3 rounded-xl bg-soft-blue px-3 py-2.5">
             <span className="flex size-9 items-center justify-center rounded-lg bg-brand-yellow text-ink">
               <UserCircle size={22} weight="bold" />
             </span>
             <span className="min-w-0">
-              {userName ? (
+              {displayName ? (
                 <>
-                  <span className="block truncate text-sm font-semibold text-ink">{userName}</span>
-                  <span className="flex items-center gap-1 text-xs text-muted">
-                    <MapPin size={12} aria-hidden="true" />
-                    Mi cuenta
-                  </span>
+                  <span className="block truncate text-sm font-semibold text-ink">{displayName}</span>
+                  <span className="block text-xs text-muted">Mi cuenta</span>
                 </>
               ) : (
-                <span className="text-sm font-semibold text-ink">Mi cuenta</span>
+                <><span className="block text-sm font-semibold text-ink">Ingresá</span><span className="block text-xs text-muted">Mi cuenta</span></>
               )}
             </span>
-          </div>
+          </Link>
+
+          <Link href="/mi-cuenta/direcciones" onClick={() => setIsOpen(false)} className="mb-3 flex min-h-12 items-center gap-3 rounded-xl border border-catalog-line bg-white px-3 py-2.5 text-ink">
+            <MapPin size={21} weight="bold" className="shrink-0 text-brand-blue" aria-hidden="true" />
+            <span className="min-w-0"><span className="block text-xs text-muted">Tu dirección</span><span className="block truncate text-sm font-semibold">{displayAddress ?? "Elegí tu dirección"}</span></span>
+          </Link>
 
           <nav aria-label="Navegación mobile" className="grid gap-1">
             {links.map(([label, href]) => (
@@ -114,7 +79,7 @@ export function MobileNav({ searchQuery }: { searchQuery?: string }) {
             </div>
 
             <Link href="/contacto" onClick={() => setIsOpen(false)} className="mt-2 flex min-h-12 items-center rounded-xl bg-brand-blue px-3 py-3 font-semibold text-white">Contacto</Link>
-            <Link href="/mi-cuenta" onClick={() => setIsOpen(false)} className="mt-1 flex min-h-12 items-center gap-3 rounded-xl px-3 py-3 font-semibold text-ink"><UserCircle size={22} weight="bold" /> {userName ? "Ver mi cuenta" : "Iniciar sesión"}</Link>
+            <Link href="/mi-cuenta" onClick={() => setIsOpen(false)} className="mt-1 flex min-h-12 items-center gap-3 rounded-xl px-3 py-3 font-semibold text-ink"><UserCircle size={22} weight="bold" /> {displayName ? "Ver mi cuenta" : "Iniciar sesión"}</Link>
           </nav>
         </div>
       ) : null}

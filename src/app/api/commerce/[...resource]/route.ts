@@ -58,7 +58,7 @@ async function handle(request: Request, context: Context, method: string) {
     }
     // Si la sesión autenticada expiró o el merge no puede completarse,
     // el carrito anónimo sigue siendo recuperable con su X-Cart-Token.
-    const mergeSucceeded = upstream.ok;
+    let mergeConfirmed = false;
     if (!upstream.ok && cartToken) {
       currentAccessToken = null;
       upstream = await requestCommerce("/cart", {
@@ -67,7 +67,8 @@ async function handle(request: Request, context: Context, method: string) {
     }
     if (upstream.ok) {
       const payload = await upstream.json();
-      return writeResponse(payload, upstream.status, { refreshedSession, clearCartToken: mergeSucceeded, visitorId });
+      mergeConfirmed = payload?.cartMerged === true;
+      return writeResponse(payload, upstream.status, { refreshedSession, clearCartToken: mergeConfirmed, visitorId });
     }
     const payload = await upstream.json().catch(() => null);
     return writeResponse(payload, upstream.status, { refreshedSession, clearAuth: upstream.status === 401, visitorId });
@@ -105,7 +106,7 @@ async function handle(request: Request, context: Context, method: string) {
     setOrderToken: typeof payload?.publicToken === "string" ? payload.publicToken : undefined,
     setOrderId: typeof payload?.order?.id === "string" ? payload.order.id : typeof payload?.orderId === "string" ? payload.orderId : orderId,
     clearCheckoutToken: typeof payload?.order === "object" && payload?.order !== null,
-    clearCartToken: path === "/cart/merge" && upstream.ok,
+    clearCartToken: path === "/cart/merge" && upstream.ok && payload?.cartMerged === true,
     visitorId,
   });
 }
@@ -121,7 +122,10 @@ function writeResponse(payload: unknown, status: number, options: {
   clearCheckoutToken?: boolean;
   visitorId: string;
 }) {
-  const response = NextResponse.json(payload, { status });
+  const response = NextResponse.json(payload, {
+    status,
+    headers: { "Cache-Control": "private, no-store" },
+  });
   if (options.refreshedSession) setAuthCookies(response, options.refreshedSession);
   if (options.clearAuth) clearAuthCookies(response);
   if (options.setCartToken) setScopedToken(response, "cartToken", options.setCartToken);

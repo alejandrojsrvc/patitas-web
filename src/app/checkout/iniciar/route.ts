@@ -18,13 +18,13 @@ export async function GET(request: Request) {
 
     if (accessToken && cartToken) {
       cartResponse = await requestCommerce("/cart/merge", { method: "POST", body: JSON.stringify({ cartToken }), headers: authHeaders });
-      mergedGuestCart = cartResponse.ok;
     } else {
       cartResponse = await requestCommerce("/cart", { headers: accessToken ? authHeaders : cartToken ? { "X-Cart-Token": cartToken } : {} });
     }
 
     if (!cartResponse.ok) return redirectToCart(request, "cart-unavailable");
-    const cart = await cartResponse.json() as Cart;
+    const cart = await cartResponse.json() as Cart & { cartMerged?: boolean };
+    mergedGuestCart = cartResponse.ok && cart.cartMerged === true;
     if (!cart.items.length) return NextResponse.redirect(new URL("/carrito", request.url));
 
     const nextCartToken = typeof cart.cartToken === "string" ? cart.cartToken : cartToken;

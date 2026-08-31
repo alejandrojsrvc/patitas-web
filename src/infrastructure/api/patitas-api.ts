@@ -2,16 +2,19 @@ import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
 import type {
   Brand,
-  Category,
+  CalculatorProductProjection,
   FoodDurationResult,
   ProductDetail,
+  ProductFacets,
   ProductFilters,
   ProductPage,
   PublicOffer,
   ReplenishmentLeadInput,
+  SitemapProductProjection,
 } from "@/domain/catalog/types";
 
 const apiUrl = (process.env.PATITAS_API_URL ?? "http://api.patitasinquietas.local/api/v1").replace(/\/$/, "");
+const requestTimeoutMs = 15_000;
 
 export class PatitasApiError extends Error {
   constructor(
@@ -26,6 +29,7 @@ export class PatitasApiError extends Error {
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${apiUrl}${path}`, {
     ...init,
+    signal: init?.signal ?? AbortSignal.timeout(requestTimeoutMs),
     headers: {
       Accept: "application/json",
       ...(init?.body ? { "Content-Type": "application/json" } : {}),
@@ -40,12 +44,20 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 function productQuery(filters: ProductFilters = {}) {
+  return catalogQuery(filters, true);
+}
+
+function facetQuery(filters: ProductFilters = {}) {
+  return catalogQuery(filters, false);
+}
+
+function catalogQuery(filters: ProductFilters, includePagination: boolean) {
   const params = new URLSearchParams();
   const scalarEntries: Array<[string, string | number | boolean | undefined]> = [
     ["q", filters.q], ["species", filters.species], ["category", filters.category],
     ["minPrice", filters.minPrice], ["maxPrice", filters.maxPrice],
-    ["featured", filters.featured], ["sort", filters.sort],
-    ["page", filters.page], ["perPage", filters.perPage],
+    ["featured", filters.featured], ["sort", includePagination ? filters.sort : undefined],
+    ["page", includePagination ? filters.page : undefined], ["perPage", includePagination ? filters.perPage : undefined],
   ];
   for (const [key, value] of scalarEntries) {
     if (value !== undefined && value !== "") params.set(key, String(value));
@@ -59,11 +71,12 @@ function productQuery(filters: ProductFilters = {}) {
 
 export const catalogApi = {
   products: (filters?: ProductFilters) => request<ProductPage>(`/products${productQuery(filters)}`),
+  productFacets: (filters?: ProductFilters) => request<ProductFacets>(`/products/facets${facetQuery(filters)}`),
   product: (slug: string) => request<ProductDetail>(`/products/${encodeURIComponent(slug)}`),
-  categories: () => request<Category[]>("/categories"),
-  category: (slug: string) => request<Category>(`/categories/${encodeURIComponent(slug)}`),
   brands: () => request<Brand[]>("/brands"),
   brand: (slug: string) => request<Brand>(`/brands/${encodeURIComponent(slug)}`),
+  calculatorProjection: () => request<CalculatorProductProjection[]>("/products/projections/calculator"),
+  sitemapProjection: () => request<SitemapProductProjection[]>("/products/projections/sitemap"),
   offers: () => request<PublicOffer[]>("/offers"),
   calculateFoodDuration: (input: {
     productSlug: string;
@@ -88,20 +101,19 @@ export async function getProducts(filters: ProductFilters = {}) {
   return catalogApi.products(filters);
 }
 
-export async function getCatalogFilterProducts(filters: Pick<ProductFilters, "species" | "category"> = {}) {
+export async function getProductFacets(filters: ProductFilters = {}) {
+  const facetFilters = { ...filters };
+  delete facetFilters.page;
+  delete facetFilters.perPage;
+  delete facetFilters.sort;
+  return getCachedProductFacets(facetFilters);
+}
+
+async function getCachedProductFacets(filters: ProductFilters) {
   "use cache";
   cacheLife({ stale: 60, revalidate: 300, expire: 3600 });
-  cacheTag("catalog-products");
-
-  const firstPage = await catalogApi.products({ ...filters, page: 1, perPage: 100 });
-  if (firstPage.meta.totalPages <= 1) return firstPage.items;
-
-  const remainingPages = await Promise.all(
-    Array.from({ length: firstPage.meta.totalPages - 1 }, (_, index) =>
-      catalogApi.products({ ...filters, page: index + 2, perPage: 100 }),
-    ),
-  );
-  return [firstPage, ...remainingPages].flatMap((page) => page.items);
+  cacheTag("catalog-facets");
+  return catalogApi.productFacets(filters);
 }
 
 export async function getProduct(slug: string) {
@@ -111,18 +123,32 @@ export async function getProduct(slug: string) {
   return catalogApi.product(slug);
 }
 
-export async function getCategories() {
-  "use cache";
-  cacheLife("hours");
-  cacheTag("catalog-categories");
-  return catalogApi.categories();
-}
-
 export async function getBrands() {
   "use cache";
   cacheLife("hours");
   cacheTag("catalog-brands");
   return catalogApi.brands();
+}
+
+export async function getBrand(slug: string) {
+  "use cache";
+  cacheLife("hours");
+  cacheTag("catalog-brands", `catalog-brand-${slug}`);
+  return catalogApi.brand(slug);
+}
+
+export async function getCalculatorProducts() {
+  "use cache";
+  cacheLife({ stale: 300, revalidate: 1800, expire: 7200 });
+  cacheTag("catalog-products", "catalog-calculator-projection");
+  return catalogApi.calculatorProjection();
+}
+
+export async function getSitemapProducts() {
+  "use cache";
+  cacheLife("hours");
+  cacheTag("catalog-products", "catalog-sitemap-projection");
+  return catalogApi.sitemapProjection();
 }
 
 export async function safeCatalogCall<T>(operation: () => Promise<T>): Promise<

@@ -5,19 +5,20 @@ import { Pagination } from "@/components/catalog/catalog-results";
 import { ProductGrid } from "@/components/catalog/product-grid";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
-import { catalogApi, getProducts, PatitasApiError } from "@/infrastructure/api/patitas-api";
+import { getBrand, getProducts, PatitasApiError } from "@/infrastructure/api/patitas-api";
 import type { CatalogSearchParams } from "@/lib/catalog-search-params";
 
 type Props = { params: Promise<{ slug: string }>; searchParams: Promise<CatalogSearchParams> };
-export async function generateMetadata({ params }: Props): Promise<Metadata> { try { const brand = await catalogApi.brand((await params).slug); return { title: `${brand.name}: productos para perros y gatos | Patitas`, description: brand.seoDescription ?? brand.description ?? `Comprá productos ${brand.name} y compará presentaciones.`, alternates: { canonical: `/marcas/${brand.slug}` } }; } catch { return {}; } }
+export async function generateMetadata({ params }: Props): Promise<Metadata> { try { const brand = await getBrand((await params).slug); return { title: `${brand.name}: productos para perros y gatos | Patitas`, description: brand.seoDescription ?? brand.description ?? `Comprá productos ${brand.name} y compará presentaciones.`, alternates: { canonical: `/marcas/${brand.slug}` } }; } catch { return {}; } }
 export default async function BrandPage({ params, searchParams }: Props) {
   const slug = (await params).slug;
   const query = await searchParams;
   const parsedPage = Number(Array.isArray(query.page) ? query.page[0] : query.page);
   const page = Number.isInteger(parsedPage) && parsedPage > 0 ? parsedPage : 1;
-  let brand;
-  try { brand = await catalogApi.brand(slug); } catch (error) { if (error instanceof PatitasApiError && error.status === 404) notFound(); throw error; }
-  const products = await getProducts({ brand: [slug], page, perPage: 24 });
+  const [brand, products] = await Promise.all([getBrand(slug), getProducts({ brand: [slug], page, perPage: 24 })]).catch((error: unknown) => {
+    if (error instanceof PatitasApiError && error.status === 404) notFound();
+    throw error;
+  });
   const hasDogProducts = products.items.some((product) => product.species === "dog");
   const hasCatProducts = products.items.some((product) => product.species === "cat");
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3001";

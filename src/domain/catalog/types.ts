@@ -1,5 +1,5 @@
 export type Species = "dog" | "cat";
-export type FulfillmentStatus = "IN_STOCK" | "ON_REQUEST" | "OUT_OF_STOCK";
+export type FulfillmentAvailability = "TODAY" | "TOMORROW" | "LATER" | "OUT_OF_STOCK";
 
 export type CatalogReference = {
   id: string;
@@ -34,9 +34,12 @@ export type ProductVariant = {
   compareAtPrice: string | null;
   currency: "ARS";
   fulfillment: {
-    status: FulfillmentStatus;
     purchasable: boolean;
-    leadTimeHours: number | null;
+    availability: FulfillmentAvailability;
+    label: string;
+    availableQuantity: number;
+    orderBefore: string | null;
+    deliveryDate: string | null;
   };
 };
 
@@ -123,12 +126,54 @@ export type ProductPage = {
     perPage: number;
     total: number;
     totalPages: number;
-    facets?: {
-      brandSlugs: string[];
-      lifeStages: string[];
-      weightGrams: number[];
-    };
   };
+};
+
+export type StringFacetOption = {
+  value: string;
+  label: string;
+  count: number;
+};
+
+export type BrandFacetOption = StringFacetOption & {
+  logoUrl: string | null;
+};
+
+export type CategoryFacetOption = StringFacetOption & {
+  species: string[];
+  children: CategoryFacetOption[];
+};
+
+export type WeightFacetOption = {
+  value: number;
+  label: string;
+  count: number;
+};
+
+export type ProductFacets = {
+  brands: BrandFacetOption[];
+  categories: CategoryFacetOption[];
+  lifeStages: StringFacetOption[];
+  weights: WeightFacetOption[];
+};
+
+export type CalculatorProductProjection = {
+  id: string;
+  name: string;
+  slug: string;
+  species: Species | null;
+  lifeStage: string | null;
+  estimatedDailyGramsPerKg: string | null;
+  variants: Array<{
+    id: string;
+    presentation: string | null;
+    weightGrams: number | null;
+  }>;
+};
+
+export type SitemapProductProjection = {
+  slug: string;
+  updatedAt: string;
 };
 
 export type ProductFilters = {

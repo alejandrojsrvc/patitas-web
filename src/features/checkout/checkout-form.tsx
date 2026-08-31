@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { type FormEvent, type InputHTMLAttributes, useRef, useState } from "react";
 
-import type { AvailablePaymentMethod, CheckoutConfirmResult, CheckoutSession, DeliverySlot, ShippingOption } from "@/domain/checkout/types";
+import type { AvailablePaymentMethod, CheckoutConflict, CheckoutConfirmResult, CheckoutMutationResult, CheckoutSession, DeliverySlot, ShippingOption } from "@/domain/checkout/types";
 import type { CustomerAddress } from "@/domain/customer/types";
 import { formatMoney } from "@/lib/catalog-formatters";
 import { useCart } from "@/features/cart/cart-context";
@@ -20,7 +20,7 @@ const steps = [
 ];
 
 export function CheckoutForm({ initialSession, initialShippingOptions = [], initialPaymentMethods = [], savedAddresses = [] }: { initialSession: CheckoutSession | null; initialShippingOptions?: ShippingOption[]; initialPaymentMethods?: AvailablePaymentMethod[]; savedAddresses?: CustomerAddress[] }) {
-  const { cart, items, refresh } = useCart();
+  const { cart, items } = useCart();
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
   const confirmIdempotencyKey = useRef<string | null>(null);
@@ -40,46 +40,18 @@ export function CheckoutForm({ initialSession, initialShippingOptions = [], init
   const mercadoPagoAvailable = initialPaymentMethods.some((method) => method.paymentMethod === "MERCADO_PAGO");
 
   function updateShippingState(next: CheckoutSession, options: ShippingOption[]) {
-    const optionId = next.shippingOptionId ?? options[0]?.id ?? "";
+    const optionId = next.shippingOptionId ?? "";
     const slots = slotsForOption(options, optionId);
     setSession(next);
     setShippingOptions(options);
     setSelectedShippingOption(optionId);
     setDeliverySlots(slots);
-    setSelectedDeliverySlotId(next.shippingDeliverySlot ?? slots[0]?.id ?? "");
+    setSelectedDeliverySlotId(next.shippingDeliverySlot ?? "");
   }
 
-  async function reloadAndPersistShipping(next: CheckoutSession, preferredOptionId?: string, preferredSlotId?: string) {
-    const options = await requestJson<ShippingOption[]>(`/checkout/sessions/${next.id}/shipping-options`);
-    const preferred = options.find((option) => option.id === next.shippingOptionId)
-      ?? options.find((option) => option.id === preferredOptionId)
-      ?? options[0];
-    if (!preferred) throw new Error("No hay métodos de envío disponibles para esta dirección.");
-    const slotId = preferred.deliverySlots.find((slot) => slot.id === next.shippingDeliverySlot)?.id
-      ?? preferred.deliverySlots.find((slot) => slot.id === preferredSlotId)?.id
-      ?? preferred.deliverySlots[0]?.id;
-    if (!slotId) throw new Error("No hay horarios de entrega disponibles para esta dirección.");
-    const persisted = await requestJson<CheckoutSession>(`/checkout/sessions/${next.id}/shipping-option`, {
-      method: "PATCH",
-      body: JSON.stringify({ shippingOptionId: preferred.id, deliverySlotId: slotId }),
-    });
-    updateShippingState(persisted, options);
-    return persisted;
-  }
-
-  async function recoverConflict() {
-    await refresh();
-    const currentSession = session;
-    if (!currentSession) return;
-    try {
-      const latest = await requestJson<CheckoutSession>(`/checkout/sessions/${currentSession.id}`);
-      if (latest.stage === "CONTACT") updateShippingState(latest, []);
-      else {
-        const options = await requestJson<ShippingOption[]>(`/checkout/sessions/${latest.id}/shipping-options`);
-        updateShippingState(latest, options);
-      }
-    } catch {
-      // El error original del paso conserva el mensaje que verá la persona.
+  function recoverConflict(cause: unknown) {
+    if (cause instanceof CheckoutRequestError && cause.currentState) {
+      updateShippingState(cause.currentState.session, cause.currentState.shippingOptions);
     }
   }
 
@@ -88,11 +60,11 @@ export function CheckoutForm({ initialSession, initialShippingOptions = [], init
     setCouponLoading(true);
     setError(null);
     try {
-      const next = await requestJson<CheckoutSession>(`/checkout/sessions/${session.id}/coupon`, { method: "POST", body: JSON.stringify({ code: couponCode.trim() }) });
-      await reloadAndPersistShipping(next, selectedShippingOption, selectedDeliverySlotId);
-      setCouponCode(next.couponCode ?? couponCode.trim().toUpperCase());
+      const result = await requestJson<CheckoutMutationResult>(`/checkout/sessions/${session.id}/coupon`, { method: "POST", body: JSON.stringify({ code: couponCode.trim() }) });
+      updateShippingState(result.session, result.shippingOptions);
+      setCouponCode(result.session.couponCode ?? couponCode.trim().toUpperCase());
     } catch (cause) {
-      if (isConflict(cause)) await recoverConflict();
+      if (isConflict(cause)) recoverConflict(cause);
       setError(errorMessage(cause, "No pudimos aplicar el cupón."));
     } finally {
       setCouponLoading(false);
@@ -104,11 +76,11 @@ export function CheckoutForm({ initialSession, initialShippingOptions = [], init
     setCouponLoading(true);
     setError(null);
     try {
-      const next = await requestJson<CheckoutSession>(`/checkout/sessions/${session.id}/coupon`, { method: "DELETE" });
-      await reloadAndPersistShipping(next, selectedShippingOption, selectedDeliverySlotId);
+      const result = await requestJson<CheckoutMutationResult>(`/checkout/sessions/${session.id}/coupon`, { method: "DELETE" });
+      updateShippingState(result.session, result.shippingOptions);
       setCouponCode("");
     } catch (cause) {
-      if (isConflict(cause)) await recoverConflict();
+      if (isConflict(cause)) recoverConflict(cause);
       setError(errorMessage(cause, "No pudimos quitar el cupón."));
     } finally {
       setCouponLoading(false);
@@ -120,14 +92,13 @@ export function CheckoutForm({ initialSession, initialShippingOptions = [], init
     setLoading(true);
     setError(null);
     try {
-      const next = await requestJson<CheckoutSession>(`/checkout/sessions/${session.id}/shipping-option`, {
+      const result = await requestJson<CheckoutMutationResult>(`/checkout/sessions/${session.id}/shipping-option`, {
         method: "PATCH",
         body: JSON.stringify({ shippingOptionId: selectedShippingOption, deliverySlotId: slot.id }),
       });
-      setSession(next);
-      setSelectedDeliverySlotId(next.shippingDeliverySlot ?? slot.id);
+      updateShippingState(result.session, result.shippingOptions);
     } catch (cause) {
-      if (isConflict(cause)) await recoverConflict();
+      if (isConflict(cause)) recoverConflict(cause);
       setError(errorMessage(cause, "No pudimos actualizar el horario de entrega."));
     } finally {
       setLoading(false);
@@ -146,16 +117,14 @@ export function CheckoutForm({ initialSession, initialShippingOptions = [], init
     setLoading(true);
     setError(null);
     try {
-      const next = await requestJson<CheckoutSession>(`/checkout/sessions/${session.id}/shipping-option`, {
+      const result = await requestJson<CheckoutMutationResult>(`/checkout/sessions/${session.id}/shipping-option`, {
         method: "PATCH",
         body: JSON.stringify({ shippingOptionId, deliverySlotId: slotId }),
       });
-      setSession(next);
-      setDeliverySlots(option.deliverySlots);
-      setSelectedDeliverySlotId(next.shippingDeliverySlot ?? slotId);
+      updateShippingState(result.session, result.shippingOptions);
     } catch (cause) {
       setSelectedShippingOption(session.shippingOptionId ?? "");
-      if (isConflict(cause)) await recoverConflict();
+      if (isConflict(cause)) recoverConflict(cause);
       setError(errorMessage(cause, "No pudimos actualizar el envío."));
     } finally {
       setLoading(false);
@@ -182,16 +151,16 @@ export function CheckoutForm({ initialSession, initialShippingOptions = [], init
       const form = new FormData(formRef.current!);
       if (step === 1) {
         const fullName = `${form.get("firstName") ?? ""} ${form.get("lastName") ?? ""}`.trim();
-        const next = await requestJson<CheckoutSession>(`/checkout/sessions/${session.id}/contact`, { method: "PATCH", body: JSON.stringify({ contactName: fullName, contactEmail: form.get("email"), contactPhone: form.get("phone") || null }) });
-        setSession(next);
+        const result = await requestJson<CheckoutMutationResult>(`/checkout/sessions/${session.id}/contact`, { method: "PATCH", body: JSON.stringify({ contactName: fullName, contactEmail: form.get("email"), contactPhone: form.get("phone") || null }) });
+        updateShippingState(result.session, result.shippingOptions);
       }
       if (step === 2) {
-        const next = await requestJson<CheckoutSession>(`/checkout/sessions/${session.id}/shipping-address`, { method: "PATCH", body: JSON.stringify({ address: { recipientName: `${form.get("firstName") ?? ""} ${form.get("lastName") ?? ""}`.trim(), street: form.get("street"), number: form.get("number"), apartment: form.get("apartment") || "", neighborhood: form.get("neighborhood") || "", city: form.get("city"), province: form.get("province"), postalCode: form.get("postalCode"), reference: form.get("reference") || "" } }) });
-        await reloadAndPersistShipping(next);
+        const result = await requestJson<CheckoutMutationResult>(`/checkout/sessions/${session.id}/shipping-address`, { method: "PATCH", body: JSON.stringify({ address: { recipientName: `${form.get("firstName") ?? ""} ${form.get("lastName") ?? ""}`.trim(), street: form.get("street"), number: form.get("number"), apartment: form.get("apartment") || "", neighborhood: form.get("neighborhood") || "", city: form.get("city"), province: form.get("province"), postalCode: form.get("postalCode"), reference: form.get("reference") || "" } }) });
+        updateShippingState(result.session, result.shippingOptions);
       }
       setStep((current) => Math.min(3, current + 1) as CheckoutStep);
     } catch (cause) {
-      if (isConflict(cause)) await recoverConflict();
+      if (isConflict(cause)) recoverConflict(cause);
       setError(errorMessage(cause, "No pudimos guardar este paso."));
     } finally {
       advancingStepRef.current = false;
@@ -232,11 +201,14 @@ export function CheckoutForm({ initialSession, initialShippingOptions = [], init
     try {
       let current = session;
       if (current.shippingOptionId !== shippingOptionId || current.shippingDeliverySlot !== selectedDeliverySlotId) {
-        current = await requestJson<CheckoutSession>(`/checkout/sessions/${session.id}/shipping-option`, { method: "PATCH", body: JSON.stringify({ shippingOptionId, deliverySlotId: selectedDeliverySlotId }) });
+        const result = await requestJson<CheckoutMutationResult>(`/checkout/sessions/${session.id}/shipping-option`, { method: "PATCH", body: JSON.stringify({ shippingOptionId, deliverySlotId: selectedDeliverySlotId }) });
+        current = result.session;
+        updateShippingState(result.session, result.shippingOptions);
       }
       if (current.paymentMethod !== "MERCADO_PAGO") {
-        current = await requestJson<CheckoutSession>(`/checkout/sessions/${session.id}/payment-method`, { method: "PATCH", body: JSON.stringify({ paymentMethod: "MERCADO_PAGO" }) });
-        setSession(current);
+        const result = await requestJson<CheckoutMutationResult>(`/checkout/sessions/${session.id}/payment-method`, { method: "PATCH", body: JSON.stringify({ paymentMethod: "MERCADO_PAGO" }) });
+        current = result.session;
+        updateShippingState(result.session, result.shippingOptions);
       }
       const idempotencyKey = confirmIdempotencyKey.current ?? crypto.randomUUID();
       confirmIdempotencyKey.current = idempotencyKey;
@@ -272,7 +244,7 @@ export function CheckoutForm({ initialSession, initialShippingOptions = [], init
         setError("Este intento ya fue procesado o usa una clave incompatible. No iniciamos otro pago; revisá el estado del pedido.");
       } else {
         confirmIdempotencyKey.current = null;
-        if (isConflict(cause)) await recoverConflict();
+        if (isConflict(cause)) recoverConflict(cause);
         setError(paymentErrorMessage(cause));
       }
     } finally {
@@ -369,7 +341,8 @@ function Field({ name, label, formStep, required = true, className = "", ...prop
 }
 
 function slotsForOption(options: ShippingOption[], optionId: string | null | undefined) {
-  return (options.find((option) => option.id === optionId) ?? options[0])?.deliverySlots ?? [];
+  if (!optionId) return [];
+  return options.find((option) => option.id === optionId)?.deliverySlots ?? [];
 }
 
 function selectedSlot(slots: DeliverySlot[], slotId: string) {
@@ -388,9 +361,29 @@ function formatDeliveryDate(value: string | null) {
 
 async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`/api/commerce${path}`, { ...init, headers: { ...(init?.body ? { "Content-Type": "application/json" } : {}), ...init?.headers } });
-  const payload = await response.json().catch(() => null) as T | { message?: string } | null;
-  if (!response.ok) throw Object.assign(new Error(payload && typeof payload === "object" && "message" in payload ? payload.message : "Patitas API no pudo completar el paso."), { status: response.status, code: payload && typeof payload === "object" && "code" in payload ? payload.code : undefined });
+  const payload = await response.json().catch(() => null) as T | CheckoutConflict | { message?: string; code?: string } | null;
+  if (!response.ok) {
+    const errorPayload = payload && typeof payload === "object" ? payload as CheckoutConflict : null;
+    throw new CheckoutRequestError(
+      errorPayload?.message ?? "Patitas API no pudo completar el paso.",
+      response.status,
+      errorPayload?.code,
+      errorPayload?.currentState,
+    );
+  }
   return payload as T;
+}
+
+class CheckoutRequestError extends Error {
+  public constructor(
+    message: string,
+    public readonly status: number,
+    public readonly code?: string,
+    public readonly currentState?: CheckoutMutationResult,
+  ) {
+    super(message);
+    this.name = "CheckoutRequestError";
+  }
 }
 
 function isConflict(cause: unknown) {

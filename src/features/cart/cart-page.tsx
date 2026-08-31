@@ -47,7 +47,7 @@ export function CartPageContent({ checkoutMessage }: { checkoutMessage?: string 
         <div className="overflow-hidden rounded-xl bg-white">
           {items.map((item) => (
             <article key={item.variantId} className="grid grid-cols-[72px_minmax(0,1fr)] gap-x-3 gap-y-3 border-b border-catalog-line p-3 last:border-b-0 sm:grid-cols-[96px_minmax(0,1fr)_auto] sm:items-center sm:gap-4 sm:p-5">
-              <div className="relative aspect-square overflow-hidden rounded-lg bg-catalog-soft">
+              <div className="relative aspect-square overflow-hidden rounded-lg bg-white">
                 <ProductImage src={item.imageUrl} alt={item.productName} className="p-2" />
               </div>
               <div className="min-w-0">

@@ -43,7 +43,7 @@ export function SiteFooter() {
   const whatsappUrl = process.env.NEXT_PUBLIC_WHATSAPP_URL?.trim();
 
   return (
-    <footer className="border-t border-catalog-line bg-[#f0eee9] py-12 text-ink sm:py-16">
+    <footer className="border-t border-catalog-line  py-12 text-ink sm:py-16">
       <div className="container-shell grid gap-12 lg:grid-cols-[1.2fr_2fr]">
         <div className="max-w-sm">
           <Image src="/brand/patitas-logo-horizontal.png" alt="Patitas Inquietas" width={220} height={24} className="h-auto w-44" />

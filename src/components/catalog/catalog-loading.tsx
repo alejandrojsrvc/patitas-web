@@ -1,9 +1,10 @@
 import { SiteHeader } from "@/components/layout/site-header";
+import { emptyStorefrontShell } from "@/domain/storefront/types";
 
 export function CatalogLoading() {
   return (
     <>
-      <SiteHeader />
+      <SiteHeader initialShell={emptyStorefrontShell} />
       <main id="contenido" className="bg-catalog-canvas pb-20" aria-busy="true" aria-label="Cargando catálogo">
         <section className="bg-catalog-soft py-12 sm:py-16">
           <div className="container-shell space-y-4">

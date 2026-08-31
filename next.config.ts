@@ -25,6 +25,28 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   cacheComponents: true,
+  images: {
+    unoptimized: true,
+    remotePatterns: [
+      {
+        protocol: "http",
+        hostname: "127.0.0.1",
+        port: "54321",
+        pathname: "/storage/v1/**",
+      },
+      {
+        protocol: "http",
+        hostname: "localhost",
+        port: "54321",
+        pathname: "/storage/v1/**",
+      },
+      {
+        protocol: "https",
+        hostname: "**.supabase.co",
+        pathname: "/storage/v1/**",
+      },
+    ],
+  },
   allowedDevOrigins: ["patitasinquietas.local"],
   async headers() {
     return [

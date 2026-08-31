@@ -2,16 +2,15 @@
 
 import { Calculator, Info } from "@phosphor-icons/react";
 import { useMemo, useState, type FormEvent } from "react";
-import type { FoodDurationResult, Product } from "@/domain/catalog/types";
+import type { CalculatorProductProjection, FoodDurationResult } from "@/domain/catalog/types";
 import { formatWeight } from "@/lib/catalog-formatters";
-import { selectInitialVariant } from "@/lib/catalog-variants";
 
 const consentVersion = "2026-08-26";
 
-export function FoodCalculator({ products }: { products: Product[] }) {
+export function FoodCalculator({ products }: { products: CalculatorProductProjection[] }) {
   const [productSlug, setProductSlug] = useState(products[0]?.slug ?? "");
   const product = useMemo(() => products.find((item) => item.slug === productSlug) ?? products[0], [productSlug, products]);
-  const [variantId, setVariantId] = useState(product ? selectInitialVariant(product)?.id ?? "" : "");
+  const [variantId, setVariantId] = useState(product?.variants[0]?.id ?? "");
   const [weight, setWeight] = useState("");
   const [lifeStage, setLifeStage] = useState(product?.lifeStage ?? "adult");
   const [result, setResult] = useState<FoodDurationResult | null>(null);
@@ -27,7 +26,7 @@ export function FoodCalculator({ products }: { products: Product[] }) {
   function selectProduct(slug: string) {
     const next = products.find((item) => item.slug === slug);
     setProductSlug(slug);
-    setVariantId(next ? selectInitialVariant(next)?.id ?? "" : "");
+    setVariantId(next?.variants[0]?.id ?? "");
     setLifeStage(next?.lifeStage ?? "adult");
     setResult(null);
     setError(null);
@@ -102,7 +101,7 @@ export function FoodCalculator({ products }: { products: Product[] }) {
       <form onSubmit={submit} className="p-5 sm:p-7">
         <div className="grid gap-5">
           <div className="grid gap-5 sm:grid-cols-2">
-            <label className="text-sm font-semibold">Alimento<select value={product?.slug} onChange={(event) => selectProduct(event.target.value)} className={fieldClass}>{products.map((item) => <option key={item.id} value={item.slug}>{item.brand.name} · {item.name}</option>)}</select></label>
+            <label className="text-sm font-semibold">Alimento<select value={product?.slug} onChange={(event) => selectProduct(event.target.value)} className={fieldClass}>{products.map((item) => <option key={item.id} value={item.slug}>{item.name}</option>)}</select></label>
             <label className="text-sm font-semibold">Presentación<select value={variantId} onChange={(event) => { setVariantId(event.target.value); setResult(null); setLeadStatus("idle"); }} className={fieldClass}>{product?.variants.map((variant) => <option key={variant.id} value={variant.id}>{variant.presentation ?? formatWeight(variant.weightGrams) ?? "Presentación"}</option>)}</select></label>
           </div>
           <div className="grid gap-5 sm:grid-cols-2">

@@ -28,6 +28,21 @@ El nombre del producto que entrega la API debe estar listo para una persona comp
 - Si el backend incorpora `seoTitle` y `seoDescription` de producto, deben ser campos editoriales opcionales y nunca reemplazar el nombre comercial mostrado.
 - Cada variante debe conservar `presentation`, `weightGrams`, precio y disponibilidad como fuente de verdad. No se crearán URLs canónicas distintas por peso mientras la selección viva en una sola página de producto.
 
+### Stock disponible en la ficha pública
+
+La ficha web necesita que cada elemento de `variants` en `GET /api/v1/products/:slug` incluya:
+
+```json
+{
+  "availableQuantity": 4
+}
+```
+
+- Debe ser un entero mayor o igual a cero, calculado como stock físico menos unidades reservadas.
+- Debe corresponder a la variante y nunca al producto agregado.
+- El carrito y el checkout deben volver a validar la cantidad antes de reservar o confirmar.
+- Mientras el campo no forme parte del contrato, la web muestra una cantidad estimada identificada como tal y limita el selector a cinco unidades.
+
 ## 1. Plan de reposición
 
 ### Captura previa a la primera compra

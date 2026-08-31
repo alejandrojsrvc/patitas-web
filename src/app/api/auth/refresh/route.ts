@@ -12,10 +12,12 @@ export async function POST() {
     const session = sessionFromResponse(result);
     if (!session) return NextResponse.json({ message: "La sesión no puede renovarse." }, { status: 401 });
     const response = NextResponse.json({ status: result.status, user: result.user });
+    response.headers.set("Cache-Control", "private, no-store");
     setAuthCookies(response, session);
     return response;
   } catch (error) {
     const response = NextResponse.json({ message: error instanceof Error ? error.message : "La sesión no puede renovarse." }, { status: error instanceof AuthApiError ? error.status : 502 });
+    response.headers.set("Cache-Control", "private, no-store");
     if (error instanceof AuthApiError && error.status === 401) clearAuthCookies(response);
     return response;
   }

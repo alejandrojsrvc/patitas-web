@@ -1,0 +1,10 @@
+node_modules
+.next
+.vercel
+out
+build
+coverage
+public
+pnpm-lock.yaml
+package-lock.json
+*.tsbuildinfo
