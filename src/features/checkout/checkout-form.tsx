@@ -37,7 +37,11 @@ export function CheckoutForm({ initialSession, initialShippingOptions = [], init
   const [loading, setLoading] = useState(false);
   const [paymentState, setPaymentState] = useState<"idle" | "creating-order" | "redirecting">("idle");
   const [error, setError] = useState<string | null>(null);
-  const mercadoPagoAvailable = initialPaymentMethods.some((method) => method.paymentMethod === "MERCADO_PAGO");
+  const selectablePaymentMethods = initialPaymentMethods.filter((method) => method.paymentMethod !== "PAYWAY");
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<AvailablePaymentMethod["paymentMethod"] | "">(
+    initialSession?.paymentMethod === "PAYWAY" ? selectablePaymentMethods[0]?.paymentMethod ?? "" : initialSession?.paymentMethod ?? selectablePaymentMethods[0]?.paymentMethod ?? "",
+  );
+  const paymentAvailable = Boolean(selectedPaymentMethod);
 
   function updateShippingState(next: CheckoutSession, options: ShippingOption[]) {
     const optionId = next.shippingOptionId ?? "";
@@ -185,7 +189,7 @@ export function CheckoutForm({ initialSession, initialShippingOptions = [], init
       setError("Elegí un horario de entrega para continuar.");
       return;
     }
-    if (!mercadoPagoAvailable) {
+    if (!paymentAvailable) {
       setError("El pago online no está disponible en este momento. Intentá nuevamente más tarde.");
       return;
     }
@@ -205,8 +209,8 @@ export function CheckoutForm({ initialSession, initialShippingOptions = [], init
         current = result.session;
         updateShippingState(result.session, result.shippingOptions);
       }
-      if (current.paymentMethod !== "MERCADO_PAGO") {
-        const result = await requestJson<CheckoutMutationResult>(`/checkout/sessions/${session.id}/payment-method`, { method: "PATCH", body: JSON.stringify({ paymentMethod: "MERCADO_PAGO" }) });
+      if (current.paymentMethod !== selectedPaymentMethod) {
+        const result = await requestJson<CheckoutMutationResult>(`/checkout/sessions/${session.id}/payment-method`, { method: "PATCH", body: JSON.stringify({ paymentMethod: selectedPaymentMethod }) });
         current = result.session;
         updateShippingState(result.session, result.shippingOptions);
       }
@@ -264,7 +268,8 @@ export function CheckoutForm({ initialSession, initialShippingOptions = [], init
   function fillSavedAddress(addressId: string) {
     const saved = savedAddresses.find((item) => item.id === addressId);
     if (!saved || !formRef.current) return;
-    const values: Record<string, string> = { street: saved.street, number: saved.number, apartment: saved.apartment ?? "", city: saved.city, province: saved.province, postalCode: saved.postalCode, reference: saved.reference ?? "" };
+    const recipientParts = splitContactName(saved.recipientName);
+    const values: Record<string, string> = { firstName: recipientParts.firstName, lastName: recipientParts.lastName, street: saved.street, number: saved.number, apartment: saved.apartment ?? "", neighborhood: saved.neighborhood ?? "", city: saved.city, province: saved.province, postalCode: saved.postalCode, reference: saved.reference ?? "" };
     for (const [name, value] of Object.entries(values)) {
       const field = formRef.current.elements.namedItem(name);
       if (field instanceof HTMLInputElement) field.value = value;
@@ -310,7 +315,8 @@ export function CheckoutForm({ initialSession, initialShippingOptions = [], init
           </section>
 
           <section className="mt-6" aria-labelledby="payment-methods-title">
-            <div className="flex items-end justify-between gap-3"><div><h2 id="payment-methods-title" className="font-display text-lg font-semibold">Pago online</h2><p className="mt-1 text-sm text-muted">{mercadoPagoAvailable ? "Vas a continuar a Mercado Pago para completar el pago." : "No hay un medio de pago disponible en este momento."}</p></div><LockKey size={19} className="text-brand-blue" aria-hidden="true" /></div>
+            <div className="flex items-end justify-between gap-3"><div><h2 id="payment-methods-title" className="font-display text-lg font-semibold">Medio de pago</h2><p className="mt-1 text-sm text-muted">{paymentAvailable ? "Elegí cómo querés completar el pago." : "No hay un medio de pago disponible en este momento."}</p></div><LockKey size={19} className="text-brand-blue" aria-hidden="true" /></div>
+            {selectablePaymentMethods.length ? <div className="mt-4 grid gap-2">{selectablePaymentMethods.map((method) => <label key={method.paymentMethod} className={`flex cursor-pointer items-center gap-3 rounded-lg border px-4 py-3 ${selectedPaymentMethod === method.paymentMethod ? "border-brand-blue bg-soft-blue" : "border-border bg-white"}`}><input type="radio" name="paymentMethod" value={method.paymentMethod} checked={selectedPaymentMethod === method.paymentMethod} onChange={() => setSelectedPaymentMethod(method.paymentMethod)} className="accent-brand-blue" /><span className="font-semibold">{paymentMethodLabel(method.paymentMethod)}</span></label>)}</div> : <p className="mt-4 rounded-lg bg-[#fff1f1] p-3 text-sm text-[#8d2020]">No hay un medio de pago compatible disponible.</p>}
             <div className="mt-4 flex items-start gap-3 rounded-lg border border-border bg-[#f7f7f5] p-3 text-sm leading-5 text-muted"><ShieldCheck size={19} weight="bold" className="mt-0.5 shrink-0 text-brand-blue" aria-hidden="true" /><p><strong className="font-semibold text-ink">Datos protegidos.</strong><span className="mt-0.5 block">El pago se procesa fuera de Patitas; solo recibimos el estado confirmado por la plataforma.</span></p></div>
           </section>
 
@@ -320,7 +326,7 @@ export function CheckoutForm({ initialSession, initialShippingOptions = [], init
 
         {paymentState !== "idle" ? <p role="status" className="mt-5 rounded-xl bg-soft-blue p-4 text-sm text-ink">{paymentState === "redirecting" ? "Redirigiendo a la plataforma de pago…" : "Procesando el pago…"}</p> : null}
         {error ? <p role="alert" className="mt-5 rounded-xl bg-[#fff1f1] p-4 text-sm text-[#8d2020]">{error}</p> : null}
-        <div className="mt-6 grid grid-cols-2 gap-3 sm:flex sm:items-center sm:justify-between">{step > 1 ? <button type="button" onClick={() => { setStep((current) => Math.max(1, current - 1) as CheckoutStep); setError(null); }} className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-catalog-canvas px-4 font-semibold text-ink transition-colors hover:bg-border focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue sm:w-auto sm:px-5"><ArrowLeft size={17} /> Volver</button> : <span />}{step < 3 ? <button type="button" onClick={() => void goNext()} disabled={loading} className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-brand-blue px-4 font-semibold text-white transition-colors hover:bg-[#0048dc] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue disabled:opacity-60 sm:w-auto sm:px-5">{loading ? "Guardando…" : "Continuar"}<ArrowRight size={17} weight="bold" /></button> : <button type="submit" disabled={loading || !mercadoPagoAvailable} className="inline-flex min-h-13 w-full items-center justify-center gap-3 rounded-xl bg-[#009ee3] px-5 font-semibold text-white shadow-[0_8px_18px_rgba(0,158,227,0.2)] transition-[background-color,box-shadow,opacity] hover:bg-[#008bc7] hover:shadow-[0_10px_22px_rgba(0,158,227,0.28)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto sm:min-w-56"><span className="flex size-8 items-center justify-center rounded-full bg-white/15"><Wallet size={18} weight="bold" aria-hidden="true" /></span><span>{loading ? (paymentState === "redirecting" ? "Redirigiendo…" : "Conectando…") : mercadoPagoAvailable ? "Continuar a Mercado Pago" : "Pago no disponible"}</span><ArrowRight size={18} weight="bold" aria-hidden="true" /></button>}</div>
+        <div className="mt-6 grid grid-cols-2 gap-3 sm:flex sm:items-center sm:justify-between">{step > 1 ? <button type="button" onClick={() => { setStep((current) => Math.max(1, current - 1) as CheckoutStep); setError(null); }} className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-catalog-canvas px-4 font-semibold text-ink transition-colors hover:bg-border focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue sm:w-auto sm:px-5"><ArrowLeft size={17} /> Volver</button> : <span />}{step < 3 ? <button type="button" onClick={() => void goNext()} disabled={loading} className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-brand-blue px-4 font-semibold text-white transition-colors hover:bg-[#0048dc] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue disabled:opacity-60 sm:w-auto sm:px-5">{loading ? "Guardando…" : "Continuar"}<ArrowRight size={17} weight="bold" /></button> : <button type="submit" disabled={loading || !paymentAvailable} className="inline-flex min-h-13 w-full items-center justify-center gap-3 rounded-xl bg-[#009ee3] px-5 font-semibold text-white shadow-[0_8px_18px_rgba(0,158,227,0.2)] transition-[background-color,box-shadow,opacity] hover:bg-[#008bc7] hover:shadow-[0_10px_22px_rgba(0,158,227,0.28)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto sm:min-w-56"><span className="flex size-8 items-center justify-center rounded-full bg-white/15"><Wallet size={18} weight="bold" aria-hidden="true" /></span><span>{loading ? (paymentState === "redirecting" ? "Redirigiendo…" : "Conectando…") : paymentAvailable ? `Continuar con ${paymentMethodLabel(selectedPaymentMethod)}` : "Pago no disponible"}</span><ArrowRight size={18} weight="bold" aria-hidden="true" /></button>}</div>
       </div>
 
       <aside className="h-fit rounded-2xl border border-border bg-white p-5 shadow-[0_10px_30px_rgba(22,24,29,0.04)] sm:sticky sm:top-6 sm:p-6" aria-labelledby="checkout-summary-title"><h2 id="checkout-summary-title" className="font-display text-xl font-semibold">Resumen</h2><ul className="mt-5 space-y-3 text-sm">{(session?.items ?? items).map((item) => <li key={item.variantId} className="flex justify-between gap-3"><span className="min-w-0"><span className="block truncate">{item.quantity} × {item.productName}</span><span className="block text-xs text-muted">{item.presentation ?? "Presentación"}</span></span><span className="shrink-0 tabular-nums">{formatMoney(Number(item.lineTotal))}</span></li>)}</ul><div className="mt-5 space-y-2 border-t border-catalog-line pt-5 text-sm"><div className="flex justify-between"><span>Subtotal</span><span>{formatMoney(Number(session?.subtotal ?? cart?.subtotal ?? 0))}</span></div>{session && Number(session.discountTotal) > 0 ? <div className="flex justify-between text-brand-blue"><span>Descuento</span><span>-{formatMoney(Number(session.discountTotal))}</span></div> : null}{session && Number(session.shippingCost) > 0 ? <div className="flex justify-between"><span>Envío</span><span>{formatMoney(Number(session.shippingCost))}</span></div> : null}<div className="flex justify-between border-t border-catalog-line pt-3 font-semibold"><span>Total</span><strong className="font-display text-xl tabular-nums">{formatMoney(Number(session?.total ?? cart?.subtotal ?? 0))}</strong></div></div><p className="mt-4 flex items-start gap-2 text-sm leading-6 text-muted"><LockKey size={18} className="mt-1 shrink-0 text-brand-blue" />Importe y envío calculados por Patitas.</p></aside>
@@ -351,6 +357,10 @@ function selectedSlot(slots: DeliverySlot[], slotId: string) {
 
 function formatSlotHours(slot: DeliverySlot) {
   return `${slot.start} a ${slot.end}`;
+}
+
+function paymentMethodLabel(method: AvailablePaymentMethod["paymentMethod"] | "") {
+  return ({ MERCADO_PAGO: "Mercado Pago", PAYWAY: "Payway", SIMULATED_CARD: "pago de prueba" } as Record<string, string>)[method] ?? "medio de pago";
 }
 
 function formatDeliveryDate(value: string | null) {

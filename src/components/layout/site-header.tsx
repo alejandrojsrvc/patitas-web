@@ -11,10 +11,13 @@ type SiteHeaderProps = {
   searchQuery?: string;
   minimal?: boolean;
   initialShell?: StorefrontShell;
+  publicOnly?: boolean;
 };
 
 export function SiteHeader(props: SiteHeaderProps) {
-  if (props.initialShell) return <ResolvedSiteHeader {...props} shell={props.initialShell} hydrateCart={false} />;
+  if (props.initialShell || props.publicOnly) {
+    return <ResolvedSiteHeader {...props} shell={props.initialShell ?? emptyStorefrontShell} hydrateCart={false} />;
+  }
 
   return (
     <Suspense fallback={<SiteHeaderClient shell={emptyStorefrontShell} searchQuery={props.searchQuery} minimal={props.minimal} />}>

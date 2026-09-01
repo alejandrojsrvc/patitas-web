@@ -7,7 +7,7 @@ import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import { emptyStorefrontShell } from "@/domain/storefront/types";
 import { SessionRefreshBoundary } from "@/features/auth/session-refresh-boundary";
-import { CartProvider } from "@/features/cart/cart-context";
+import { CartHydrator } from "@/features/cart/cart-context";
 import { CheckoutForm } from "@/features/checkout/checkout-form";
 import { getCheckoutBootstrap } from "@/infrastructure/api/commerce-server";
 
@@ -29,11 +29,11 @@ async function CheckoutPageRuntime({ searchParams }: { searchParams: Promise<{ s
   }
   const checkout = result.data;
   const shell = checkout?.shell ?? emptyStorefrontShell;
-  return <CartProvider initialCart={shell.cart}><SiteHeader initialShell={shell} /><main id="contenido" className="min-h-[70vh] bg-catalog-canvas py-7 sm:py-12"><div className="container-shell"><Link href="/carrito" className="text-sm font-semibold text-brand-blue hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-blue">← Volver al carrito</Link><h1 className="display-heading mt-4 text-3xl sm:mt-5 sm:text-4xl">Finalizar pedido</h1><p className="mb-7 mt-2 max-w-xl text-base text-muted sm:mb-9">Tus datos, entrega y pago en un solo lugar.</p>{checkout ? <CheckoutForm initialSession={checkout.session} initialShippingOptions={checkout.shippingOptions} initialPaymentMethods={checkout.paymentMethods} savedAddresses={checkout.savedAddresses} /> : <CheckoutUnavailable message={result.error} />}</div></main><SiteFooter /></CartProvider>;
+  return <><CartHydrator cart={shell.cart} /><SiteHeader initialShell={shell} /><main id="contenido" className="min-h-[70vh] bg-catalog-canvas py-7 sm:py-12"><div className="container-shell"><Link href="/carrito" className="text-sm font-semibold text-brand-blue hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-blue">← Volver al carrito</Link><h1 className="display-heading mt-4 text-3xl sm:mt-5 sm:text-4xl">Finalizar pedido</h1><p className="mb-7 mt-2 max-w-xl text-base text-muted sm:mb-9">Tus datos, entrega y pago en un solo lugar.</p>{checkout ? <CheckoutForm initialSession={checkout.session} initialShippingOptions={checkout.shippingOptions} initialPaymentMethods={checkout.paymentMethods} savedAddresses={checkout.savedAddresses} /> : <CheckoutUnavailable message={result.error} />}</div></main><SiteFooter /></>;
 }
 
 function CheckoutPageFallback() {
-  return <CartProvider initialCart={emptyStorefrontShell.cart}><SiteHeader initialShell={emptyStorefrontShell} /><main id="contenido" className="min-h-[70vh] bg-catalog-canvas py-7 sm:py-12"><div className="container-shell"><h1 className="display-heading mt-4 text-3xl sm:mt-5 sm:text-4xl">Finalizar pedido</h1><div className="mt-7 rounded-xl bg-white p-8 text-center text-muted">Cargando tu checkout…</div></div></main><SiteFooter /></CartProvider>;
+  return <><CartHydrator cart={emptyStorefrontShell.cart} /><SiteHeader initialShell={emptyStorefrontShell} /><main id="contenido" className="min-h-[70vh] bg-catalog-canvas py-7 sm:py-12"><div className="container-shell"><h1 className="display-heading mt-4 text-3xl sm:mt-5 sm:text-4xl">Finalizar pedido</h1><div className="mt-7 rounded-xl bg-white p-8 text-center text-muted">Cargando tu checkout…</div></div></main><SiteFooter /></>;
 }
 
 function CheckoutUnavailable({ message }: { message: string | null }) {
@@ -41,5 +41,5 @@ function CheckoutUnavailable({ message }: { message: string | null }) {
 }
 
 function CheckoutRefreshFailure() {
-  return <CartProvider initialCart={emptyStorefrontShell.cart}><SiteHeader initialShell={emptyStorefrontShell} /><main id="contenido" className="min-h-[70vh] bg-catalog-canvas py-7 sm:py-12"><div className="container-shell rounded-xl bg-white p-8"><h1 className="font-display text-2xl font-semibold">No pudimos renovar tu sesión</h1><p className="mt-2 text-muted">Volvé a iniciar sesión antes de continuar con el pago.</p></div></main><SiteFooter /></CartProvider>;
+  return <><CartHydrator cart={emptyStorefrontShell.cart} /><SiteHeader initialShell={emptyStorefrontShell} /><main id="contenido" className="min-h-[70vh] bg-catalog-canvas py-7 sm:py-12"><div className="container-shell rounded-xl bg-white p-8"><h1 className="font-display text-2xl font-semibold">No pudimos renovar tu sesión</h1><p className="mt-2 text-muted">Volvé a iniciar sesión antes de continuar con el pago.</p></div></main><SiteFooter /></>;
 }

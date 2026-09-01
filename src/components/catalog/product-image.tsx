@@ -46,6 +46,11 @@ function publicImageUrl(src: string, preset: "card" | "thumbnail" | "detail") {
   if (src.startsWith("/")) return src;
   try {
     const url = new URL(src);
+    if (isLocalStorageUrl(url)) {
+      url.pathname = url.pathname.replace("/storage/v1/render/image/public/", "/storage/v1/object/public/");
+      ["width", "height", "quality", "resize"].forEach((key) => url.searchParams.delete(key));
+      return url.toString();
+    }
     if (!url.pathname.includes("/storage/v1/object/public/")) return src;
     url.pathname = url.pathname.replace("/storage/v1/object/public/", "/storage/v1/render/image/public/");
     const size = preset === "detail" ? 1600 : preset === "thumbnail" ? 240 : 640;
@@ -58,4 +63,8 @@ function publicImageUrl(src: string, preset: "card" | "thumbnail" | "detail") {
   } catch {
     return src;
   }
+}
+
+function isLocalStorageUrl(url: URL) {
+  return (url.hostname === "127.0.0.1" || url.hostname === "localhost") && url.port === "54321";
 }

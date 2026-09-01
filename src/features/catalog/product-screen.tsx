@@ -7,7 +7,6 @@ import { ProductStructuredData } from "@/components/product/product-structured-d
 import { ProductTechnicalInfo } from "@/components/product/product-technical-info";
 import { productBreadcrumbs } from "@/lib/product-breadcrumbs";
 import { ProductPurchaseView } from "./product-purchase-view";
-import { ProductViewTracker } from "./product-view-tracker";
 
 export function ProductScreen({ product }: { product: ProductDetail }) {
   const breadcrumbs = productBreadcrumbs(product);
@@ -15,10 +14,9 @@ export function ProductScreen({ product }: { product: ProductDetail }) {
 
   return (
     <>
-      <SiteHeader />
+      <SiteHeader publicOnly />
       <main id="contenido" className="min-w-0 bg-catalog-page py-6 sm:py-10">
         <div className="container-shell">
-          <ProductViewTracker slug={product.slug} />
           <ProductBreadcrumbs items={breadcrumbs} />
           <ProductStructuredData product={product} breadcrumbs={breadcrumbs} />
           <ProductPurchaseView product={product} />

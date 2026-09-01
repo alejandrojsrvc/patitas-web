@@ -6,7 +6,7 @@ import { SiteHeader } from "@/components/layout/site-header";
 import { emptyStorefrontShell, type ApiAccountSection } from "@/domain/storefront/types";
 import { AccountPage } from "@/features/account/account-page";
 import { SessionRefreshBoundary } from "@/features/auth/session-refresh-boundary";
-import { CartProvider } from "@/features/cart/cart-context";
+import { CartHydrator } from "@/features/cart/cart-context";
 import { getAccountScreen } from "@/infrastructure/api/commerce-server";
 
 export const metadata: Metadata = { title: "Mi cuenta | Patitas Inquietas", robots: { index: false, follow: false } };
@@ -42,15 +42,15 @@ async function AccountRouteRuntime({ params, searchParams }: AccountRouteProps) 
     ? `${result.data.shell.viewer.id}-${result.data.section.type}-${segments[1] ?? page}`
     : "guest";
 
-  return <CartProvider key={`account-${screenKey}`} initialCart={shell.cart}><SiteHeader initialShell={shell} /><main id="contenido" className="container-shell min-h-[65vh] bg-catalog-canvas py-7 sm:py-12"><AccountPage key={screenKey} section={section} initialData={result.data} initialError={result.error} /></main><SiteFooter /></CartProvider>;
+  return <><CartHydrator cart={shell.cart} /><SiteHeader initialShell={shell} /><main id="contenido" className="container-shell min-h-[65vh] bg-white py-7 sm:py-12"><AccountPage key={screenKey} section={section} initialData={result.data} initialError={result.error} /></main><SiteFooter /></>;
 }
 
 function AccountPageFallback() {
-  return <CartProvider initialCart={emptyStorefrontShell.cart}><SiteHeader initialShell={emptyStorefrontShell} /><main id="contenido" className="container-shell min-h-[65vh] bg-catalog-canvas py-7 sm:py-12"><div className="rounded-xl bg-white p-8 text-center text-muted">Cargando tu cuenta…</div></main><SiteFooter /></CartProvider>;
+  return <><CartHydrator cart={emptyStorefrontShell.cart} /><SiteHeader initialShell={emptyStorefrontShell} /><main id="contenido" className="container-shell min-h-[65vh] bg-white py-7 sm:py-12"><div className="rounded-xl bg-white p-8 text-center text-muted">Cargando tu cuenta…</div></main><SiteFooter /></>;
 }
 
 function AccountRefreshFailure() {
-  return <CartProvider initialCart={emptyStorefrontShell.cart}><SiteHeader initialShell={emptyStorefrontShell} /><main id="contenido" className="container-shell min-h-[65vh] bg-catalog-canvas py-7 sm:py-12"><div className="rounded-xl bg-white p-8"><h1 className="font-display text-2xl font-semibold">No pudimos renovar tu sesión</h1><p className="mt-2 text-muted">Intentá nuevamente o iniciá sesión otra vez.</p></div></main><SiteFooter /></CartProvider>;
+  return <><CartHydrator cart={emptyStorefrontShell.cart} /><SiteHeader initialShell={emptyStorefrontShell} /><main id="contenido" className="container-shell min-h-[65vh] bg-white py-7 sm:py-12"><div className="rounded-xl bg-white p-8"><h1 className="font-display text-2xl font-semibold">No pudimos renovar tu sesión</h1><p className="mt-2 text-muted">Intentá nuevamente o iniciá sesión otra vez.</p></div></main><SiteFooter /></>;
 }
 
 const accountSectionMap: Record<"resumen" | "pedidos" | "direcciones" | "mascotas" | "reposiciones", ApiAccountSection> = {

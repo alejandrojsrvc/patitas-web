@@ -23,6 +23,7 @@ export type CustomerAddress = {
   street: string;
   number: string;
   apartment: string | null;
+  neighborhood: string | null;
   city: string;
   province: string;
   postalCode: string;
@@ -39,6 +40,7 @@ export type CustomerAddressInput = {
   street: string;
   number: string;
   apartment?: string | null;
+  neighborhood?: string | null;
   city: string;
   province: string;
   postalCode: string;

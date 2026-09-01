@@ -13,7 +13,7 @@ export function ProductGrid({
 }) {
   if (products.length === 0) {
     return (
-      <div className="flex min-h-72 flex-col items-center justify-center rounded-2xl bg-catalog-soft px-6 text-center">
+      <div className="flex min-h-72 flex-col items-center justify-center rounded-2xl bg-white px-6 text-center">
         <Package size={42} weight="duotone" className="mb-4 text-brand-blue" aria-hidden="true" />
         <h2 className="font-display text-2xl font-semibold tracking-[-0.025em]">Estamos preparando esta selección</h2>
         <p className="mt-2 max-w-md text-muted">{emptyCopy ?? "Todavía no hay productos publicables con esos filtros. Probá otra combinación dentro del catálogo."}</p>

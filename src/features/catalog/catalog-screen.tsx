@@ -27,7 +27,7 @@ export function CatalogScreen({
 }) {
   return (
     <>
-      <SiteHeader searchQuery={searchQuery} />
+      <SiteHeader publicOnly searchQuery={searchQuery} />
       {products.ok ? (
         <CatalogResults
           result={products.data}

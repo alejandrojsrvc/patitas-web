@@ -4,6 +4,7 @@ import Script from "next/script";
 import { Analytics } from "@vercel/analytics/next";
 import { OrganizationJsonLd, WebsiteJsonLd } from "@/components/seo/json-ld";
 import { CartProvider } from "@/features/cart/cart-context";
+import { SessionShellProvider } from "@/features/session/session-shell-context";
 import "./globals.css";
 
 const googleAnalyticsId = process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID;
@@ -79,7 +80,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body>
         <OrganizationJsonLd />
         <WebsiteJsonLd />
-        <CartProvider>{children}</CartProvider>
+        <CartProvider><SessionShellProvider>{children}</SessionShellProvider></CartProvider>
         <Analytics />
       </body>
       {googleAnalyticsId ? (

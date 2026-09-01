@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { ProductScreen } from "@/features/catalog/product-screen";
 import { getProduct, PatitasApiError } from "@/infrastructure/api/patitas-api";
 import { productDisplayName, productSeoTitle } from "@/lib/product-seo";
+import { cacheLife, cacheTag } from "next/cache";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -23,9 +24,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function ProductPage({ params }: Props) {
+  const requestedSlug = (await params).slug;
+  return <CachedProductPage slug={requestedSlug} />;
+}
+
+async function CachedProductPage({ slug }: { slug: string }) {
+  "use cache";
+  cacheLife({ stale: 30, revalidate: 60, expire: 86400 });
+  cacheTag("catalog-products", `catalog-product-${slug}`);
   let product;
   try {
-    product = await getProduct((await params).slug);
+    product = await getProduct(slug);
   } catch (error) {
     if (error instanceof PatitasApiError && error.status === 404) notFound();
     throw error;

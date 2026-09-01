@@ -25,3 +25,10 @@ export const fulfillmentCopy = (variant: ProductVariant) => {
   if (variant.fulfillment.availability === "LATER") return "Disponible bajo pedido";
   return "Sin stock";
 };
+
+export const deliveryBadgeCopy = (variant: ProductVariant) => {
+  if (!variant.fulfillment.purchasable) return "Sin stock";
+  if (variant.fulfillment.availability === "TODAY") return "Llega hoy entre las 13–19 horas";
+  if (variant.fulfillment.availability === "TOMORROW") return "Llega mañana";
+  return fulfillmentCopy(variant);
+};

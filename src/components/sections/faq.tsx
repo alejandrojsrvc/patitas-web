@@ -1,4 +1,4 @@
-import { Plus } from "@phosphor-icons/react/ssr";
+import { ArrowRight, Plus } from "@phosphor-icons/react/ssr";
 import Link from "next/link";
 import { FAQJsonLd } from "@/components/seo/json-ld";
 
@@ -10,8 +10,7 @@ const faqs = [
   },
   {
     question: "¿Tengo que suscribirme para comprar?",
-    answer:
-      "No. Podés hacer una compra puntual de alimento, arena o esenciales sin contratar una suscripción.",
+    answer: "No. Podés hacer una compra puntual de alimento, arena o esenciales sin contratar una suscripción.",
   },
   {
     question: "¿Cómo sé cuánto puede durarme una bolsa?",
@@ -20,8 +19,7 @@ const faqs = [
   },
   {
     question: "¿La calculadora reemplaza la recomendación veterinaria?",
-    answer:
-      "No. El resultado es orientativo: la actividad, la condición corporal y la recomendación profesional pueden cambiar la ración.",
+    answer: "No. El resultado es orientativo: la actividad, la condición corporal y la recomendación profesional pueden cambiar la ración.",
   },
   {
     question: "¿Por qué una marca o presentación puede no aparecer?",
@@ -37,17 +35,20 @@ export function FAQ() {
       <div className="container-shell grid gap-10 lg:grid-cols-[0.72fr_1.28fr] lg:gap-20">
         <div>
           <h2 id="faq-title" className="display-heading text-4xl sm:text-5xl lg:text-[3.25rem]">
-            Preguntas frecuentes.
+            Preguntas frecuentes
           </h2>
-          <p className="body-copy mt-5 max-w-md text-lg">
-            Lo importante sobre compras, entregas y la calculadora, explicado sin vueltas.
-          </p>
-          <Link href="/preguntas-frecuentes" className="mt-7 inline-flex font-semibold text-brand-blue underline-offset-4 hover:underline">Ver todas las respuestas →</Link>
+          <p className="body-copy mt-5 max-w-md text-lg">Respuestas claras sobre compras, entregas y la calculadora.</p>
+          <Link
+            href="/preguntas-frecuentes"
+            className="mt-7 inline-flex items-center gap-2 font-semibold text-brand-blue underline-offset-4 hover:underline"
+          >
+            Ver todas las respuestas <ArrowRight size={18} weight="bold" />
+          </Link>
         </div>
 
-        <div className="border-t border-border">
+        <div className="space-y-1">
           {faqs.map((faq) => (
-            <details key={faq.question} className="group border-b border-border">
+            <details key={faq.question} className="group">
               <summary className="flex min-h-16 cursor-pointer list-none items-center justify-between gap-6 py-5 font-display text-xl font-semibold leading-tight marker:hidden hover:text-brand-blue sm:text-2xl [&::-webkit-details-marker]:hidden">
                 <span>{faq.question}</span>
                 <Plus

@@ -79,7 +79,7 @@ export function ProductGallery({
           onClick={() => current?.url && setLightboxOpen(true)}
           disabled={!current?.url}
           aria-label={current?.url ? `Ampliar imagen de ${productName}` : undefined}
-          className="group relative aspect-square w-full overflow-hidden rounded-2xl bg-catalog-soft text-left disabled:cursor-default"
+          className="group relative aspect-square w-full overflow-hidden rounded-2xl bg-white text-left disabled:cursor-default"
         >
           <ProductImage
             src={current?.url}

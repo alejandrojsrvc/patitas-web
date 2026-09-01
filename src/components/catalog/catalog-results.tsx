@@ -1,5 +1,6 @@
 import type { ProductFacets, ProductPage, Species } from "@/domain/catalog/types";
 import type { CatalogSearchParams } from "@/lib/catalog-search-params";
+import { CatalogAppliedFilters } from "./catalog-applied-filters";
 import { CatalogIntro } from "./catalog-intro";
 import { CatalogFilterSidebar } from "./catalog-filter-sidebar";
 import { CatalogPagination } from "./catalog-pagination";
@@ -43,6 +44,7 @@ export function CatalogResults({
       <CatalogIntro species={species} title={title} description={description} />
 
       <section className="container-shell py-5 sm:py-7 lg:py-9">
+        <CatalogAppliedFilters pathname={pathname} current={current} species={species} {...filters} />
         <div className="grid items-start gap-4 lg:grid-cols-[260px_minmax(0,1fr)] lg:gap-10">
           <CatalogFilterSidebar pathname={pathname} current={current} species={species} {...filters} />
 

@@ -96,7 +96,7 @@ export const catalogApi = {
 
 export async function getProducts(filters: ProductFilters = {}) {
   "use cache";
-  cacheLife({ stale: 60, revalidate: 300, expire: 3600 });
+  cacheLife({ stale: 30, revalidate: 60, expire: 86400 });
   cacheTag("catalog-products");
   return catalogApi.products(filters);
 }
@@ -111,14 +111,14 @@ export async function getProductFacets(filters: ProductFilters = {}) {
 
 async function getCachedProductFacets(filters: ProductFilters) {
   "use cache";
-  cacheLife({ stale: 60, revalidate: 300, expire: 3600 });
+  cacheLife({ stale: 300, revalidate: 1800, expire: 86400 });
   cacheTag("catalog-facets");
   return catalogApi.productFacets(filters);
 }
 
 export async function getProduct(slug: string) {
   "use cache";
-  cacheLife({ stale: 60, revalidate: 300, expire: 3600 });
+  cacheLife({ stale: 30, revalidate: 60, expire: 86400 });
   cacheTag("catalog-products", `catalog-product-${slug}`);
   return catalogApi.product(slug);
 }

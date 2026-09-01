@@ -143,6 +143,7 @@ function isAllowed(path: string, method: string) {
   if (/^\/cart\/items\/[^/]+$/.test(path) && ["PUT", "DELETE"].includes(method)) return true;
   if (path === "/cart/merge" && method === "POST") return true;
   if (path === "/me" && method === "GET") return true;
+  if (path === "/storefront/bootstrap" && method === "GET") return true;
   if (path === "/me/customer" && ["GET", "PATCH"].includes(method)) return true;
   if (path === "/me/addresses" && ["GET", "POST"].includes(method)) return true;
   if (/^\/me\/addresses\/[^/]+$/.test(path) && ["PATCH", "DELETE"].includes(method)) return true;

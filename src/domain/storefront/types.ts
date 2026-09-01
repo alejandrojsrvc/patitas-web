@@ -22,6 +22,7 @@ export type StorefrontLocation = {
   street: string;
   number: string;
   apartment: string | null;
+  neighborhood: string | null;
   city: string;
   province: string;
   postalCode: string;
