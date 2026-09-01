@@ -45,6 +45,11 @@ const nextConfig: NextConfig = {
         hostname: "**.supabase.co",
         pathname: "/storage/v1/**",
       },
+      {
+        protocol: "https",
+        hostname: "media.patitasinquietas.com.ar",
+        pathname: "/**",
+      },
     ],
   },
   allowedDevOrigins: ["patitasinquietas.local"],
