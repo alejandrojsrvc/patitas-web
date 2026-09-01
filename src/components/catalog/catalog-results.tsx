@@ -1,4 +1,4 @@
-import type { ProductFacets, ProductPage, Species } from "@/domain/catalog/types";
+import type { CategoryFacetOption, ProductFacets, ProductPage, Species } from "@/domain/catalog/types";
 import type { CatalogSearchParams } from "@/lib/catalog-search-params";
 import { CatalogAppliedFilters } from "./catalog-applied-filters";
 import { CatalogIntro } from "./catalog-intro";

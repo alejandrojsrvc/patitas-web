@@ -25,8 +25,8 @@ export function SessionShellProvider({ children }: { children: React.ReactNode }
   }, [hydrate]);
 
   useEffect(() => {
-    let hydrationTimer: ReturnType<typeof setTimeout> | null = null;
-    let loadTimer: ReturnType<typeof setTimeout> | null = null;
+    let hydrationTimer: number | null = null;
+    let loadTimer: number | null = null;
 
     try {
       const cached = window.localStorage.getItem(storageKey);
