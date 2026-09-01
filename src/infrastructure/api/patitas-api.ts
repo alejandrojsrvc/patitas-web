@@ -141,7 +141,12 @@ export async function getCalculatorProducts() {
   "use cache";
   cacheLife({ stale: 300, revalidate: 1800, expire: 7200 });
   cacheTag("catalog-products", "catalog-calculator-projection");
-  return catalogApi.calculatorProjection();
+  try {
+    return await catalogApi.calculatorProjection();
+  } catch {
+    // Next prerender treats a rejected cache fill as fatal; the calculator renders its explicit empty state instead.
+    return [];
+  }
 }
 
 export async function getSitemapProducts() {
