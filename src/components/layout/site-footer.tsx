@@ -88,6 +88,8 @@ export function SiteFooter() {
             width={220}
             height={24}
             unoptimized={false}
+            quality={60}
+            sizes="176px"
             className="h-auto w-44 brightness-0 invert"
           />
           <p className="mt-5 text-sm leading-6 text-white">Alimento balanceado, arena y esenciales para perros y gatos en CABA.</p>

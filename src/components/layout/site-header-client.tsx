@@ -60,6 +60,7 @@ export function SiteHeaderClient({
             height={24}
             unoptimized={false}
             priority
+            quality={60}
             sizes="(min-width: 1024px) 164px, 142px"
             className="h-auto w-[136px] brightness-0 invert sm:w-[148px] lg:w-[164px]"
           />
