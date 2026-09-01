@@ -22,6 +22,7 @@ export function MobileAuthFallback({
           alt="Patitas Inquietas"
           width={220}
           height={24}
+          unoptimized={false}
           priority
           className="mx-auto h-auto w-[180px]"
         />

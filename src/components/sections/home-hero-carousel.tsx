@@ -90,7 +90,7 @@ export function HomeHeroCarousel() {
               src={slide.src}
               alt={slide.alt}
               fill
-              priority={index === 1}
+              preload={index === 1}
               sizes="(min-width: 1280px) 1216px, calc(100vw - 1.25rem)"
               className="object-contain"
             />

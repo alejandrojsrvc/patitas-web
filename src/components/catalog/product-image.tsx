@@ -35,7 +35,17 @@ export function ProductImage({
   return (
     <picture>
       {sources.desktopSrc ? <source media="(min-width: 640px)" srcSet={sources.desktopSrc} /> : null}
-      <Image unoptimized src={sources.src} alt={alt} fill priority={priority} sizes={sizes} className={`object-contain ${className}`} />
+      <Image
+        unoptimized
+        src={sources.src}
+        alt={alt}
+        fill
+        preload={priority}
+        loading={priority ? "eager" : undefined}
+        fetchPriority={priority ? "high" : undefined}
+        sizes={sizes}
+        className={`object-contain ${className}`}
+      />
     </picture>
   );
 }

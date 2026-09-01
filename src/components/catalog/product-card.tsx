@@ -9,7 +9,7 @@ import { deliveryBadgeCopy, formatMoney, pricePerKilogram } from "@/lib/catalog-
 import { variantLabel } from "@/lib/catalog-variants";
 import { ProductImage } from "./product-image";
 
-export function ProductCard({ product, variant: cardVariant = "catalog" }: { product: Product; variant?: "catalog" | "featured" }) {
+export function ProductCard({ product, variant: cardVariant = "catalog", priority = false }: { product: Product; variant?: "catalog" | "featured"; priority?: boolean }) {
   const firstVariant = product.variants[0];
   const [selectedVariantId, setSelectedVariantId] = useState(firstVariant?.id);
   const selectedVariant = product.variants.find((item) => item.id === selectedVariantId) ?? firstVariant;
@@ -29,6 +29,7 @@ export function ProductCard({ product, variant: cardVariant = "catalog" }: { pro
         <ProductImage
           src={product.media[0]?.url}
           alt={product.media[0]?.altText ?? product.name}
+          priority={priority}
           sizes={
             isFeatured
               ? "(min-width: 1024px) 22vw, (min-width: 768px) 30vw, 50vw"
@@ -39,13 +40,13 @@ export function ProductCard({ product, variant: cardVariant = "catalog" }: { pro
       </Link>
 
       <div className="flex flex-1 flex-col">
-        <h3 className="min-h-10 line-clamp-2 font-display text-[15px] font-semibold leading-5 tracking-[-0.025em] text-ink sm:text-lg">
-          <Link href={`/producto/${product.slug}`} prefetch={false} className="underline-offset-4 hover:underline">
+        <h2 className="min-h-10 line-clamp-2 font-display text-[15px] font-semibold leading-5 tracking-[-0.025em] text-ink sm:text-lg">
+          <Link href={`/producto/${product.slug}`} prefetch={false} className="inline-block min-h-6 py-1 underline-offset-4 hover:underline">
             {product.name}
           </Link>
-        </h3>
+        </h2>
         <p className="mt-1 truncate text-sm font-semibold text-muted">
-          <Link href={`/marcas/${product.brand.slug}`} prefetch={false} className="hover:underline">
+          <Link href={`/marcas/${product.brand.slug}`} prefetch={false} className="inline-block min-h-6 py-1 hover:underline">
             {product.brand.name}
           </Link>
         </p>

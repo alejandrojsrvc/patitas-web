@@ -87,9 +87,10 @@ export function SiteFooter() {
             alt="Patitas Inquietas"
             width={220}
             height={24}
+            unoptimized={false}
             className="h-auto w-44 brightness-0 invert"
           />
-          <p className="mt-5 text-sm leading-6 text-white/75">Alimento balanceado, arena y esenciales para perros y gatos en CABA.</p>
+          <p className="mt-5 text-sm leading-6 text-white">Alimento balanceado, arena y esenciales para perros y gatos en CABA.</p>
           {whatsappUrl ? (
             <a
               href={whatsappUrl}
@@ -105,7 +106,7 @@ export function SiteFooter() {
           {groups.map((group) => (
             <nav key={group.title} aria-label={group.title}>
               <h2 className="font-display text-lg font-semibold">{group.title}</h2>
-              <ul className="mt-4 space-y-3 text-sm text-white/75">
+              <ul className="mt-4 space-y-3 text-sm text-white">
                 {group.links.map(([label, href]) => (
                   <li key={`${label}-${href}`}>
                     <Link href={href} className="underline-offset-4 hover:text-brand-yellow hover:underline">
@@ -120,11 +121,11 @@ export function SiteFooter() {
       </div>
       <div className="container-shell mt-12 flex flex-col gap-4 pt-6">
         <div className="flex flex-col gap-3 sm:flex-row sm:justify-between">
-          <p className="text-xs text-white/65">© 2026 Patitas Inquietas</p>
-          <p className="text-xs text-white/65">Buenos Aires, Argentina</p>
+          <p className="text-xs text-white">© 2026 Patitas Inquietas</p>
+          <p className="text-xs text-white">Buenos Aires, Argentina</p>
         </div>
         <div className="flex items-center gap-3">
-          <span className="text-xs text-white/65">Medios de pago:</span>
+          <span className="text-xs text-white">Medios de pago:</span>
           <div className="flex items-center gap-2">
             <MercadoPagoIcon className="h-8 w-auto" />
             <VisaIcon className="h-8 w-auto" />

@@ -58,6 +58,7 @@ export function SiteHeaderClient({
             alt="Patitas Inquietas"
             width={220}
             height={24}
+            unoptimized={false}
             priority
             sizes="(min-width: 1024px) 164px, 142px"
             className="h-auto w-[136px] brightness-0 invert sm:w-[148px] lg:w-[164px]"

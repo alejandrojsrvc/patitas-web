@@ -24,7 +24,7 @@ export function ProductGrid({
     <div className={variant === "featured"
       ? "grid grid-cols-2 items-stretch gap-3 md:grid-cols-3 lg:grid-cols-4 lg:gap-4"
       : "grid grid-cols-2 items-stretch gap-1 sm:grid-cols-3 sm:gap-2 lg:grid-cols-3 lg:gap-2 xl:grid-cols-4"}>
-      {products.map((product) => <ProductCard key={product.id} product={product} variant={variant} />)}
+      {products.map((product, index) => <ProductCard key={product.id} product={product} variant={variant} priority={index === 0} />)}
     </div>
   );
 }

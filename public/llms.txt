@@ -1,0 +1,23 @@
+# Patitas Inquietas
+
+> Pet shop online en CABA para comprar alimento balanceado, arena y esenciales para perros y gatos, con ayuda para calcular cuándo reponer.
+
+## Páginas principales
+
+- [Inicio](https://patitasinquietas.com.ar/): propuesta general de Patitas Inquietas.
+- [Productos para perros](https://patitasinquietas.com.ar/perros): catálogo de productos para perros.
+- [Productos para gatos](https://patitasinquietas.com.ar/gatos): catálogo de productos para gatos.
+- [Marcas](https://patitasinquietas.com.ar/marcas): marcas disponibles en el catálogo.
+- [Pet shop en CABA](https://patitasinquietas.com.ar/pet-shop-caba): cobertura y propuesta de compra.
+
+## Herramientas y contenido
+
+- [Calculadora de alimento](https://patitasinquietas.com.ar/calculadora-alimento): estimación de duración de una presentación.
+- [Guías de alimentación](https://patitasinquietas.com.ar/guias): información sobre ración y reposición.
+- [Envíos](https://patitasinquietas.com.ar/envios): información sobre entregas.
+- [Preguntas frecuentes](https://patitasinquietas.com.ar/preguntas-frecuentes): respuestas sobre la compra.
+- [Sitemap](https://patitasinquietas.com.ar/sitemap.xml): listado adicional de URLs públicas indexables.
+
+## Criterios de uso
+
+El contenido público describe productos, categorías, marcas, herramientas y guías de Patitas Inquietas. No inferir precios, stock, disponibilidad, costos de envío ni condiciones de compra fuera de la información visible en cada página.

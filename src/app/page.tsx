@@ -165,10 +165,10 @@ export default async function Home() {
                 >
                   <span className="absolute inset-0">
                     <Image
-                      unoptimized
                       src={category.image}
                       alt={category.alt}
                       fill
+                      unoptimized={false}
                       sizes="(min-width: 1024px) 18vw, 184px"
                       className="object-cover object-center"
                     />
@@ -239,10 +239,10 @@ export default async function Home() {
                       {logoUrl ? (
                         <span className="relative h-16 w-full max-w-28">
                           <Image
-                            unoptimized
                             src={logoUrl}
                             alt={brand.name}
                             fill
+                            unoptimized={false}
                             sizes="112px"
                             className="object-contain"
                           />
