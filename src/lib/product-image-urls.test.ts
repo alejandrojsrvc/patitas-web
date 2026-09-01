@@ -31,6 +31,12 @@ test("mantiene la transformación existente para Supabase Storage", () => {
   assert.match(sources.src, /resize=contain/);
 });
 
+test("mantiene Supabase Storage local sin convertirlo a R2", () => {
+  const src = "http://127.0.0.1:54321/storage/v1/object/public/product-media/products/product-id/image.png";
+
+  assert.deepEqual(productImageSources(src, "card"), { src });
+});
+
 test("no transforma URLs externas que no son media pública", () => {
   const src = "https://example.com/products/product-id/image.png";
   assert.deepEqual(productImageSources(src, "card"), { src });

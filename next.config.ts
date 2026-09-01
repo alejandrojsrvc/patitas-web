@@ -26,7 +26,6 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   cacheComponents: true,
   images: {
-    unoptimized: true,
     remotePatterns: [
       {
         protocol: "http",

@@ -72,7 +72,7 @@ export function SiteHeaderClient({
           >
             <MapPin size={22} weight="bold" className="shrink-0 text-brand-yellow" aria-hidden="true" />
             <span className="min-w-0">
-              <span className="block text-[11px] leading-tight text-white/75">Tu dirección</span>
+              <span className="block text-[11px] leading-tight text-white">Tu dirección</span>
               <span className="block truncate text-xs font-semibold leading-tight">{displayAddress ?? "Elegí tu dirección"}</span>
             </span>
           </Link>
@@ -110,7 +110,7 @@ export function SiteHeaderClient({
             <UserCircle size={23} weight="bold" className="shrink-0" aria-hidden="true" />
             <span className="min-w-0">
               <span className="block truncate text-[11px] font-semibold leading-tight">{displayName ?? "Ingresá"}</span>
-              <span className="block text-xs leading-tight text-white/70">Mi cuenta</span>
+              <span className="block text-xs leading-tight text-white">Mi cuenta</span>
             </span>
           </Link>
           <CartLink initialSummary={effectiveShell.cart} onBrand />
@@ -154,10 +154,10 @@ export function SiteHeaderClient({
                 <NavItem key={item.href} item={item} />
               ))}
               <div className="ml-auto flex items-center gap-1 border-l border-white/20 pl-3">
-                <Link href="/envios" className="whitespace-nowrap px-3 py-2 text-white/75 hover:text-brand-yellow">
+                <Link href="/envios" className="whitespace-nowrap px-3 py-2 text-white hover:text-brand-yellow">
                   Envíos
                 </Link>
-                <Link href="/preguntas-frecuentes" className="whitespace-nowrap px-3 py-2 text-white/75 hover:text-brand-yellow">
+                <Link href="/preguntas-frecuentes" className="whitespace-nowrap px-3 py-2 text-white hover:text-brand-yellow">
                   Ayuda
                 </Link>
               </div>

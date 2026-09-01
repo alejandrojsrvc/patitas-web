@@ -270,7 +270,7 @@ export default async function Home() {
               <h2 id="calculator-title" className="display-heading max-w-3xl text-3xl sm:text-4xl">
                 Calculá cuánto rinde su alimento
               </h2>
-              <p className="mt-3 max-w-2xl leading-7 text-white/70">
+              <p className="mt-3 max-w-2xl leading-7 text-white">
                 Elegí alimento, presentación y peso. Te mostramos si el cálculo usa la tabla del fabricante o una estimación general.
               </p>
             </div>
