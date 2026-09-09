@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { connection } from "next/server";
 import { PawPrint } from "@phosphor-icons/react/ssr";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
@@ -15,7 +14,6 @@ export const metadata: Metadata = {
 };
 
 export default async function BrandsPage() {
-  await connection();
   const result = await safeCatalogCall(() => getBrands());
   return (
     <>

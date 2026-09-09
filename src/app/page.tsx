@@ -2,7 +2,6 @@ import { ArrowRight, CreditCard, MapPin, Package, PawPrint } from "@phosphor-ico
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { connection } from "next/server";
 import { ProductGrid } from "@/components/catalog/product-grid";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
@@ -85,7 +84,6 @@ function availableBrands(brands: Brand[]): Brand[] {
 }
 
 export default async function Home() {
-  await connection();
   const [featuredResult, brandsResult] = await Promise.all([
     safeCatalogCall(() => getProducts({ featured: true, perPage: 4 })),
     safeCatalogCall(() => getBrands()),
