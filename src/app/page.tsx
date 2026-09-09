@@ -2,6 +2,7 @@ import { ArrowRight, CreditCard, MapPin, Package, PawPrint } from "@phosphor-ico
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { connection } from "next/server";
 import { ProductGrid } from "@/components/catalog/product-grid";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
@@ -11,7 +12,6 @@ import { RecentProducts } from "@/components/sections/recent-products";
 import type { Brand } from "@/domain/catalog/types";
 import { brandLogoUrl } from "@/lib/brand-assets";
 import { getBrands, getProducts, safeCatalogCall } from "@/infrastructure/api/patitas-api";
-import { cacheLife, cacheTag } from "next/cache";
 
 export const metadata: Metadata = {
   title: "Pet shop online en CABA | Patitas Inquietas",
@@ -85,9 +85,7 @@ function availableBrands(brands: Brand[]): Brand[] {
 }
 
 export default async function Home() {
-  "use cache";
-  cacheLife({ stale: 30, revalidate: 60, expire: 86400 });
-  cacheTag("catalog-products", "catalog-brands");
+  await connection();
   const [featuredResult, brandsResult] = await Promise.all([
     safeCatalogCall(() => getProducts({ featured: true, perPage: 4 })),
     safeCatalogCall(() => getBrands()),

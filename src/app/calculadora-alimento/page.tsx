@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { connection } from "next/server";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import { FoodCalculator } from "@/features/calculator/food-calculator";
@@ -11,6 +12,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "/calculadora-alimento" },
 };
 export default async function CalculatorPage() {
+  await connection();
   const result = await safeCatalogCall(() => getCalculatorProducts());
   return (
     <>

@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { connection } from "next/server";
 import { indexableCatalogRoutes, catalogPath } from "@/data/catalog-routes";
 import { guides } from "@/data/guides";
 import { getBrands, getSitemapProducts, safeCatalogCall } from "@/infrastructure/api/patitas-api";
@@ -7,6 +8,7 @@ const siteUrl =
   process.env.NEXT_PUBLIC_SITE_URL ??
   (process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : "http://localhost:3001");
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  await connection();
   const [products, brands] = await Promise.all([safeCatalogCall(() => getSitemapProducts()), safeCatalogCall(() => getBrands())]);
   const fixed = [
     "",
