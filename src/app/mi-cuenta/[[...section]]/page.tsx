@@ -8,7 +8,6 @@ import { SessionRefreshBoundary } from "@/features/auth/session-refresh-boundary
 import { getAccountScreen } from "@/infrastructure/api/commerce-server";
 
 export const metadata: Metadata = { title: "Mi cuenta | Patitas Inquietas", robots: { index: false, follow: false } };
-export const instant = false;
 
 type AccountRouteProps = {
   params: Promise<{ section?: string[] }>;
