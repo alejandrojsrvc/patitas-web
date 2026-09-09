@@ -36,7 +36,6 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
-  cacheComponents: true,
   images: {
     qualities: [60, 75],
     remotePatterns: [

@@ -4,7 +4,6 @@ import { catalogPath, resolveCatalogRoute, type CatalogRoute } from "@/data/cata
 import { CatalogScreen } from "@/features/catalog/catalog-screen";
 import { getBrands, getProductFacets, getProducts, safeCatalogCall } from "@/infrastructure/api/patitas-api";
 import { hasCatalogFilterParams, normalizeCatalogSearchParams, productFiltersFromSearchParams } from "@/lib/catalog-search-params";
-import { cacheLife, cacheTag } from "next/cache";
 
 type Props = { params: Promise<{ segments?: string[] }>; searchParams: Promise<Record<string, string | string[] | undefined>> };
 
@@ -28,13 +27,10 @@ export default async function CatsCatalogPage({ params, searchParams }: Props) {
   delete query.category;
   if (route.brand) query.brand = [route.brand];
   if (route.lifeStage) query.lifeStage = [route.lifeStage];
-  return <CachedCatsCatalog route={route} query={query} />;
+  return <CatsCatalog route={route} query={query} />;
 }
 
-async function CachedCatsCatalog({ route, query }: { route: CatalogRoute; query: Record<string, string | string[] | undefined> }) {
-  "use cache";
-  cacheLife({ stale: 30, revalidate: 60, expire: 86400 });
-  cacheTag("catalog-products", "catalog-facets");
+async function CatsCatalog({ route, query }: { route: CatalogRoute; query: Record<string, string | string[] | undefined> }) {
   const requestedBrand = route.brand;
   if (requestedBrand) {
     const brands = await safeCatalogCall(() => getBrands());

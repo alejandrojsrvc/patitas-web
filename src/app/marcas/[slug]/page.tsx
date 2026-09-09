@@ -7,7 +7,6 @@ import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import { getBrand, getProducts, PatitasApiError } from "@/infrastructure/api/patitas-api";
 import { hasCatalogFilterParams, normalizeCatalogSearchParams, type CatalogSearchParams } from "@/lib/catalog-search-params";
-import { cacheLife, cacheTag } from "next/cache";
 
 type Props = { params: Promise<{ slug: string }>; searchParams: Promise<CatalogSearchParams> };
 export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
@@ -35,10 +34,10 @@ export default async function BrandPage({ params, searchParams }: Props) {
     if (error instanceof PatitasApiError && error.status === 404) notFound();
     throw error;
   }
-  return <CachedBrandPage slug={slug} query={query} brand={brand} />;
+  return <BrandPageContent slug={slug} query={query} brand={brand} />;
 }
 
-async function CachedBrandPage({
+async function BrandPageContent({
   slug,
   query,
   brand,
@@ -47,9 +46,6 @@ async function CachedBrandPage({
   query: CatalogSearchParams;
   brand: Awaited<ReturnType<typeof getBrand>>;
 }) {
-  "use cache";
-  cacheLife({ stale: 30, revalidate: 60, expire: 86400 });
-  cacheTag("catalog-products", "catalog-facets", "catalog-brands", `catalog-brand-${slug}`);
   const parsedPage = Number(Array.isArray(query.page) ? query.page[0] : query.page);
   const page = Number.isInteger(parsedPage) && parsedPage > 0 ? parsedPage : 1;
   const products = await getProducts({ brand: [slug], page, perPage: 24 });

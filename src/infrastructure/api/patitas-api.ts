@@ -1,5 +1,4 @@
 import "server-only";
-import { cacheLife, cacheTag } from "next/cache";
 import { unstable_rethrow } from "next/navigation";
 import type {
   Brand,
@@ -115,9 +114,6 @@ export const catalogApi = {
 };
 
 export async function getProducts(filters: ProductFilters = {}) {
-  "use cache";
-  cacheLife({ stale: 30, revalidate: 60, expire: 86400 });
-  cacheTag("catalog-products");
   return catalogApi.products(filters);
 }
 
@@ -126,54 +122,32 @@ export async function getProductFacets(filters: ProductFilters = {}) {
   delete facetFilters.page;
   delete facetFilters.perPage;
   delete facetFilters.sort;
-  return getCachedProductFacets(facetFilters);
-}
-
-async function getCachedProductFacets(filters: ProductFilters) {
-  "use cache";
-  cacheLife({ stale: 300, revalidate: 1800, expire: 86400 });
-  cacheTag("catalog-facets");
-  return catalogApi.productFacets(filters);
+  return catalogApi.productFacets(facetFilters);
 }
 
 export async function getProduct(slug: string) {
-  "use cache";
-  cacheLife({ stale: 30, revalidate: 60, expire: 86400 });
-  cacheTag("catalog-products", `catalog-product-${slug}`);
   return catalogApi.product(slug);
 }
 
 export async function getBrands() {
-  "use cache";
-  cacheLife("hours");
-  cacheTag("catalog-brands");
   return catalogApi.brands();
 }
 
 export async function getBrand(slug: string) {
-  "use cache";
-  cacheLife("hours");
-  cacheTag("catalog-brands", `catalog-brand-${slug}`);
   return catalogApi.brand(slug);
 }
 
 export async function getCalculatorProducts() {
-  "use cache";
-  cacheLife({ stale: 300, revalidate: 1800, expire: 7200 });
-  cacheTag("catalog-products", "catalog-calculator-projection");
   try {
     return await catalogApi.calculatorProjection();
   } catch (error) {
     unstable_rethrow(error);
-    // Next prerender treats a rejected cache fill as fatal; the calculator renders its explicit empty state instead.
+    // The calculator renders its explicit empty state when the projection is unavailable.
     return [];
   }
 }
 
 export async function getSitemapProducts() {
-  "use cache";
-  cacheLife("hours");
-  cacheTag("catalog-products", "catalog-sitemap-projection");
   return catalogApi.sitemapProjection();
 }
 
