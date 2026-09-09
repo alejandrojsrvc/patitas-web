@@ -34,14 +34,7 @@ export default async function BrandsPage() {
                   >
                     {logoUrl ? (
                       <span className="relative h-16 w-full max-w-28">
-                        <Image
-                          src={logoUrl}
-                          alt={brand.name}
-                          fill
-                          unoptimized={false}
-                          sizes="112px"
-                          className="object-contain"
-                        />
+                        <Image src={logoUrl} alt={brand.name} fill unoptimized={false} sizes="112px" className="object-contain" />
                       </span>
                     ) : (
                       <span className="flex h-14 items-center justify-center text-brand-blue" aria-hidden="true">

@@ -13,10 +13,10 @@
  * this module takes as options (`skipDirs`, `fileFilter`).
  */
 
-import fs from 'node:fs';
-import path from 'node:path';
-import { UIZZE_DIR } from '../lib/uizze-paths.mjs';
-import { matchesTemplateExtension } from '../lib/template-extensions.mjs';
+import fs from "node:fs";
+import path from "node:path";
+import { UIZZE_DIR } from "../lib/uizze-paths.mjs";
+import { matchesTemplateExtension } from "../lib/template-extensions.mjs";
 
 /**
  * Privileged roots, searched in order, before the catch-all `.` walk.
@@ -25,9 +25,7 @@ import { matchesTemplateExtension } from '../lib/template-extensions.mjs';
  * an ordering preference rather than a reachability fix: `.` already recurses
  * into `lib`, so the real #374 bug was the extension list, not this array.
  */
-export const SOURCE_SEARCH_DIRS = Object.freeze([
-  'src', 'app', 'pages', 'components', 'public', 'views', 'templates', 'lib', '.',
-]);
+export const SOURCE_SEARCH_DIRS = Object.freeze(["src", "app", "pages", "components", "public", "views", "templates", "lib", "."]);
 
 /**
  * Directories that are never project source.
@@ -42,7 +40,7 @@ export const SOURCE_SEARCH_DIRS = Object.freeze([
  * the agent fell back to carbonizing several hundred lines of stylesheet by
  * hand.
  */
-export const NEVER_SOURCE_DIRS = Object.freeze(['node_modules', '.git', UIZZE_DIR]);
+export const NEVER_SOURCE_DIRS = Object.freeze(["node_modules", ".git", UIZZE_DIR]);
 
 const MAX_DEPTH = 5;
 
@@ -74,13 +72,20 @@ function walk(dir, query, extensions, skip, fileFilter, seen, depth) {
   // A broken symlink anywhere in the tree used to throw straight out of
   // live-wrap's copy of this walk, killing the whole wrap.
   let realDir;
-  try { realDir = fs.realpathSync(dir); } catch { return null; }
+  try {
+    realDir = fs.realpathSync(dir);
+  } catch {
+    return null;
+  }
   if (seen.has(realDir)) return null;
   seen.add(realDir);
 
   let entries;
-  try { entries = fs.readdirSync(dir, { withFileTypes: true }); }
-  catch { return null; }
+  try {
+    entries = fs.readdirSync(dir, { withFileTypes: true });
+  } catch {
+    return null;
+  }
 
   // Files before directories: a match in the current directory beats one
   // nested deeper.
@@ -90,8 +95,10 @@ function walk(dir, query, extensions, skip, fileFilter, seen, depth) {
     const filePath = path.join(dir, entry.name);
     if (fileFilter && !fileFilter(filePath)) continue;
     try {
-      if (fs.readFileSync(filePath, 'utf-8').includes(query)) return filePath;
-    } catch { /* unreadable, skip */ }
+      if (fs.readFileSync(filePath, "utf-8").includes(query)) return filePath;
+    } catch {
+      /* unreadable, skip */
+    }
   }
 
   for (const entry of entries) {

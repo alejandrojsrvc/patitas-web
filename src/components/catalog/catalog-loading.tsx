@@ -5,17 +5,25 @@ export function CatalogLoading() {
   return (
     <>
       <SiteHeader initialShell={emptyStorefrontShell} />
-      <main id="contenido" className="bg-catalog-canvas pb-20" aria-busy="true" aria-label="Cargando catálogo">
-        <section className="bg-catalog-soft py-12 sm:py-16">
-          <div className="container-shell space-y-4">
-            <div className="h-12 max-w-xl animate-pulse rounded-xl bg-white/70" />
-            <div className="h-5 max-w-2xl animate-pulse rounded-lg bg-white/60" />
+      <main id="contenido" className="bg-catalog-page pb-20 [overflow-anchor:none]" aria-busy="true" aria-label="Cargando catálogo">
+        <section className="container-shell pb-3 pt-6 sm:pb-4 sm:pt-8">
+          <div className="space-y-3">
+            <div className="h-9 max-w-xl animate-pulse rounded-lg bg-catalog-soft" />
+            <div className="h-5 max-w-2xl animate-pulse rounded bg-catalog-soft" />
           </div>
         </section>
-        <section className="container-shell grid gap-6 py-8 lg:grid-cols-[260px_minmax(0,1fr)] lg:gap-10">
-          <div className="h-80 animate-pulse rounded-2xl bg-white" />
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
-            {Array.from({ length: 8 }, (_, index) => <div key={index} className="h-80 animate-pulse rounded-xl bg-white" />)}
+        <section className="container-shell pb-10 pt-3 sm:pt-4">
+          <div className="mb-4 h-14 animate-pulse border-y border-catalog-line lg:hidden" />
+          <div className="grid gap-4 lg:grid-cols-[240px_minmax(0,1fr)] lg:gap-8">
+            <div className="hidden h-80 animate-pulse border-y border-catalog-line lg:block" />
+            <div>
+              <div className="mb-4 h-16 animate-pulse rounded-xl bg-soft-blue" />
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 xl:grid-cols-4">
+                {Array.from({ length: 8 }, (_, index) => (
+                  <div key={index} className="aspect-[0.62] animate-pulse rounded-xl bg-white" />
+                ))}
+              </div>
+            </div>
           </div>
         </section>
       </main>

@@ -1,16 +1,19 @@
 "use client";
 
-import { Funnel, X } from "@phosphor-icons/react/ssr";
+import { CaretDown, Check, Funnel, X } from "@phosphor-icons/react/ssr";
 import Form from "next/form";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { type FormEvent, useEffect, useRef, useState } from "react";
 
+import { categoryPathForSpecies } from "@/data/catalog-routes";
 import { catalogHref, type CatalogSearchParams } from "@/lib/catalog-search-params";
+import { CatalogSortOptions } from "./catalog-sort-options";
 
 export function CatalogFilterSidebar({
   pathname,
   current,
   species,
+  resultCount,
   categories,
   brands,
   stages,
@@ -19,6 +22,7 @@ export function CatalogFilterSidebar({
   pathname: string;
   current: CatalogSearchParams;
   species?: "dog" | "cat";
+  resultCount: number;
   categories: Array<readonly [string, string]>;
   brands: Array<readonly [string, string]>;
   stages: Array<readonly [string, string]>;
@@ -46,11 +50,25 @@ export function CatalogFilterSidebar({
     if (!isOpen) return;
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
-    drawerRef.current?.focus();
+    drawerRef.current?.focus({ preventScroll: true });
     const closeOnEscape = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         setIsOpen(false);
-        triggerRef.current?.focus();
+        triggerRef.current?.focus({ preventScroll: true });
+      }
+      if (event.key !== "Tab" || !drawerRef.current) return;
+      const focusable = Array.from(
+        drawerRef.current.querySelectorAll<HTMLElement>("a[href], button:not([disabled]), input:not([disabled]), summary"),
+      );
+      if (!focusable.length) return;
+      const firstFocusable = focusable[0];
+      const lastFocusable = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === firstFocusable) {
+        event.preventDefault();
+        lastFocusable.focus({ preventScroll: true });
+      } else if (!event.shiftKey && document.activeElement === lastFocusable) {
+        event.preventDefault();
+        firstFocusable.focus({ preventScroll: true });
       }
     };
     document.addEventListener("keydown", closeOnEscape);
@@ -62,19 +80,22 @@ export function CatalogFilterSidebar({
 
   const closeDrawer = () => {
     setIsOpen(false);
-    triggerRef.current?.focus();
+    triggerRef.current?.focus({ preventScroll: true });
   };
 
   return (
     <>
-      <div className="sticky top-0 z-20 -mx-1 mb-3 bg-catalog-page py-2 lg:hidden">
+      <div className="mb-1 flex min-h-14 items-center justify-between gap-3 border-y border-catalog-line py-2 lg:hidden">
+        <p className="text-sm text-muted">
+          <strong className="font-semibold text-ink">{resultCount}</strong> {resultCount === 1 ? "producto" : "productos"}
+        </p>
         <button
           ref={triggerRef}
           type="button"
           onClick={() => setIsOpen(true)}
           aria-expanded={isOpen}
           aria-controls="catalog-filter-drawer"
-          className="flex min-h-11 w-full items-center justify-between rounded-lg border border-catalog-line bg-white px-3 text-sm font-semibold text-ink shadow-[0_2px_8px_rgba(23,23,23,0.06)] transition-colors hover:border-brand-blue focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue"
+          className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-white px-4 text-sm font-semibold text-ink transition-colors hover:text-brand-blue focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue"
         >
           <span className="inline-flex items-center gap-2">
             <Funnel size={18} weight="bold" aria-hidden="true" />
@@ -82,15 +103,13 @@ export function CatalogFilterSidebar({
           </span>
           {activeFilterCount ? (
             <span className="rounded-full bg-brand-blue px-2 py-0.5 text-xs font-bold text-white">{activeFilterCount}</span>
-          ) : (
-            <span className="text-xs font-normal text-muted">Abrir</span>
-          )}
+          ) : null}
         </button>
       </div>
 
       {isOpen ? (
         <div
-          className="fixed inset-x-0 bottom-0 top-32 z-30 bg-ink/30 motion-safe:animate-[catalog-overlay-in_160ms_ease-out] lg:hidden"
+          className="fixed inset-0 z-40 bg-ink/35 motion-safe:animate-[catalog-overlay-in_160ms_ease-out] lg:hidden"
           aria-hidden="true"
           onClick={closeDrawer}
         />
@@ -103,7 +122,7 @@ export function CatalogFilterSidebar({
           role="dialog"
           aria-modal="true"
           aria-label="Filtros del catálogo"
-          className="fixed bottom-0 left-0 top-32 z-40 w-[min(88vw,22rem)] overflow-y-auto overscroll-contain border-r border-catalog-line bg-catalog-soft px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 shadow-[10px_0_28px_rgba(23,23,23,0.14)] motion-safe:animate-[catalog-drawer-in_180ms_ease-out] lg:hidden"
+          className="fixed inset-x-0 bottom-0 z-50 max-h-[85dvh] overflow-y-auto overscroll-contain rounded-t-2xl bg-white px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-4 shadow-[0_-16px_44px_rgba(23,23,23,0.16)] motion-safe:animate-[catalog-drawer-in_180ms_ease-out] lg:hidden"
         >
           <FilterContent
             pathname={pathname}
@@ -119,7 +138,7 @@ export function CatalogFilterSidebar({
         </aside>
       ) : null}
 
-      <aside className="hidden self-start rounded-xl bg-catalog-soft p-5 lg:block" aria-label="Filtros del catálogo">
+      <aside className="hidden self-start pr-2 lg:block" aria-label="Filtros del catálogo">
         <FilterContent
           pathname={pathname}
           current={current}
@@ -162,10 +181,25 @@ function FilterContent({
   const selectedCategory = first(current.category);
   const selectedMinPrice = first(current.minPrice);
   const selectedMaxPrice = first(current.maxPrice);
+  const [priceError, setPriceError] = useState<string | null>(null);
+
+  function validatePriceRange(event: FormEvent<HTMLFormElement>) {
+    const data = new FormData(event.currentTarget);
+    const minPrice = Number(data.get("minPrice") || 0);
+    const rawMaxPrice = data.get("maxPrice");
+    const maxPrice = rawMaxPrice ? Number(rawMaxPrice) : null;
+    if (maxPrice !== null && minPrice > maxPrice) {
+      event.preventDefault();
+      setPriceError("El precio máximo debe ser mayor o igual al mínimo.");
+      return;
+    }
+    setPriceError(null);
+    onNavigate?.();
+  }
 
   return (
     <div>
-      <div className="flex items-center justify-between gap-3 border-b border-catalog-line pb-3">
+      <div className="flex min-h-12 items-center justify-between gap-3 border-b border-catalog-line pb-3">
         <h2 className="font-display text-lg font-semibold">Filtros</h2>
         {onClose ? (
           <button
@@ -177,13 +211,20 @@ function FilterContent({
             <X size={20} weight="bold" aria-hidden="true" />
           </button>
         ) : (
-          <Link href={pathname} scroll={false} className="text-xs font-semibold text-brand-blue hover:underline">
+          <Link href={pathname} prefetch={false} scroll={false} className="text-xs font-semibold text-brand-blue hover:underline">
             Limpiar
           </Link>
         )}
       </div>
-      <div className="flex items-center justify-end py-2 lg:hidden">
-        <Link href={pathname} scroll={false} onClick={onNavigate} className="text-xs font-semibold text-brand-blue hover:underline">
+      <div className="grid gap-3 border-b border-catalog-line py-4 lg:hidden">
+        <CatalogSortOptions current={current} pathname={pathname} />
+        <Link
+          href={pathname}
+          prefetch={false}
+          scroll={false}
+          onClick={onNavigate}
+          className="text-xs font-semibold text-brand-blue hover:underline"
+        >
           Limpiar filtros
         </Link>
       </div>
@@ -208,6 +249,7 @@ function FilterContent({
             name="category"
             values={selectedCategory ? [selectedCategory] : []}
             options={categories}
+            categorySpecies={species ?? (selectedSpecies === "dog" || selectedSpecies === "cat" ? selectedSpecies : undefined)}
             current={current}
             pathname={pathname}
             onNavigate={onNavigate}
@@ -234,7 +276,7 @@ function FilterContent({
           onNavigate={onNavigate}
         />
         <FilterOptionList
-          label="Presentación"
+          label="Peso o tamaño"
           name="weightGrams"
           values={selectedWeights}
           multiple
@@ -243,11 +285,16 @@ function FilterContent({
           pathname={pathname}
           onNavigate={onNavigate}
         />
-        <Form action={pathname} scroll={false} onSubmit={onNavigate} className="border-t border-catalog-line pt-3">
+        <Form action={pathname} scroll={false} onSubmit={validatePriceRange} className="border-b border-catalog-line py-3">
           <PreservedSearchParams current={current} omit={["minPrice", "maxPrice", "page"]} />
           <details open={Boolean(selectedMinPrice || selectedMaxPrice)} className="group">
             <summary className="flex min-h-10 cursor-pointer list-none items-center justify-between gap-3 font-semibold marker:content-none">
-              Precio <span className="text-xs font-normal text-muted">Abrir</span>
+              <span>Precio</span>
+              <span className="inline-flex items-center gap-1 text-xs font-normal text-muted">
+                <span className="group-open:hidden">Ver</span>
+                <span className="hidden group-open:inline">Ocultar</span>
+                <CaretDown size={14} aria-hidden="true" className="transition-transform group-open:rotate-180" />
+              </span>
             </summary>
             <div className="grid gap-2 pb-3">
               <label className="text-xs font-semibold text-muted">
@@ -275,6 +322,11 @@ function FilterContent({
                 />
               </label>
             </div>
+            {priceError ? (
+              <p role="alert" className="mb-2 text-sm text-[#8d2020]">
+                {priceError}
+              </p>
+            ) : null}
             <button
               type="submit"
               className="inline-flex min-h-10 w-full items-center justify-center rounded-lg bg-brand-blue px-4 text-sm font-semibold text-white hover:bg-[#0048dc]"
@@ -294,6 +346,7 @@ function FilterOptionList({
   values: selectedValues,
   multiple = false,
   options,
+  categorySpecies,
   current,
   pathname,
   onNavigate,
@@ -303,46 +356,70 @@ function FilterOptionList({
   values: string[];
   multiple?: boolean;
   options: Array<readonly [string, string]>;
+  categorySpecies?: "dog" | "cat";
   current: CatalogSearchParams;
   pathname: string;
   onNavigate?: () => void;
 }) {
+  const selectedCount = selectedValues.length;
+  const expandedByDefault = label === "Especie" || label === "Categoría" || selectedCount > 0;
+
   return (
-    <fieldset className="border-t border-catalog-line py-3 first:border-t-0">
-      <legend className="font-display text-base font-semibold">{label}</legend>
-      <div className="mt-2 grid gap-1">
-        {options.map(([optionValue, optionLabel]) => {
-          const selected = selectedValues.includes(optionValue);
-          const nextValues = multiple
-            ? selected
-              ? selectedValues.filter((value) => value !== optionValue)
-              : [...selectedValues, optionValue]
-            : [optionValue];
-          return (
-            <FilterOption
-              key={optionValue}
-              label={optionLabel}
-              selected={selected}
-              href={catalogHref(pathname, current, { [name]: nextValues, page: 1 })}
-              onNavigate={onNavigate}
-            />
-          );
-        })}
-      </div>
+    <fieldset className="border-b border-catalog-line">
+      <legend className="sr-only">{label}</legend>
+      <details open={expandedByDefault} className="group py-2">
+        <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 font-semibold marker:content-none">
+          <span>{label}</span>
+          <span className="inline-flex items-center gap-2 text-xs font-normal text-muted">
+            {selectedCount ? `${selectedCount} ${selectedCount === 1 ? "elegido" : "elegidos"}` : "Ver"}
+            <CaretDown size={14} aria-hidden="true" className="transition-transform group-open:rotate-180" />
+          </span>
+        </summary>
+        <div className="grid max-h-64 gap-1 overflow-y-auto pb-2 pr-1">
+          {options.map(([optionValue, optionLabel]) => {
+            const selected = selectedValues.includes(optionValue);
+            const nextValues = multiple
+              ? selected
+                ? selectedValues.filter((value) => value !== optionValue)
+                : [...selectedValues, optionValue]
+              : selected
+                ? []
+                : [optionValue];
+            const canonicalCategoryPath =
+              pathname !== "/buscar" && name === "category" && categorySpecies
+                ? categoryPathForSpecies(categorySpecies, optionValue)
+                : null;
+            return (
+              <FilterOption
+                key={optionValue}
+                label={optionLabel}
+                selected={selected}
+                href={canonicalCategoryPath ?? catalogHref(pathname, current, { [name]: nextValues, page: 1 })}
+                onNavigate={onNavigate}
+              />
+            );
+          })}
+        </div>
+      </details>
     </fieldset>
   );
 }
 
 function FilterOption({ label, selected, href, onNavigate }: { label: string; selected: boolean; href: string; onNavigate?: () => void }) {
+  const isFilteredUrl = href.includes("?");
+
   return (
     <Link
       href={href}
+      prefetch={false}
+      rel={isFilteredUrl ? "nofollow" : undefined}
       scroll={false}
       onClick={onNavigate}
       aria-label={selected ? `${label}, seleccionado` : label}
-      className={`flex min-h-9 items-center rounded-lg px-3 text-sm transition-colors ${selected ? "bg-white font-semibold text-brand-blue" : "text-muted hover:bg-white/70 hover:text-ink"}`}
+      className={`flex min-h-11 items-center justify-between gap-2 rounded-lg px-3 text-sm transition-colors ${selected ? "bg-soft-blue font-semibold text-brand-blue" : "text-muted hover:bg-white hover:text-ink"}`}
     >
-      {label}
+      <span>{label}</span>
+      {selected ? <Check size={15} weight="bold" aria-hidden="true" /> : null}
     </Link>
   );
 }

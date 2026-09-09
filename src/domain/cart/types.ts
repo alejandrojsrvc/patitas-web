@@ -11,7 +11,12 @@ export type CartItem = {
   quantity: number;
   lineTotal: string;
   availableQuantity: number;
+  role: "MAIN" | "EXTRA";
+  petId: string | null;
+  planId: string | null;
 };
+
+export type CartItemContext = { role: "MAIN" | "EXTRA"; petId?: string | null; planId?: string | null };
 
 export type Cart = {
   id: string;

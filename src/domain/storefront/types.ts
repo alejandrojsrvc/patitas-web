@@ -3,6 +3,7 @@ import type {
   CustomerAddress,
   CustomerPet,
   CustomerProfile,
+  OrderListItem,
   OrderSummary,
   ReplenishmentPlanSummary,
 } from "@/domain/customer/types";
@@ -49,12 +50,12 @@ export type CartScreen = {
 export type AccountOverviewSection = {
   type: "overview";
   orderCount: number;
-  recentOrders: OrderSummary[];
+  recentOrders: OrderListItem[];
 };
 
 export type AccountOrdersSection = {
   type: "orders";
-  orders: OrderSummary[];
+  orders: OrderListItem[];
   meta: {
     page: number;
     perPage: number;

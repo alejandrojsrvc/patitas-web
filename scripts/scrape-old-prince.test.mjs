@@ -39,10 +39,7 @@ test("extracts and deduplicates product links from the category", () => {
 });
 
 test("preserves the relevant product detail data", () => {
-  const product = parseProductDetail(
-    detailHtml,
-    "https://oldprince.com.ar/producto/old-prince-premium-adultos/",
-  );
+  const product = parseProductDetail(detailHtml, "https://oldprince.com.ar/producto/old-prince-premium-adultos/");
 
   assert.equal(product.name, "Old Prince Premium Adultos");
   assert.equal(product.line, "Premium");

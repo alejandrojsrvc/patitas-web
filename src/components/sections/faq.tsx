@@ -30,7 +30,7 @@ const faqs = [
 
 export function FAQ() {
   return (
-    <section id="preguntas-frecuentes" className="anchor-section bg-white py-14 sm:py-20" aria-labelledby="faq-title">
+    <section id="preguntas-frecuentes" className="anchor-section bg-page-bg py-14 sm:py-20" aria-labelledby="faq-title">
       <FAQJsonLd faqs={faqs} />
       <div className="container-shell grid gap-10 lg:grid-cols-[0.72fr_1.28fr] lg:gap-20">
         <div>

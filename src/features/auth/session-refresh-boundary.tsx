@@ -49,7 +49,7 @@ export function SessionRefreshBoundary({
 function refreshSession() {
   if (!refreshInFlight) {
     refreshInFlight = fetch("/api/auth/refresh", { method: "POST" })
-      .then((response) => response.ok || response.status === 401)
+      .then((response) => response.ok)
       .catch(() => false)
       .finally(() => {
         window.setTimeout(() => {

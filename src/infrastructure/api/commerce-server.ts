@@ -3,13 +3,8 @@ import "server-only";
 import { cookies } from "next/headers";
 
 import type { CheckoutScreen } from "@/domain/checkout/types";
-import type {
-  AccountScreen,
-  ApiAccountSection,
-  CartScreen,
-  ServerBootstrapResult,
-  StorefrontShell,
-} from "@/domain/storefront/types";
+import type { CustomerProfile } from "@/domain/customer/types";
+import type { AccountScreen, ApiAccountSection, CartScreen, ServerBootstrapResult, StorefrontShell } from "@/domain/storefront/types";
 import { authCookieNames } from "@/lib/auth-cookies";
 import { requestCommerce } from "./commerce-api";
 
@@ -71,10 +66,29 @@ export async function getCheckoutBootstrap(sessionId: string): Promise<ServerBoo
   if (credentials.accessToken) headers.Authorization = `Bearer ${credentials.accessToken}`;
   else if (credentials.checkoutToken) headers["X-Checkout-Token"] = credentials.checkoutToken;
 
-  return requestBootstrap(`/checkout/sessions/${encodeURIComponent(sessionId)}/bootstrap`, {
+  const checkoutResult = await requestBootstrap<CheckoutScreen>(`/checkout/sessions/${encodeURIComponent(sessionId)}/bootstrap`, {
     credentials,
     headers,
   });
+  if (!checkoutResult.data || !credentials.accessToken) return checkoutResult;
+
+  try {
+    const customerResponse = await requestCommerce("/me/customer", { headers: { Authorization: `Bearer ${credentials.accessToken}` } });
+    const customer = (await customerResponse.json().catch(() => null)) as CustomerProfile | null;
+    if (customerResponse.ok && customer?.email) {
+      return {
+        ...checkoutResult,
+        data: {
+          ...checkoutResult.data,
+          customer: { fullName: customer.fullName, email: customer.email, phone: customer.phone },
+        },
+      };
+    }
+  } catch {
+    // El perfil es una mejora de precarga; no debe impedir continuar con el checkout.
+  }
+
+  return checkoutResult;
 }
 
 async function requestBootstrap<T>(
@@ -83,16 +97,17 @@ async function requestBootstrap<T>(
 ): Promise<ServerBootstrapResult<T>> {
   try {
     const response = await requestCommerce(path, { headers: options.headers });
-    const payload = await response.json().catch(() => null) as T | { message?: string } | null;
+    const payload = (await response.json().catch(() => null)) as T | { message?: string } | null;
 
     if (response.status === 401 && options.credentials.refreshToken) return refreshRequired();
     if (!response.ok || !payload) {
       return {
         data: null,
         refreshRequired: false,
-        error: payload && typeof payload === "object" && "message" in payload
-          ? payload.message ?? "Patitas API no pudo completar la solicitud."
-          : "Patitas API no pudo completar la solicitud.",
+        error:
+          payload && typeof payload === "object" && "message" in payload
+            ? (payload.message ?? "Patitas API no pudo completar la solicitud.")
+            : "Patitas API no pudo completar la solicitud.",
       };
     }
 
@@ -102,9 +117,7 @@ async function requestBootstrap<T>(
     return {
       data: null,
       refreshRequired: false,
-      error: timedOut
-        ? "Patitas API tardó demasiado en responder."
-        : "No pudimos conectar con Patitas API.",
+      error: timedOut ? "Patitas API tardó demasiado en responder." : "No pudimos conectar con Patitas API.",
     };
   }
 }

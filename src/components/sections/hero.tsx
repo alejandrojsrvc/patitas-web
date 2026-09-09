@@ -1,26 +1,16 @@
-import {
-  Bone,
-  BowlFood,
-  Check,
-  Dog,
-  Package,
-} from "@phosphor-icons/react/ssr";
+import { Bone, BowlFood, Check, Dog, Package } from "@phosphor-icons/react/ssr";
 import Image from "next/image";
 import { CtaLink } from "@/components/ui/cta-link";
 
 export function Hero() {
   return (
-    <section id="inicio" className="anchor-section overflow-hidden bg-cream pb-18 pt-12 sm:pb-24 sm:pt-16 lg:pb-28 lg:pt-20">
+    <section id="inicio" className="anchor-section overflow-hidden bg-page-bg pb-18 pt-12 sm:pb-24 sm:pt-16 lg:pb-28 lg:pt-20">
       <div className="container-shell grid items-center gap-12 lg:grid-cols-[0.92fr_1.08fr] lg:gap-16">
         <div>
-          <h1 className="display-heading max-w-[11ch] text-[clamp(3rem,7vw,5.25rem)] text-ink">
-            Que nunca le falte lo que necesita.
-          </h1>
+          <h1 className="display-heading max-w-[11ch] text-[clamp(3rem,7vw,5.25rem)] text-ink">Que nunca le falte lo que necesita.</h1>
           <p className="body-copy mt-6 max-w-[35rem] text-lg leading-8 sm:text-xl">
-            Configurá una vez su alimento y esenciales. Patitas se ocupa de
-            que lleguen según su ritmo, sin que tengas que recordar cada
-            compra. Elegís la frecuencia, y vos seguís teniendo el control
-            de cada entrega.
+            Configurá una vez su alimento y esenciales. Patitas se ocupa de que lleguen según su ritmo, sin que tengas que recordar cada
+            compra. Elegís la frecuencia, y vos seguís teniendo el control de cada entrega.
           </p>
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -64,12 +54,8 @@ export function Hero() {
             />
 
             <div className="relative flex items-start justify-between">
-              <p className="max-w-[11rem] font-display text-2xl font-semibold leading-[1.05] sm:text-3xl">
-                Todo listo para cuando toca.
-              </p>
-              <span className="rounded-full bg-brand-yellow px-3 py-1.5 text-xs font-bold text-ink">
-                PLAN MENSUAL
-              </span>
+              <p className="max-w-[11rem] font-display text-2xl font-semibold leading-[1.05] sm:text-3xl">Todo listo para cuando toca.</p>
+              <span className="rounded-full bg-brand-yellow px-3 py-1.5 text-xs font-bold text-ink">PLAN MENSUAL</span>
             </div>
 
             <div className="absolute bottom-7 left-6 right-6 sm:bottom-9 sm:left-9 sm:right-9">

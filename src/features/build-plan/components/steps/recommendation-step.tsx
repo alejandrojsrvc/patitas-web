@@ -2,11 +2,7 @@ import { BowlFood, CalendarDots, CheckCircle } from "@phosphor-icons/react";
 import { OptionCard } from "../option-card";
 import { StepIntro } from "../step-intro";
 import type { FoodPresentation, PlanRecommendation } from "../../types";
-import {
-  formatGrams,
-  formatKilograms,
-  formatReplenishmentDate,
-} from "../../utils/formatters";
+import { formatGrams, formatKilograms, formatReplenishmentDate } from "../../utils/formatters";
 import type { BuildPlanAction } from "../../hooks/use-build-plan";
 
 type RecommendationStepProps = {
@@ -16,15 +12,9 @@ type RecommendationStepProps = {
   dispatch: React.Dispatch<BuildPlanAction>;
 };
 
-export function RecommendationStep({
-  recommendation,
-  presentations,
-  selectedPresentationId,
-  dispatch,
-}: RecommendationStepProps) {
+export function RecommendationStep({ recommendation, presentations, selectedPresentationId, dispatch }: RecommendationStepProps) {
   const isManualSelection = Boolean(selectedPresentationId);
-  const quantityPrefix =
-    recommendation.bagQuantity > 1 ? `${recommendation.bagQuantity} bolsas de ` : "";
+  const quantityPrefix = recommendation.bagQuantity > 1 ? `${recommendation.bagQuantity} bolsas de ` : "";
 
   return (
     <div>
@@ -56,38 +46,29 @@ export function RecommendationStep({
             <div>
               <BowlFood size={24} weight="duotone" className="text-brand-yellow" aria-hidden="true" />
               <p className="mt-3 text-xs font-bold tracking-wide text-white/80">CONSUMO DIARIO</p>
-              <p className="mt-1 font-display text-2xl font-semibold">
-                ≈ {formatGrams(recommendation.dailyConsumptionGrams)} g
-              </p>
+              <p className="mt-1 font-display text-2xl font-semibold">≈ {formatGrams(recommendation.dailyConsumptionGrams)} g</p>
             </div>
             <div>
               <CheckCircle size={24} weight="duotone" className="text-brand-yellow" aria-hidden="true" />
               <p className="mt-3 text-xs font-bold tracking-wide text-white/80">DURACIÓN ESTIMADA</p>
-              <p className="mt-1 font-display text-2xl font-semibold">
-                ≈ {Math.round(recommendation.estimatedDurationDays)} días
-              </p>
+              <p className="mt-1 font-display text-2xl font-semibold">≈ {Math.round(recommendation.estimatedDurationDays)} días</p>
             </div>
             <div>
               <CalendarDots size={24} weight="duotone" className="text-brand-yellow" aria-hidden="true" />
               <p className="mt-3 text-xs font-bold tracking-wide text-white/80">PRÓXIMA REPOSICIÓN</p>
-              <p className="mt-1 font-display text-2xl font-semibold">
-                {formatReplenishmentDate(recommendation.replenishmentDate)}
-              </p>
+              <p className="mt-1 font-display text-2xl font-semibold">{formatReplenishmentDate(recommendation.replenishmentDate)}</p>
             </div>
           </div>
         </div>
         <p className="bg-[#064bdd] px-6 py-4 text-sm text-white/90 sm:px-8">
-          Para {recommendation.periodDays} días estimamos una necesidad de {" "}
-          {formatKilograms(recommendation.periodConsumptionGrams)} kg. La entrega
-          propuesta cubre {formatKilograms(recommendation.deliveredGrams)} kg.
+          Para {recommendation.periodDays} días estimamos una necesidad de {formatKilograms(recommendation.periodConsumptionGrams)} kg. La
+          entrega propuesta cubre {formatKilograms(recommendation.deliveredGrams)} kg.
         </p>
       </article>
 
       {presentations.length > 1 ? (
         <details className="mt-6 border-y border-border py-1">
-          <summary className="cursor-pointer py-4 font-semibold text-brand-blue">
-            Prefiero revisar otra presentación
-          </summary>
+          <summary className="cursor-pointer py-4 font-semibold text-brand-blue">Prefiero revisar otra presentación</summary>
           <fieldset className="grid gap-3 pb-5 sm:grid-cols-3">
             <legend className="sr-only">Elegir otra presentación</legend>
             {presentations.map((presentation) => (
@@ -95,10 +76,7 @@ export function RecommendationStep({
                 key={presentation.id}
                 name="recommendedPresentation"
                 value={presentation.id}
-                checked={
-                  (selectedPresentationId || recommendation.presentation.id) ===
-                  presentation.id
-                }
+                checked={(selectedPresentationId || recommendation.presentation.id) === presentation.id}
                 onChange={() =>
                   dispatch({
                     type: "set-recommended-presentation",

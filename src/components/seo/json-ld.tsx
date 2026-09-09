@@ -21,12 +21,7 @@ export function OrganizationJsonLd() {
     sameAs: [],
   };
 
-  return (
-    <script
-      type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
-    />
-  );
+  return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }} />;
 }
 
 export function WebsiteJsonLd() {
@@ -37,26 +32,12 @@ export function WebsiteJsonLd() {
     url: siteUrl,
     description: "Comprá alimento balanceado, arena y esenciales para perros y gatos en CABA.",
     inLanguage: "es-AR",
-    potentialAction: {
-      "@type": "SearchAction",
-      target: `${siteUrl}/buscar?q={search_term_string}`,
-      "query-input": "required name=search_term_string",
-    },
   };
 
-  return (
-    <script
-      type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
-    />
-  );
+  return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }} />;
 }
 
-export function FAQJsonLd({
-  faqs,
-}: {
-  faqs: { question: string; answer: string }[];
-}) {
+export function FAQJsonLd({ faqs }: { faqs: { question: string; answer: string }[] }) {
   const data = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
@@ -70,10 +51,5 @@ export function FAQJsonLd({
     })),
   };
 
-  return (
-    <script
-      type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
-    />
-  );
+  return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }} />;
 }

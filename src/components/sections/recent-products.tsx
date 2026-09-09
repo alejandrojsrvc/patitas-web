@@ -22,17 +22,29 @@ export function RecentProducts() {
   const [products, setProducts] = useState<RecentProduct[]>([]);
 
   useEffect(() => {
+    let active = true;
+
     try {
       const stored = window.localStorage.getItem(RECENT_PRODUCTS_KEY);
       if (!stored) return;
       const parsed = JSON.parse(stored) as unknown;
       if (!Array.isArray(parsed)) return;
       const nextProducts = parsed.filter(isRecentProduct).slice(0, 8);
-      const timer = window.setTimeout(() => setProducts(nextProducts), 0);
-      return () => window.clearTimeout(timer);
+      const timer = window.setTimeout(() => {
+        if (active) setProducts(nextProducts);
+      }, 0);
+
+      return () => {
+        active = false;
+        window.clearTimeout(timer);
+      };
     } catch {
       // El historial es opcional y puede estar bloqueado por la configuración del navegador.
     }
+
+    return () => {
+      active = false;
+    };
   }, []);
 
   if (!products.length) return null;

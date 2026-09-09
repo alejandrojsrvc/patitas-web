@@ -13,15 +13,15 @@
 // substrings, so user tokens that merely share the prefix cannot trip the
 // completion gate.
 const FORBIDDEN = [
-  { marker: 'uizze-variants-start', why: 'variant wrapper comment left in source' },
-  { marker: 'uizze-variants-end', why: 'variant wrapper comment left in source' },
-  { marker: 'uizze-carbonize-start', why: 'carbonize block not rewritten into permanent form' },
-  { marker: 'uizze-carbonize-end', why: 'carbonize block not rewritten into permanent form' },
-  { marker: 'uizze-param-values', why: 'param-values comment not baked and removed' },
-  { marker: 'data-uizze-', why: 'live-mode plumbing attribute left on markup' },
-  { marker: /\bdata-p-[A-Za-z0-9_-]+\s*(?:=|\])/, label: 'data-p-*', why: 'preview parameter attribute left on markup' },
-  { marker: /var\(\s*--p-[A-Za-z0-9_-]+\s*[,)]/, label: 'var(--p-*)', why: 'preview parameter variable not baked to a literal' },
-  { marker: '--uizze-variant-ready', why: 'preview readiness sentinel left in CSS' },
+  { marker: "uizze-variants-start", why: "variant wrapper comment left in source" },
+  { marker: "uizze-variants-end", why: "variant wrapper comment left in source" },
+  { marker: "uizze-carbonize-start", why: "carbonize block not rewritten into permanent form" },
+  { marker: "uizze-carbonize-end", why: "carbonize block not rewritten into permanent form" },
+  { marker: "uizze-param-values", why: "param-values comment not baked and removed" },
+  { marker: "data-uizze-", why: "live-mode plumbing attribute left on markup" },
+  { marker: /\bdata-p-[A-Za-z0-9_-]+\s*(?:=|\])/, label: "data-p-*", why: "preview parameter attribute left on markup" },
+  { marker: /var\(\s*--p-[A-Za-z0-9_-]+\s*[,)]/, label: "var(--p-*)", why: "preview parameter variable not baked to a literal" },
+  { marker: "--uizze-variant-ready", why: "preview readiness sentinel left in CSS" },
 ];
 
 /**
@@ -30,7 +30,7 @@ const FORBIDDEN = [
  */
 export function verifyAcceptedSource(text) {
   const findings = [];
-  const lines = String(text || '').split('\n');
+  const lines = String(text || "").split("\n");
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     for (const { marker, label, why } of FORBIDDEN) {
@@ -52,7 +52,7 @@ export function verifyAcceptedSource(text) {
 export function verifyAcceptedFile(fs, filePath) {
   let text;
   try {
-    text = fs.readFileSync(filePath, 'utf-8');
+    text = fs.readFileSync(filePath, "utf-8");
   } catch {
     return { clean: true, findings: [], missing: true };
   }

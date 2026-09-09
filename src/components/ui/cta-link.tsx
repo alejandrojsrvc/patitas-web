@@ -8,21 +8,13 @@ type CtaLinkProps = {
 };
 
 const variants = {
-  primary:
-    "bg-brand-blue text-white hover:bg-[#0048dc] active:bg-[#003fbe]",
-  secondary:
-    "border border-[#dadaD5] bg-surface text-ink hover:border-brand-blue hover:text-brand-blue",
-  yellow:
-    "bg-brand-yellow text-ink hover:bg-[#f1df00] active:bg-[#e3d200]",
+  primary: "bg-brand-blue text-white hover:bg-[#0048dc] active:bg-[#003fbe]",
+  secondary: "border border-[#dadaD5] bg-surface text-ink hover:border-brand-blue hover:text-brand-blue",
+  yellow: "bg-brand-yellow text-ink hover:bg-[#f1df00] active:bg-[#e3d200]",
   ghost: "text-brand-blue underline-offset-4 hover:underline",
 };
 
-export function CtaLink({
-  href,
-  children,
-  variant = "primary",
-  className = "",
-}: CtaLinkProps) {
+export function CtaLink({ href, children, variant = "primary", className = "" }: CtaLinkProps) {
   const isGhost = variant === "ghost";
 
   return (

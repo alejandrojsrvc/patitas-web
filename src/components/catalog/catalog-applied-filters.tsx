@@ -54,21 +54,28 @@ export function CatalogAppliedFilters({ pathname, current, species, categories, 
   if (!filters.length) return null;
 
   return (
-    <section aria-label="Filtros aplicados" className="mb-5 flex flex-wrap items-center gap-2 sm:mb-6">
-      <h2 className="mr-1 text-sm font-semibold text-ink">Filtros aplicados</h2>
+    <section aria-label="Filtros aplicados" className="mb-4 flex flex-wrap items-center gap-2">
+      <h2 className="mr-1 text-sm font-semibold text-ink">Tu selección</h2>
       {filters.map((filter) => (
         <Link
           key={filter.id}
           href={filter.href}
+          prefetch={false}
+          rel={filter.href.includes("?") ? "nofollow" : undefined}
           scroll={false}
           aria-label={`Quitar ${filter.label}`}
-          className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-brand-blue/25 bg-white px-3 pl-3 text-xs font-semibold text-brand-blue transition-colors hover:border-brand-blue hover:bg-soft-blue focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue"
+          className="inline-flex min-h-11 items-center gap-1.5 rounded-full bg-soft-blue px-3 text-xs font-semibold text-brand-blue transition-colors hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue"
         >
           <span>{filter.label}</span>
           <X size={14} weight="bold" aria-hidden="true" />
         </Link>
       ))}
-      <Link href={pathname} scroll={false} className="ml-1 text-xs font-semibold text-brand-blue underline-offset-4 hover:underline">
+      <Link
+        href={pathname}
+        prefetch={false}
+        scroll={false}
+        className="ml-1 inline-flex min-h-11 items-center text-xs font-semibold text-brand-blue underline-offset-4 hover:underline"
+      >
         Limpiar todos
       </Link>
     </section>
@@ -114,7 +121,7 @@ function optionLabel(options: FilterOption[], value: string) {
 }
 
 function filterName(name: string) {
-  return name === "category" ? "Categoría" : name === "brand" ? "Marca" : name === "lifeStage" ? "Etapa" : "Presentación";
+  return name === "category" ? "Categoría" : name === "brand" ? "Marca" : name === "lifeStage" ? "Etapa" : "Peso";
 }
 
 const first = (input: string | string[] | undefined) => (Array.isArray(input) ? input[0] : input);

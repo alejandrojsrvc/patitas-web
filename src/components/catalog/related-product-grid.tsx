@@ -12,9 +12,13 @@ export function RelatedProductGrid({ products }: { products: ProductDetail["rela
           <Link href={`/producto/${product.slug}`} prefetch={false} className="relative aspect-square overflow-hidden rounded-lg bg-white">
             <ProductImage src={product.imageUrl} alt={product.name} className="p-4" />
           </Link>
-          <p className="mt-3 truncate text-[11px] font-bold uppercase tracking-[0.08em] text-brand-blue">{product.brand.name}</p>
+          <p className="mt-3 break-words text-xs font-bold uppercase tracking-[0.08em] text-brand-blue" title={product.brand.name}>
+            {product.brand.name}
+          </p>
           <h3 className="mt-1 line-clamp-2 min-h-10 font-display text-base font-semibold leading-5">
-            <Link href={`/producto/${product.slug}`} prefetch={false} className="hover:text-brand-blue">{product.name}</Link>
+            <Link href={`/producto/${product.slug}`} prefetch={false} className="hover:text-brand-blue">
+              {product.name}
+            </Link>
           </h3>
           <p className="mt-3 font-display text-lg font-semibold tabular-nums">Desde {formatMoney(product.startingPrice)}</p>
         </article>

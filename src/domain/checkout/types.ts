@@ -20,13 +20,32 @@ export type CheckoutSession = {
   shippingCost: string;
   shippingDeliverySlot: string | null;
   shippingDeliveryDate: string | null;
-  paymentMethod: "MERCADO_PAGO" | "PAYWAY" | null;
+  paymentMethod: "MERCADO_PAGO" | "PAYWAY" | "BANK_TRANSFER" | null;
   savedPaymentMethodId: string | null;
   couponCode: string | null;
   orderId: string | null;
   subtotal: string;
   discountTotal: string;
   total: string;
+  pricing?: {
+    productDiscountTotal: string;
+    paymentDiscountTotal: string;
+    shippingDiscountTotal: string;
+    benefits: Array<{ type: string; origin?: string; description: string; amount: string; percentage?: string | null }>;
+    conflicts: Array<{ code: string; message: string }>;
+    shippingThreshold?: { threshold: string | null; eligibleAmount: string; remaining: string | null };
+  };
+  actions?: {
+    coupon: { allowed: boolean; reasonCode: string | null; message: string | null };
+    purchaseSchedule: { allowed: boolean; reasonCode: string | null; message: string | null };
+  };
+  scheduledPurchase?: {
+    id: string;
+    frequencyDays: number;
+    discountPercent: string;
+    leadDays: number;
+    status: string;
+  } | null;
   items: CartItem[];
   expiresAt: string;
 };
@@ -34,7 +53,25 @@ export type CheckoutSession = {
 export type ShippingOption = {
   id: string;
   cost: string;
+  tariff: string;
+  deliveryCount: number;
+  zoneId?: string | null;
+  zoneName?: string | null;
+  available: boolean;
+  message: string;
+  reasonCode?: string | null;
   deliverySlots: DeliverySlot[];
+  freeShippingFrom?: string | null;
+  eligibleAmount?: string;
+  remainingForFreeShipping?: string | null;
+  benefit?: { type?: string; origin: string; description: string; amount: string } | null;
+  estimate?: string | null;
+};
+
+export type CheckoutCustomerSummary = {
+  fullName: string;
+  email: string;
+  phone: string | null;
 };
 
 export type DeliverySlot = {
@@ -46,9 +83,11 @@ export type DeliverySlot = {
 };
 
 export type AvailablePaymentMethod = {
-  provider: "mercadopago" | "payway" | "simulated";
-  paymentMethod: "MERCADO_PAGO" | "PAYWAY" | "SIMULATED_CARD";
+  provider: "mercadopago" | "payway" | "manual_transfer";
+  paymentMethod: "MERCADO_PAGO" | "PAYWAY" | "BANK_TRANSFER";
   priority: number;
+  benefit?: { percentage: string; description: string };
+  transfer?: { expirationMinutes: number; instructions: Record<string, string | null> };
 };
 
 export type CheckoutCreateResult = {
@@ -77,7 +116,7 @@ type CheckoutConfirmOrder = Omit<OrderSummary, "paymentStatus"> & {
 export type CheckoutConfirmResult = {
   order: CheckoutConfirmOrder;
   payment?: {
-    provider: "mercadopago" | "payway" | "simulated";
+    provider: "mercadopago" | "payway";
     action: "REDIRECT" | "NONE" | "RETRY";
     paymentUrl: string | null;
     externalId: string | null;
@@ -85,6 +124,13 @@ export type CheckoutConfirmResult = {
     expiresAt: string | null;
   };
   publicToken?: string;
+  transfer?: {
+    status: "PENDING" | "REPORTED" | "APPROVED" | "EXPIRED" | "REJECTED" | "CANCELLED";
+    expectedAmount: string;
+    currency: string;
+    expiresAt: string | null;
+    instructions: Record<string, string | null> | null;
+  };
 };
 
 export type CheckoutMutationResult = {
@@ -96,11 +142,12 @@ export type CheckoutScreen = CheckoutMutationResult & {
   shell: StorefrontShell;
   paymentMethods: AvailablePaymentMethod[];
   savedAddresses: CustomerAddress[];
+  customer?: CheckoutCustomerSummary | null;
 };
 
 export type CheckoutConflict = {
   statusCode: 409;
-  code: "CHECKOUT_CONFLICT";
+  code: string;
   message: string;
   currentState?: CheckoutMutationResult;
 };

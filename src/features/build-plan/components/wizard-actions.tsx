@@ -6,13 +6,9 @@ type WizardActionsProps = {
   nextLabel?: string;
 };
 
-export function WizardActions({
-  canGoBack,
-  onBack,
-  nextLabel = "Continuar",
-}: WizardActionsProps) {
+export function WizardActions({ canGoBack, onBack, nextLabel = "Continuar" }: WizardActionsProps) {
   return (
-    <div className="mt-auto border-t border-border bg-cream pb-[max(1rem,env(safe-area-inset-bottom))] pt-4">
+    <div className="mt-auto border-t border-border bg-page-bg pb-[max(1rem,env(safe-area-inset-bottom))] pt-4">
       <div className="flex gap-3">
         {canGoBack ? (
           <button

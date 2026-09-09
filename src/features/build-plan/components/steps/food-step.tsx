@@ -17,9 +17,7 @@ const inputClass =
 export function FoodStep({ state, catalog, errors, dispatch }: FoodStepProps) {
   const brands = catalog.filter((brand) => brand.species === state.pet.species);
   const selectedBrand = brands.find((brand) => brand.id === state.food.brandId);
-  const selectedLine = selectedBrand?.lines.find(
-    (line) => line.id === state.food.lineId,
-  );
+  const selectedLine = selectedBrand?.lines.find((line) => line.id === state.food.lineId);
 
   return (
     <div>
@@ -170,16 +168,10 @@ export function FoodStep({ state, catalog, errors, dispatch }: FoodStepProps) {
                 }
                 className={`${inputClass} pr-11`}
                 aria-invalid={Boolean(errors.customPresentationKg)}
-                aria-describedby={
-                  errors.customPresentationKg
-                    ? "custom-presentation-error"
-                    : undefined
-                }
+                aria-describedby={errors.customPresentationKg ? "custom-presentation-error" : undefined}
                 placeholder="Ej.: 3…"
               />
-              <span className="pointer-events-none absolute bottom-[1.05rem] right-4 text-sm text-muted">
-                kg
-              </span>
+              <span className="pointer-events-none absolute bottom-[1.05rem] right-4 text-sm text-muted">kg</span>
             </div>
             {errors.customPresentationKg ? (
               <p id="custom-presentation-error" className="mt-2 text-sm font-semibold text-[#b42318]">

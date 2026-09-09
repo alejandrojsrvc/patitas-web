@@ -6,17 +6,18 @@ import { ProductGrid } from "@/components/catalog/product-grid";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import { getBrand, getProducts, PatitasApiError } from "@/infrastructure/api/patitas-api";
-import type { CatalogSearchParams } from "@/lib/catalog-search-params";
+import { hasCatalogFilterParams, normalizeCatalogSearchParams, type CatalogSearchParams } from "@/lib/catalog-search-params";
 import { cacheLife, cacheTag } from "next/cache";
 
 type Props = { params: Promise<{ slug: string }>; searchParams: Promise<CatalogSearchParams> };
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
   try {
     const brand = await getBrand((await params).slug);
     return {
       title: `${brand.name}: productos para perros y gatos | Patitas`,
       description: brand.seoDescription ?? brand.description ?? `Comprá productos ${brand.name} y compará presentaciones.`,
       alternates: { canonical: `/marcas/${brand.slug}` },
+      robots: hasCatalogFilterParams(await searchParams) ? { index: false, follow: false } : undefined,
     };
   } catch {
     return {};
@@ -24,7 +25,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 export default async function BrandPage({ params, searchParams }: Props) {
   const slug = (await params).slug;
-  const query = await searchParams;
+  const normalizedQuery = normalizeCatalogSearchParams(await searchParams);
+  const query: CatalogSearchParams = { page: normalizedQuery.page };
   let brand: Awaited<ReturnType<typeof getBrand>>;
   try {
     brand = await getBrand(slug);
@@ -84,7 +86,7 @@ async function CachedBrandPage({
   return (
     <>
       <SiteHeader publicOnly />
-      <main id="contenido">
+      <main id="contenido" className="[overflow-anchor:none]">
         <section className="bg-soft-blue py-8 sm:py-14 lg:py-20">
           <div className="container-shell">
             <nav aria-label="Migas de pan" className="mb-5 text-xs text-muted sm:text-sm">
@@ -112,7 +114,7 @@ async function CachedBrandPage({
           {products.meta.totalPages > 1 ? <CatalogPagination result={products} pathname={`/marcas/${brand.slug}`} current={query} /> : null}
         </section>
         {products.items.length ? (
-          <section className="bg-cream py-12 sm:py-16">
+          <section className="bg-page-bg py-12 sm:py-16">
             <div className="container-shell">
               <h2 className="display-heading max-w-2xl text-3xl sm:text-4xl">¿No sabés qué presentación elegir?</h2>
               <p className="mt-4 max-w-2xl text-muted">Calculá cuánto puede durar una bolsa o revisá la guía según tu mascota.</p>

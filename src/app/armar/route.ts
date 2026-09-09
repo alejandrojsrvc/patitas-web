@@ -1,2 +1,4 @@
 import { permanentRedirect } from "next/navigation";
-export function GET() { permanentRedirect("/calculadora-alimento"); }
+export function GET() {
+  permanentRedirect("/calculadora-alimento");
+}

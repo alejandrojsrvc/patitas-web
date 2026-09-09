@@ -9,11 +9,11 @@ import type {
   ProductFilters,
   ProductPage,
   PublicOffer,
-  ReplenishmentLeadInput,
+  ReplenishmentEstimate,
   SitemapProductProjection,
 } from "@/domain/catalog/types";
 
-const apiUrl = (process.env.PATITAS_API_URL ?? "http://api.patitasinquietas.local/api/v1").replace(/\/$/, "");
+const apiUrl = (process.env.API_INTERNAL_URL ?? "http://api.patitasinquietas.local/api/v1").replace(/\/$/, "");
 const requestTimeoutMs = 15_000;
 
 export class PatitasApiError extends Error {
@@ -37,7 +37,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     },
   });
   if (!response.ok) {
-    const body = await response.json().catch(() => null) as { message?: string } | null;
+    const body = (await response.json().catch(() => null)) as { message?: string } | null;
     throw new PatitasApiError(body?.message ?? "Patitas API no pudo completar la solicitud.", response.status);
   }
   return response.json() as Promise<T>;
@@ -54,10 +54,15 @@ function facetQuery(filters: ProductFilters = {}) {
 function catalogQuery(filters: ProductFilters, includePagination: boolean) {
   const params = new URLSearchParams();
   const scalarEntries: Array<[string, string | number | boolean | undefined]> = [
-    ["q", filters.q], ["species", filters.species], ["category", filters.category],
-    ["minPrice", filters.minPrice], ["maxPrice", filters.maxPrice],
-    ["featured", filters.featured], ["sort", includePagination ? filters.sort : undefined],
-    ["page", includePagination ? filters.page : undefined], ["perPage", includePagination ? filters.perPage : undefined],
+    ["q", filters.q],
+    ["species", filters.species],
+    ["category", filters.category],
+    ["minPrice", filters.minPrice],
+    ["maxPrice", filters.maxPrice],
+    ["featured", filters.featured],
+    ["sort", includePagination ? filters.sort : undefined],
+    ["page", includePagination ? filters.page : undefined],
+    ["perPage", includePagination ? filters.perPage : undefined],
   ];
   for (const [key, value] of scalarEntries) {
     if (value !== undefined && value !== "") params.set(key, String(value));
@@ -84,14 +89,25 @@ export const catalogApi = {
     petWeightKg: number;
     lifeStage?: string;
     attributes?: Record<string, string>;
-  }) => request<FoodDurationResult>("/calculator/food-duration", {
-    method: "POST",
-    body: JSON.stringify(input),
-  }),
-  captureReplenishmentLead: (input: ReplenishmentLeadInput) => request<{ id: string; status: string }>("/replenishment-leads", {
-    method: "POST",
-    body: JSON.stringify(input),
-  }),
+  }) =>
+    request<FoodDurationResult>("/calculator/food-duration", {
+      method: "POST",
+      body: JSON.stringify(input),
+    }),
+  createReplenishmentEstimate: (input: {
+    pet: { name: string; species: string; weightKg: number; lifeStage: string };
+    food: { productId: string; variantId: string };
+  }) =>
+    request<ReplenishmentEstimate>("/replenishment-estimates", {
+      method: "POST",
+      body: JSON.stringify(input),
+    }),
+  createReplenishmentReminder: (input: { estimateId: string; email: string; consent: boolean; consentVersion: string }, token?: string) =>
+    request<{ id: string; status: string; nextReminderAt: string }>("/replenishment-reminders", {
+      method: "POST",
+      headers: token ? { "X-Replenishment-Token": token } : undefined,
+      body: JSON.stringify(input),
+    }),
 };
 
 export async function getProducts(filters: ProductFilters = {}) {
@@ -156,9 +172,7 @@ export async function getSitemapProducts() {
   return catalogApi.sitemapProjection();
 }
 
-export async function safeCatalogCall<T>(operation: () => Promise<T>): Promise<
-  { ok: true; data: T } | { ok: false; error: string }
-> {
+export async function safeCatalogCall<T>(operation: () => Promise<T>): Promise<{ ok: true; data: T } | { ok: false; error: string }> {
   try {
     return { ok: true, data: await operation() };
   } catch (error) {

@@ -7,14 +7,17 @@ import { authCookieNames, clearScopedToken, setAuthCookies } from "@/lib/auth-co
 
 export async function POST(request: Request) {
   try {
-    const input = await request.json() as { email?: string; password?: string };
+    const input = (await request.json()) as { email?: string; password?: string };
     if (!input.email?.trim() || !input.password || input.password.length < 8) {
       return NextResponse.json({ message: "Ingresá un email válido y una contraseña de al menos 8 caracteres." }, { status: 400 });
     }
-    const result = await authApi.register({ email: input.email.trim().toLowerCase(), password: input.password });
+    const result = await authApi.register(
+      { email: input.email.trim().toLowerCase(), password: input.password },
+      request.headers.get("X-Turnstile-Token") ?? undefined,
+    );
     const session = sessionFromResponse(result);
     const cartToken = (await cookies()).get(authCookieNames.cartToken)?.value;
-    const cartMerged = Boolean(session && cartToken && await mergeAnonymousCart(session.accessToken, cartToken));
+    const cartMerged = Boolean(session && cartToken && (await mergeAnonymousCart(session.accessToken, cartToken)));
     const response = NextResponse.json({ status: result.status, user: result.user, cartMerged }, { status: 201 });
     response.headers.set("Cache-Control", "private, no-store");
     if (session) setAuthCookies(response, session);
@@ -26,5 +29,8 @@ export async function POST(request: Request) {
 }
 
 function authErrorResponse(error: unknown, fallback: string) {
-  return NextResponse.json({ message: error instanceof Error ? error.message : fallback }, { status: error instanceof AuthApiError ? error.status : 502 });
+  return NextResponse.json(
+    { message: error instanceof Error ? error.message : fallback },
+    { status: error instanceof AuthApiError ? error.status : 502 },
+  );
 }

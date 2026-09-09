@@ -1,19 +1,19 @@
-import fs from 'node:fs';
-import path from 'node:path';
-import { resolveProjectRoot } from '../context.mjs';
-import { designSidecarCandidatesFor } from './staleness.mjs';
-export { UIZZE_COMMAND_PREFIX } from './provider.mjs';
+import fs from "node:fs";
+import path from "node:path";
+import { resolveProjectRoot } from "../context.mjs";
+import { designSidecarCandidatesFor } from "./staleness.mjs";
+export { UIZZE_COMMAND_PREFIX } from "./provider.mjs";
 
-export const UIZZE_DIR = '.uizze';
-export const LIVE_DIR = 'live';
-export const CRITIQUE_DIR = 'critique';
+export const UIZZE_DIR = ".uizze";
+export const LIVE_DIR = "live";
+export const CRITIQUE_DIR = "critique";
 
 export function getUizzeDir(cwd = process.cwd(), options = {}) {
   return path.join(resolveProjectRoot(cwd, options), UIZZE_DIR);
 }
 
 export function getDesignSidecarPath(cwd = process.cwd(), options = {}) {
-  return path.join(getUizzeDir(cwd, options), 'design.json');
+  return path.join(getUizzeDir(cwd, options), "design.json");
 }
 
 export function getDesignSidecarCandidates(cwd = process.cwd(), contextDir = cwd, options = {}) {
@@ -29,11 +29,11 @@ export function getLiveDir(cwd = process.cwd(), options = {}) {
 }
 
 export function getLiveConfigPath(cwd = process.cwd(), options = {}) {
-  return path.join(getLiveDir(cwd, options), 'config.json');
+  return path.join(getLiveDir(cwd, options), "config.json");
 }
 
 export function getLegacyLiveConfigPath(scriptsDir) {
-  return path.join(scriptsDir, 'config.json');
+  return path.join(scriptsDir, "config.json");
 }
 
 export function resolveLiveConfigPath({ cwd = process.cwd(), scriptsDir, env = process.env, targetPath } = {}) {
@@ -51,19 +51,21 @@ export function resolveLiveConfigPath({ cwd = process.cwd(), scriptsDir, env = p
 }
 
 export function getLiveServerPath(cwd = process.cwd(), options = {}) {
-  return path.join(getLiveDir(cwd, options), 'server.json');
+  return path.join(getLiveDir(cwd, options), "server.json");
 }
 
 export function getLegacyLiveServerPath(cwd = process.cwd(), options = {}) {
-  return path.join(resolveProjectRoot(cwd, options), '.uizze-live.json');
+  return path.join(resolveProjectRoot(cwd, options), ".uizze-live.json");
 }
 
 export function readLiveServerInfo(cwd = process.cwd(), options = {}) {
   for (const filePath of [getLiveServerPath(cwd, options), getLegacyLiveServerPath(cwd, options)]) {
     try {
-      const info = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
-      if (info && typeof info.pid === 'number' && !isLiveServerPidReachable(info.pid)) {
-        try { fs.unlinkSync(filePath); } catch {}
+      const info = JSON.parse(fs.readFileSync(filePath, "utf-8"));
+      if (info && typeof info.pid === "number" && !isLiveServerPidReachable(info.pid)) {
+        try {
+          fs.unlinkSync(filePath);
+        } catch {}
         continue;
       }
       return { info, path: filePath };
@@ -81,7 +83,7 @@ export function isLiveServerPidReachable(pid) {
   } catch (err) {
     // ESRCH means "no such process". EPERM means the process exists but this
     // user cannot signal it, so the live server info is still valid.
-    return err?.code !== 'ESRCH';
+    return err?.code !== "ESRCH";
   }
 }
 
@@ -94,7 +96,9 @@ export function writeLiveServerInfo(cwd = process.cwd(), info, options = {}) {
 
 export function removeLiveServerInfo(cwd = process.cwd(), options = {}) {
   for (const filePath of [getLiveServerPath(cwd, options), getLegacyLiveServerPath(cwd, options)]) {
-    try { fs.unlinkSync(filePath); } catch {}
+    try {
+      fs.unlinkSync(filePath);
+    } catch {}
   }
 }
 
@@ -106,22 +110,22 @@ export function removeLiveServerInfo(cwd = process.cwd(), options = {}) {
  * `.uizze/live/`. Real IDs are 8 hex chars; the tests use short slugs.
  */
 export function safeSessionId(id) {
-  if (typeof id !== 'string' || !/^[A-Za-z0-9_-]{1,128}$/.test(id)) {
-    throw new Error('invalid session id: ' + id);
+  if (typeof id !== "string" || !/^[A-Za-z0-9_-]{1,128}$/.test(id)) {
+    throw new Error("invalid session id: " + id);
   }
   return id;
 }
 
 export function getLiveSessionsDir(cwd = process.cwd(), options = {}) {
-  return path.join(getLiveDir(cwd, options), 'sessions');
+  return path.join(getLiveDir(cwd, options), "sessions");
 }
 
 export function getLegacyLiveSessionsDir(cwd = process.cwd(), options = {}) {
-  return path.join(resolveProjectRoot(cwd, options), '.uizze-live', 'sessions');
+  return path.join(resolveProjectRoot(cwd, options), ".uizze-live", "sessions");
 }
 
 export function getLiveAnnotationsDir(cwd = process.cwd(), options = {}) {
-  return path.join(getLiveDir(cwd, options), 'annotations');
+  return path.join(getLiveDir(cwd, options), "annotations");
 }
 
 export function getCritiqueDir(cwd = process.cwd(), options = {}) {
@@ -129,7 +133,7 @@ export function getCritiqueDir(cwd = process.cwd(), options = {}) {
 }
 
 export function getLegacyLiveAnnotationsDir(cwd = process.cwd(), options = {}) {
-  return path.join(resolveProjectRoot(cwd, options), '.uizze-live', 'annotations');
+  return path.join(resolveProjectRoot(cwd, options), ".uizze-live", "annotations");
 }
 
 function firstExisting(paths) {

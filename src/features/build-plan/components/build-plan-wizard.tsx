@@ -4,11 +4,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { useBuildPlan } from "../hooks/use-build-plan";
 import type { ConsumableOption, FoodBrand, WizardStep } from "../types";
 import { calculatePeriodConsumption, parseDecimalInput } from "../utils/calculations";
-import {
-  buildRecommendationForState,
-  getDailyConsumptionForState,
-  resolveFoodSelection,
-} from "../utils/build-recommendation";
+import { buildRecommendationForState, getDailyConsumptionForState, resolveFoodSelection } from "../utils/build-recommendation";
 import { savePlanMock } from "../services/save-plan";
 import { WizardActions } from "./wizard-actions";
 import { WizardShell } from "./wizard-shell";
@@ -25,12 +21,7 @@ type BuildPlanWizardProps = {
   consumables: ConsumableOption[];
 };
 
-function validateStep(
-  step: WizardStep,
-  petPhase: 1 | 2 | 3,
-  state: ReturnType<typeof useBuildPlan>[0],
-  catalog: FoodBrand[],
-) {
+function validateStep(step: WizardStep, petPhase: 1 | 2 | 3, state: ReturnType<typeof useBuildPlan>[0], catalog: FoodBrand[]) {
   const errors: Record<string, string> = {};
 
   if (step === 1) {
@@ -87,9 +78,7 @@ function validateStep(
   return errors;
 }
 
-function validateLead(
-  lead: ReturnType<typeof useBuildPlan>[0]["lead"],
-) {
+function validateLead(lead: ReturnType<typeof useBuildPlan>[0]["lead"]) {
   const errors: Record<string, string> = {};
   if (!lead.ownerName.trim()) errors.ownerName = "Ingresá tu nombre.";
   if (!/^\S+@\S+\.\S+$/.test(lead.email.trim())) {
@@ -101,10 +90,7 @@ function validateLead(
   return errors;
 }
 
-export function BuildPlanWizard({
-  catalog,
-  consumables,
-}: BuildPlanWizardProps) {
+export function BuildPlanWizard({ catalog, consumables }: BuildPlanWizardProps) {
   const [state, dispatch] = useBuildPlan();
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [sessionStart] = useState(() => new Date());
@@ -112,14 +98,8 @@ export function BuildPlanWizard({
 
   const resolvedFood = resolveFoodSelection(state, catalog);
   const dailyConsumption = getDailyConsumptionForState(state, catalog);
-  const recommendation = buildRecommendationForState(
-    state,
-    catalog,
-    sessionStart,
-  );
-  const availableConsumables = consumables.filter(
-    (option) => option.species === state.pet.species,
-  );
+  const recommendation = buildRecommendationForState(state, catalog, sessionStart);
+  const availableConsumables = consumables.filter((option) => option.species === state.pet.species);
 
   useEffect(() => {
     requestAnimationFrame(() => {
@@ -130,9 +110,7 @@ export function BuildPlanWizard({
 
   function focusFirstError() {
     requestAnimationFrame(() => {
-      const invalid = document.querySelector<HTMLElement>(
-        '[aria-invalid="true"], [data-invalid="true"] input',
-      );
+      const invalid = document.querySelector<HTMLElement>('[aria-invalid="true"], [data-invalid="true"] input');
       (invalid ?? document.querySelector<HTMLElement>("[data-step-heading]"))?.focus();
     });
   }
@@ -196,24 +174,13 @@ export function BuildPlanWizard({
   let stepContent: React.ReactNode = null;
 
   if (state.step === 1) {
-    stepContent = (
-      <PetStep
-        state={state}
-        phase={petPhase}
-        errors={errors}
-        updatePet={dispatch}
-      />
-    );
+    stepContent = <PetStep state={state} phase={petPhase} errors={errors} updatePet={dispatch} />;
   }
   if (state.step === 2) {
-    stepContent = (
-      <FoodStep state={state} catalog={catalog} errors={errors} dispatch={dispatch} />
-    );
+    stepContent = <FoodStep state={state} catalog={catalog} errors={errors} dispatch={dispatch} />;
   }
   if (state.step === 3) {
-    stepContent = (
-      <ConsumptionStep state={state} errors={errors} dispatch={dispatch} />
-    );
+    stepContent = <ConsumptionStep state={state} errors={errors} dispatch={dispatch} />;
   }
   if (state.step === 4 && dailyConsumption) {
     stepContent = (
@@ -237,13 +204,7 @@ export function BuildPlanWizard({
     );
   }
   if (state.step === 6) {
-    stepContent = (
-      <ConsumablesStep
-        state={state}
-        options={availableConsumables}
-        dispatch={dispatch}
-      />
-    );
+    stepContent = <ConsumablesStep state={state} options={availableConsumables} dispatch={dispatch} />;
   }
 
   return (

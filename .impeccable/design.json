@@ -1,0 +1,380 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-06T23:07:50Z",
+  "title": "Design System: Patitas Inquietas",
+  "extensions": {
+    "colorMeta": {
+      "brand-blue": {
+        "role": "primary",
+        "displayName": "Azul Patitas",
+        "canonical": "#0055FF",
+        "tonalRamp": [
+          "color-mix(in oklch, #0055FF 60%, black)",
+          "color-mix(in oklch, #0055FF 80%, black)",
+          "color-mix(in oklch, #0055FF 90%, black)",
+          "#0055FF",
+          "color-mix(in oklch, #0055FF 85%, white)",
+          "color-mix(in oklch, #0055FF 65%, white)",
+          "color-mix(in oklch, #0055FF 40%, white)",
+          "color-mix(in oklch, #0055FF 15%, white)"
+        ]
+      },
+      "brand-yellow": {
+        "role": "secondary",
+        "displayName": "Amarillo Señal",
+        "canonical": "#FFEC00",
+        "tonalRamp": [
+          "color-mix(in oklch, #FFEC00 60%, black)",
+          "color-mix(in oklch, #FFEC00 80%, black)",
+          "color-mix(in oklch, #FFEC00 90%, black)",
+          "#FFEC00",
+          "color-mix(in oklch, #FFEC00 85%, white)",
+          "color-mix(in oklch, #FFEC00 65%, white)",
+          "color-mix(in oklch, #FFEC00 40%, white)",
+          "color-mix(in oklch, #FFEC00 15%, white)"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Tinta Cercana",
+        "canonical": "#171717",
+        "tonalRamp": [
+          "color-mix(in oklch, #171717 60%, black)",
+          "color-mix(in oklch, #171717 80%, black)",
+          "#171717",
+          "color-mix(in oklch, #171717 85%, white)",
+          "color-mix(in oklch, #171717 65%, white)",
+          "color-mix(in oklch, #171717 45%, white)",
+          "color-mix(in oklch, #171717 25%, white)",
+          "color-mix(in oklch, #171717 10%, white)"
+        ]
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Gris Conversación",
+        "canonical": "#686868",
+        "tonalRamp": [
+          "color-mix(in oklch, #686868 60%, black)",
+          "color-mix(in oklch, #686868 80%, black)",
+          "color-mix(in oklch, #686868 90%, black)",
+          "#686868",
+          "color-mix(in oklch, #686868 75%, white)",
+          "color-mix(in oklch, #686868 55%, white)",
+          "color-mix(in oklch, #686868 30%, white)",
+          "color-mix(in oklch, #686868 12%, white)"
+        ]
+      },
+      "page-bg": {
+        "role": "neutral",
+        "displayName": "Fondo Claro",
+        "canonical": "#F7F9FC",
+        "tonalRamp": [
+          "color-mix(in oklch, #F7F9FC 35%, black)",
+          "color-mix(in oklch, #F7F9FC 50%, black)",
+          "color-mix(in oklch, #F7F9FC 65%, black)",
+          "color-mix(in oklch, #F7F9FC 80%, black)",
+          "color-mix(in oklch, #F7F9FC 90%, black)",
+          "#F7F9FC",
+          "color-mix(in oklch, #F7F9FC 80%, white)",
+          "color-mix(in oklch, #F7F9FC 45%, white)"
+        ]
+      },
+      "soft-blue": {
+        "role": "primary",
+        "displayName": "Azul Bruma",
+        "canonical": "#EEF4FF",
+        "tonalRamp": [
+          "color-mix(in oklch, #EEF4FF 35%, black)",
+          "color-mix(in oklch, #EEF4FF 50%, black)",
+          "color-mix(in oklch, #EEF4FF 65%, black)",
+          "color-mix(in oklch, #EEF4FF 80%, black)",
+          "color-mix(in oklch, #EEF4FF 90%, black)",
+          "#EEF4FF",
+          "color-mix(in oklch, #EEF4FF 70%, white)",
+          "color-mix(in oklch, #EEF4FF 35%, white)"
+        ]
+      },
+      "soft-yellow": {
+        "role": "secondary",
+        "displayName": "Amarillo Susurro",
+        "canonical": "#FFF9C7",
+        "tonalRamp": [
+          "color-mix(in oklch, #FFF9C7 35%, black)",
+          "color-mix(in oklch, #FFF9C7 50%, black)",
+          "color-mix(in oklch, #FFF9C7 65%, black)",
+          "color-mix(in oklch, #FFF9C7 80%, black)",
+          "color-mix(in oklch, #FFF9C7 90%, black)",
+          "#FFF9C7",
+          "color-mix(in oklch, #FFF9C7 70%, white)",
+          "color-mix(in oklch, #FFF9C7 35%, white)"
+        ]
+      },
+      "border": {
+        "role": "neutral",
+        "displayName": "Línea Cálida",
+        "canonical": "#E8E8E3",
+        "tonalRamp": [
+          "color-mix(in oklch, #E8E8E3 35%, black)",
+          "color-mix(in oklch, #E8E8E3 50%, black)",
+          "color-mix(in oklch, #E8E8E3 65%, black)",
+          "color-mix(in oklch, #E8E8E3 80%, black)",
+          "color-mix(in oklch, #E8E8E3 90%, black)",
+          "#E8E8E3",
+          "color-mix(in oklch, #E8E8E3 65%, white)",
+          "color-mix(in oklch, #E8E8E3 30%, white)"
+        ]
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "Superficie Limpia",
+        "canonical": "#FFFFFF",
+        "tonalRamp": [
+          "color-mix(in oklch, #FFFFFF 35%, black)",
+          "color-mix(in oklch, #FFFFFF 50%, black)",
+          "color-mix(in oklch, #FFFFFF 65%, black)",
+          "color-mix(in oklch, #FFFFFF 75%, black)",
+          "color-mix(in oklch, #FFFFFF 85%, black)",
+          "color-mix(in oklch, #FFFFFF 92%, black)",
+          "color-mix(in oklch, #FFFFFF 97%, black)",
+          "#FFFFFF"
+        ]
+      },
+      "catalog-canvas": {
+        "role": "neutral",
+        "displayName": "Lienzo Catálogo",
+        "canonical": "#FAFAF8",
+        "tonalRamp": [
+          "color-mix(in oklch, #FAFAF8 35%, black)",
+          "color-mix(in oklch, #FAFAF8 50%, black)",
+          "color-mix(in oklch, #FAFAF8 65%, black)",
+          "color-mix(in oklch, #FAFAF8 80%, black)",
+          "color-mix(in oklch, #FAFAF8 90%, black)",
+          "#FAFAF8",
+          "color-mix(in oklch, #FAFAF8 65%, white)",
+          "color-mix(in oklch, #FAFAF8 30%, white)"
+        ]
+      },
+      "catalog-page": {
+        "role": "neutral",
+        "displayName": "Página Catálogo",
+        "canonical": "#F5F5F5",
+        "tonalRamp": [
+          "color-mix(in oklch, #F5F5F5 35%, black)",
+          "color-mix(in oklch, #F5F5F5 50%, black)",
+          "color-mix(in oklch, #F5F5F5 65%, black)",
+          "color-mix(in oklch, #F5F5F5 80%, black)",
+          "color-mix(in oklch, #F5F5F5 90%, black)",
+          "#F5F5F5",
+          "color-mix(in oklch, #F5F5F5 65%, white)",
+          "color-mix(in oklch, #F5F5F5 30%, white)"
+        ]
+      },
+      "catalog-soft": {
+        "role": "neutral",
+        "displayName": "Fondo Catálogo",
+        "canonical": "#F5F5F2",
+        "tonalRamp": [
+          "color-mix(in oklch, #F5F5F2 35%, black)",
+          "color-mix(in oklch, #F5F5F2 50%, black)",
+          "color-mix(in oklch, #F5F5F2 65%, black)",
+          "color-mix(in oklch, #F5F5F2 80%, black)",
+          "color-mix(in oklch, #F5F5F2 90%, black)",
+          "#F5F5F2",
+          "color-mix(in oklch, #F5F5F2 65%, white)",
+          "color-mix(in oklch, #F5F5F2 30%, white)"
+        ]
+      },
+      "catalog-line": {
+        "role": "neutral",
+        "displayName": "Línea Catálogo",
+        "canonical": "#E7E7E1",
+        "tonalRamp": [
+          "color-mix(in oklch, #E7E7E1 35%, black)",
+          "color-mix(in oklch, #E7E7E1 50%, black)",
+          "color-mix(in oklch, #E7E7E1 65%, black)",
+          "color-mix(in oklch, #E7E7E1 80%, black)",
+          "color-mix(in oklch, #E7E7E1 90%, black)",
+          "#E7E7E1",
+          "color-mix(in oklch, #E7E7E1 65%, white)",
+          "color-mix(in oklch, #E7E7E1 30%, white)"
+        ]
+      },
+      "store-navy": {
+        "role": "secondary",
+        "displayName": "Azul Noche de Tienda",
+        "canonical": "#182534",
+        "tonalRamp": [
+          "color-mix(in oklch, #182534 60%, black)",
+          "color-mix(in oklch, #182534 80%, black)",
+          "#182534",
+          "color-mix(in oklch, #182534 85%, white)",
+          "color-mix(in oklch, #182534 65%, white)",
+          "color-mix(in oklch, #182534 45%, white)",
+          "color-mix(in oklch, #182534 25%, white)",
+          "color-mix(in oklch, #182534 10%, white)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Titulares principales y frases de marca." },
+      "headline": { "displayName": "Headline", "purpose": "Aperturas de sección y decisiones principales." },
+      "title": { "displayName": "Title", "purpose": "Tarjetas, módulos y grupos funcionales." },
+      "body": { "displayName": "Body", "purpose": "Contenido funcional y explicativo." },
+      "label": { "displayName": "Label", "purpose": "Badges, marcas y metadatos breves." }
+    },
+    "shadows": [
+      {
+        "name": "ambient-low",
+        "value": "0 4px 12px rgba(24, 33, 43, 0.05)",
+        "purpose": "Paginación y controles discretamente separados del lienzo."
+      },
+      {
+        "name": "interactive-float",
+        "value": "0 6px 18px rgba(23, 23, 23, 0.12)",
+        "purpose": "Controles sobre imágenes y pequeños elementos flotantes."
+      },
+      { "name": "menu-float", "value": "0 14px 36px rgba(23, 23, 23, 0.14)", "purpose": "Dropdowns y paneles de búsqueda." },
+      {
+        "name": "feature-lift",
+        "value": "0 12px 32px rgba(0, 50, 145, 0.10)",
+        "purpose": "Tarjetas protagonistas dentro de composiciones editoriales."
+      },
+      {
+        "name": "modal-lift",
+        "value": "0 24px 70px rgba(22, 24, 29, 0.18)",
+        "purpose": "Diálogos y superficies separadas inequívocamente del contexto."
+      }
+    ],
+    "motion": [
+      { "name": "state-fast", "value": "150ms ease-out", "purpose": "Cambios breves de navegación y estado." },
+      { "name": "state-standard", "value": "200ms ease-out", "purpose": "Color, borde, sombra y altura de componentes." },
+      { "name": "drawer-in", "value": "180ms ease-out", "purpose": "Entrada del panel de filtros en mobile." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "xl", "value": "1280px" },
+      { "name": "2xl", "value": "1440px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Acción principal confiable y directa.",
+      "html": "<button class=\"ds-btn-primary\">Armar mi Patitas →</button>",
+      "css": ".ds-btn-primary { min-height: 56px; padding: 14px 24px; border: 0; border-radius: 12px; background: var(--brand-blue, #0055FF); color: #fff; font: 600 16px/1.2 var(--font-sn-pro, Arial, sans-serif); transition: background-color 200ms ease-out; } .ds-btn-primary:hover { background: #0048DC; } .ds-btn-primary:active { background: #003FBE; } .ds-btn-primary:focus-visible { outline: 3px solid var(--brand-yellow, #FFEC00); outline-offset: 4px; }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Acción alternativa sobria sobre superficies claras.",
+      "html": "<button class=\"ds-btn-secondary\">Ver cómo funciona</button>",
+      "css": ".ds-btn-secondary { min-height: 56px; padding: 14px 24px; border: 1px solid #DADAD5; border-radius: 12px; background: var(--white, #FFFFFF); color: var(--ink, #171717); font: 600 16px/1.2 var(--font-sn-pro, Arial, sans-serif); transition: border-color 200ms ease-out, color 200ms ease-out; } .ds-btn-secondary:hover { border-color: var(--brand-blue, #0055FF); color: var(--brand-blue, #0055FF); } .ds-btn-secondary:focus-visible { outline: 3px solid var(--brand-yellow, #FFEC00); outline-offset: 4px; }"
+    },
+    {
+      "name": "Yellow Action",
+      "kind": "button",
+      "refersTo": "button-yellow",
+      "description": "Acción excepcional con energía de marca.",
+      "html": "<button class=\"ds-btn-yellow\">Agregar a mi próxima Patitas</button>",
+      "css": ".ds-btn-yellow { min-height: 56px; padding: 14px 24px; border: 0; border-radius: 12px; background: var(--brand-yellow, #FFEC00); color: var(--ink, #171717); font: 600 16px/1.2 var(--font-sn-pro, Arial, sans-serif); transition: background-color 200ms ease-out; } .ds-btn-yellow:hover { background: #F1DF00; } .ds-btn-yellow:active { background: #E3D200; } .ds-btn-yellow:focus-visible { outline: 3px solid var(--brand-blue, #0055FF); outline-offset: 4px; }"
+    },
+    {
+      "name": "Ghost Link",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Acción contextual que no compite con el CTA principal.",
+      "html": "<a class=\"ds-btn-ghost\" href=\"#\">Ver detalles →</a>",
+      "css": ".ds-btn-ghost { color: var(--brand-blue, #0055FF); font: 600 16px/1.4 var(--font-sn-pro, Arial, sans-serif); text-decoration: none; text-underline-offset: 4px; } .ds-btn-ghost:hover { text-decoration: underline; } .ds-btn-ghost:focus-visible { outline: 3px solid var(--brand-yellow, #FFEC00); outline-offset: 4px; }"
+    },
+    {
+      "name": "Text Field",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Campo amplio, claro y táctil.",
+      "html": "<label class=\"ds-field\"><span>Tu dirección</span><input placeholder=\"Calle y altura\" /></label>",
+      "css": ".ds-field { display: grid; gap: 8px; color: var(--ink, #171717); font: 600 14px/1.4 var(--font-sn-pro, Arial, sans-serif); } .ds-field input { height: 56px; padding: 0 16px; border: 1px solid var(--border, #E8E8E3); border-radius: 12px; background: var(--white, #FFFFFF); color: var(--ink, #171717); font: 400 16px/1.55 var(--font-sn-pro, Arial, sans-serif); outline: none; transition: border-color 200ms ease-out, box-shadow 200ms ease-out; } .ds-field input:focus { border-color: var(--brand-blue, #0055FF); box-shadow: 0 0 0 4px rgba(0, 85, 255, 0.12); }"
+    },
+    {
+      "name": "Offer Badge",
+      "kind": "chip",
+      "refersTo": "badge",
+      "description": "Señal breve de promoción o recomendación.",
+      "html": "<span class=\"ds-badge\">RECOMENDADO</span>",
+      "css": ".ds-badge { display: inline-flex; width: fit-content; padding: 4px 10px; border-radius: 9999px; background: var(--soft-yellow, #FFF9C7); color: var(--ink, #171717); font: 700 11px/1.4 var(--font-sn-pro, Arial, sans-serif); letter-spacing: 0.04em; }"
+    },
+    {
+      "name": "Content Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Contenedor tranquilo definido por superficie, borde y espacio.",
+      "html": "<article class=\"ds-card\"><h3>Todo lo de siempre, a mano</h3><p>Una superficie clara para decidir sin apuro.</p></article>",
+      "css": ".ds-card { padding: 24px; border: 1px solid var(--border, #E8E8E3); border-radius: 24px; background: var(--white, #FFFFFF); color: var(--ink, #171717); font-family: var(--font-sn-pro, Arial, sans-serif); } .ds-card h3 { margin: 0; font-size: 24px; line-height: 1.1; letter-spacing: -0.025em; } .ds-card p { margin: 12px 0 0; color: var(--muted, #686868); line-height: 1.55; } .ds-card:focus-within { border-color: var(--brand-blue, #0055FF); }"
+    },
+    {
+      "name": "Store Navigation",
+      "kind": "nav",
+      "description": "Navegación de ecommerce azul con acción amarilla excepcional.",
+      "html": "<nav class=\"ds-nav\"><a class=\"ds-nav-logo\" href=\"#\">Patitas Inquietas</a><a href=\"#\">Perros</a><a href=\"#\">Gatos</a><a class=\"ds-nav-all\" href=\"#\">Todos los productos</a></nav>",
+      "css": ".ds-nav { display: flex; align-items: center; gap: 16px; min-height: 64px; padding: 12px 20px; background: var(--brand-blue, #0055FF); color: #fff; font: 600 14px/1.2 var(--font-sn-pro, Arial, sans-serif); } .ds-nav a { color: inherit; text-decoration: none; } .ds-nav a:hover { color: var(--brand-yellow, #FFEC00); } .ds-nav-logo { margin-right: auto; font-size: 18px; font-weight: 700; } .ds-nav-all { padding: 10px 12px; border-radius: 8px; background: var(--brand-yellow, #FFEC00); color: var(--ink, #171717) !important; } .ds-nav a:focus-visible { outline: 3px solid var(--brand-yellow, #FFEC00); outline-offset: 4px; }"
+    },
+    {
+      "name": "Product Card",
+      "kind": "custom",
+      "description": "Tarjeta de catálogo limpia con producto, variante, precio y una acción.",
+      "html": "<article class=\"ds-product\"><div class=\"ds-product-image\">Producto</div><h3>Excellent Adulto</h3><p class=\"ds-product-brand\">Purina</p><span class=\"ds-product-variant\">3 kg</span><strong>$ XX.XXX</strong><button>Agregar</button></article>",
+      "css": ".ds-product { display: grid; gap: 8px; padding: 8px; border-radius: 12px; background: var(--white, #FFFFFF); color: var(--ink, #171717); font-family: var(--font-sn-pro, Arial, sans-serif); } .ds-product-image { display: grid; place-items: center; aspect-ratio: 1; border-radius: 8px; background: var(--catalog-soft, #F5F5F2); color: var(--muted, #686868); } .ds-product h3 { margin: 4px 0 0; font-size: 18px; line-height: 1.2; letter-spacing: -0.025em; } .ds-product-brand { margin: 0; color: var(--muted, #686868); font-size: 14px; font-weight: 600; } .ds-product-variant { width: fit-content; padding: 5px 10px; border-radius: 8px; background: var(--soft-blue, #EEF4FF); font-size: 12px; font-weight: 600; } .ds-product strong { font-size: 20px; } .ds-product button { min-height: 44px; border: 0; border-radius: 12px; background: var(--brand-blue, #0055FF); color: #fff; font-weight: 600; } .ds-product button:hover { background: #0048DC; } .ds-product button:focus-visible { outline: 3px solid var(--brand-yellow, #FFEC00); outline-offset: 4px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "La despensa tranquila",
+    "overview": "Patitas Inquietas se siente como una despensa digital preparada con cariño: cercana, ordenada y lista para resolver una necesidad cotidiana antes de que se convierta en urgencia. La interfaz combina la claridad de un producto digital moderno con una calidez doméstica contenida.\n\nLa expresión es alegre y reconocible, pero nunca ruidosa. El azul sostiene la confianza y la acción; el amarillo aparece como señal de energía; los neutros claros y limpios dejan respirar productos, contenido y decisiones. Los componentes pueden ser suaves, expresivos y juguetones, siempre con estructura clara y sin adoptar una estética infantil.\n\nLa referencia negativa es explícita: Patitas no debe parecer una veterinaria fría, un pet shop barato ni una interfaz excesivamente infantil.",
+    "keyCharacteristics": [
+      "Azul protagonista con amarillo escaso y enérgico.",
+      "Neutros claros y superficies amplias que transmiten confianza y calma.",
+      "Tipografía única, directa y amable.",
+      "Geometría redondeada con jerarquía, no una colección de cápsulas.",
+      "Producto y tareas de compra por encima del ornamento."
+    ],
+    "rules": [
+      {
+        "name": "The 70/25/5 Rule",
+        "body": "Aproximadamente 70% de cada pantalla pertenece a neutros, 25% al azul y sólo 5% al amarillo.",
+        "section": "colors"
+      },
+      {
+        "name": "The Yellow Is a Signal Rule",
+        "body": "El amarillo marca energía o estado; no ocupa grandes superficies repetidas, párrafos ni toda la navegación.",
+        "section": "colors"
+      },
+      {
+        "name": "The One Voice Rule",
+        "body": "SN Pro es la voz de marca y de interfaz; la personalidad viene de la composición, no de sumar fuentes.",
+        "section": "typography"
+      },
+      {
+        "name": "The Flat-By-Default Rule",
+        "body": "Una tarjeta en reposo usa superficie, borde y espacio; la sombra debe comunicar flotación, interacción o protagonismo real.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "**Do** usar Azul Patitas como ancla de marca, foco y acción principal.",
+      "**Do** reservar Amarillo Señal para badges, selección, pequeños acentos y acciones excepcionales.",
+      "**Do** priorizar superficie, borde y espacio antes de agregar sombra.",
+      "**Do** mantener objetivos táctiles de al menos `44px` y estados de foco visibles.",
+      "**Do** usar mascotas reales, hogares cálidos, producto limpio y formas derivadas del isotipo cuando haya fotografía o recursos de marca disponibles."
+    ],
+    "donts": [
+      "**Don't** convertir el amarillo en un segundo color dominante ni usarlo para párrafos.",
+      "**Don't** convertir cada control, tarjeta o sección en una cápsula.",
+      "**Don't** llenar la interfaz de huellas genéricas, emojis permanentes o recursos de stock impersonales.",
+      "**Don't** imitar una veterinaria fría, un pet shop barato, un marketplace saturado ni una interfaz excesivamente infantil.",
+      "**Don't** fabricar testimonios, métricas, fotografías propias o afirmaciones comerciales sin evidencia."
+    ]
+  }
+}

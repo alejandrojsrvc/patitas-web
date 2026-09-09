@@ -1,9 +1,4 @@
-import {
-  Bone,
-  BowlFood,
-  Cookie,
-  PuzzlePiece,
-} from "@phosphor-icons/react/ssr";
+import { Bone, BowlFood, Cookie, PuzzlePiece } from "@phosphor-icons/react/ssr";
 import { CtaLink } from "@/components/ui/cta-link";
 import { addOns } from "@/data/mocks/landing";
 
@@ -11,17 +6,13 @@ const icons = [BowlFood, Cookie, Bone, PuzzlePiece];
 
 export function AddOns() {
   return (
-    <section className="section-space bg-cream">
+    <section className="section-space bg-page-bg">
       <div className="container-shell">
         <div className="max-w-2xl">
-          <h2 className="display-heading text-4xl sm:text-5xl lg:text-[3.25rem]">
-            Un extra puede viajar con lo de siempre.
-          </h2>
+          <h2 className="display-heading text-4xl sm:text-5xl lg:text-[3.25rem]">Un extra puede viajar con lo de siempre.</h2>
           <p className="body-copy mt-5 max-w-xl text-lg">
-            Sumalo una vez a una próxima Patitas. No todo tiene que volverse
-            recurrente: elegí un juguete, un snack o un accesorio y viaja
-            junto con su alimento sin que tengas que hacer otro pedido
-            aparte.
+            Sumalo una vez a una próxima Patitas. No todo tiene que volverse recurrente: elegí un juguete, un snack o un accesorio y viaja
+            junto con su alimento sin que tengas que hacer otro pedido aparte.
           </p>
         </div>
 
@@ -34,12 +25,7 @@ export function AddOns() {
                   key={product.id}
                   className={`flex min-h-44 items-start gap-4 p-6 sm:p-7 ${index > 0 ? "border-t border-border" : ""} ${index === 1 ? "sm:border-l sm:border-t-0" : ""} ${index === 2 ? "sm:border-t" : ""} ${index === 3 ? "sm:border-l sm:border-t" : ""}`}
                 >
-                  <Icon
-                    size={30}
-                    weight="duotone"
-                    className="mt-1 shrink-0 text-brand-blue"
-                    aria-hidden="true"
-                  />
+                  <Icon size={30} weight="duotone" className="mt-1 shrink-0 text-brand-blue" aria-hidden="true" />
                   <div>
                     <h3 className="font-display text-2xl font-semibold">{product.name}</h3>
                     <p className="mt-2 text-sm text-muted">{product.detail}</p>
@@ -51,12 +37,9 @@ export function AddOns() {
 
           <div className="flex flex-col justify-between bg-brand-yellow p-7 text-ink sm:p-9">
             <div>
-              <p className="font-display text-3xl font-semibold leading-tight">
-                Un gustito extra, una sola entrega.
-              </p>
+              <p className="font-display text-3xl font-semibold leading-tight">Un gustito extra, una sola entrega.</p>
               <p className="mt-4 max-w-xs text-sm leading-6 text-ink/75">
-                Elegís qué sumar y a cuál de las próximas entregas. Después,
-                la rutina sigue como estaba.
+                Elegís qué sumar y a cuál de las próximas entregas. Después, la rutina sigue como estaba.
               </p>
             </div>
             <CtaLink href="/armar" variant="secondary" className="mt-10 bg-surface">

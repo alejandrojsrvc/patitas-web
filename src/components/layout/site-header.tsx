@@ -36,7 +36,12 @@ async function StorefrontBootstrap(props: SiteHeaderProps) {
   );
 }
 
-function ResolvedSiteHeader({ shell, searchQuery, minimal, hydrateCart }: SiteHeaderProps & { shell: StorefrontShell; hydrateCart: boolean }) {
+function ResolvedSiteHeader({
+  shell,
+  searchQuery,
+  minimal,
+  hydrateCart,
+}: SiteHeaderProps & { shell: StorefrontShell; hydrateCart: boolean }) {
   return (
     <>
       {hydrateCart ? <CartHydrator cart={shell.cart} /> : null}

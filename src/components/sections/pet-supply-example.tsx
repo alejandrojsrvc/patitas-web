@@ -1,11 +1,4 @@
-import {
-  Bone,
-  BowlFood,
-  CalendarDots,
-  Dog,
-  Package,
-  PencilSimple,
-} from "@phosphor-icons/react/ssr";
+import { Bone, BowlFood, CalendarDots, Dog, Package, PencilSimple } from "@phosphor-icons/react/ssr";
 import { kiaraPlan } from "@/data/mocks/landing";
 
 const productIcons = {
@@ -26,17 +19,13 @@ export function PetSupplyExample() {
     <section id="que-recibes" className="anchor-section section-space bg-soft-blue">
       <div className="container-shell grid items-center gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:gap-20">
         <div>
-          <h2 className="display-heading text-4xl sm:text-5xl lg:text-[3.25rem]">
-            El abastecimiento de Kiara, ya organizado.
-          </h2>
+          <h2 className="display-heading text-4xl sm:text-5xl lg:text-[3.25rem]">El abastecimiento de Kiara, ya organizado.</h2>
           <p className="body-copy mt-5 max-w-md text-lg">
-            No es un carrito esperando que vuelvas. Es una próxima entrega
-            preparada alrededor de lo que Kiara consume, con los productos
+            No es un carrito esperando que vuelvas. Es una próxima entrega preparada alrededor de lo que Kiara consume, con los productos
             que ya conocés y la frecuencia que elegiste.
           </p>
           <p className="body-copy mt-4 max-w-md text-muted">
-            Cada Patitas se arma según la rutina de tu mascota. Si algo
-            cambia, podés ajustarlo antes de que salga.
+            Cada Patitas se arma según la rutina de tu mascota. Si algo cambia, podés ajustarlo antes de que salga.
           </p>
           <div className="mt-8 flex items-center gap-3 text-sm font-semibold text-brand-blue">
             <PencilSimple size={20} weight="bold" aria-hidden="true" />
@@ -53,9 +42,7 @@ export function PetSupplyExample() {
               <div>
                 <div className="flex items-center gap-2">
                   <h3 className="font-display text-3xl font-semibold">{kiaraPlan.pet.name}</h3>
-                  <span className="rounded-full bg-brand-yellow px-2.5 py-1 text-[0.65rem] font-bold tracking-wide text-ink">
-                    EJEMPLO
-                  </span>
+                  <span className="rounded-full bg-brand-yellow px-2.5 py-1 text-[0.65rem] font-bold tracking-wide text-ink">EJEMPLO</span>
                 </div>
                 <p className="mt-1 text-sm text-white/90">
                   {kiaraPlan.pet.description} · {kiaraPlan.pet.weightKg} kg
@@ -64,9 +51,7 @@ export function PetSupplyExample() {
             </div>
             <div className="sm:text-right">
               <p className="text-xs font-bold tracking-[0.1em] text-white/90">FRECUENCIA</p>
-              <p className="mt-1 font-display text-2xl font-semibold capitalize">
-                {kiaraPlan.frequency}
-              </p>
+              <p className="mt-1 font-display text-2xl font-semibold capitalize">{kiaraPlan.frequency}</p>
             </div>
           </div>
 
@@ -76,10 +61,8 @@ export function PetSupplyExample() {
                 <CalendarDots size={20} weight="bold" aria-hidden="true" />
                 PRÓXIMA PATITAS
               </div>
-              <p className="mt-5 font-display text-5xl font-semibold uppercase leading-none tracking-[-0.03em]">
-                {deliveryDate}
-              </p>
-                <p className="mt-3 text-sm text-muted">Fecha ilustrativa · plan mensual</p>
+              <p className="mt-5 font-display text-5xl font-semibold uppercase leading-none tracking-[-0.03em]">{deliveryDate}</p>
+              <p className="mt-3 text-sm text-muted">Fecha ilustrativa · plan mensual</p>
             </div>
 
             <div>
@@ -100,9 +83,7 @@ export function PetSupplyExample() {
                         <p className="font-semibold text-ink">{product.name}</p>
                         <p className="text-sm text-muted">{product.detail}</p>
                       </div>
-                      {product.optional ? (
-                        <span className="text-xs font-bold text-brand-blue">OPCIONAL</span>
-                      ) : null}
+                      {product.optional ? <span className="text-xs font-bold text-brand-blue">OPCIONAL</span> : null}
                     </li>
                   );
                 })}

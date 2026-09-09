@@ -17,9 +17,10 @@ const ENTITY_NAMES = {
   quot: '"',
 };
 
-const sleep = (milliseconds) => new Promise((resolvePromise) => {
-  setTimeout(resolvePromise, milliseconds);
-});
+const sleep = (milliseconds) =>
+  new Promise((resolvePromise) => {
+    setTimeout(resolvePromise, milliseconds);
+  });
 
 function decodeHtml(value) {
   return value.replace(/&(#x?[\da-f]+|[a-z]+);/gi, (match, entity) => {
@@ -37,11 +38,13 @@ function decodeHtml(value) {
 }
 
 function textContent(value) {
-  return decodeHtml(value
-    .replace(/<!--([\s\S]*?)-->/g, "")
-    .replace(/<br\s*\/?\s*>/gi, "\n")
-    .replace(/<\/(?:p|div|li|tr|h[1-6])\s*>/gi, "\n")
-    .replace(/<[^>]+>/g, " "))
+  return decodeHtml(
+    value
+      .replace(/<!--([\s\S]*?)-->/g, "")
+      .replace(/<br\s*\/?\s*>/gi, "\n")
+      .replace(/<\/(?:p|div|li|tr|h[1-6])\s*>/gi, "\n")
+      .replace(/<[^>]+>/g, " "),
+  )
     .replace(/[ \t\u00a0]+/g, " ")
     .replace(/\n\s+/g, "\n")
     .replace(/\s+\n/g, "\n")
@@ -77,9 +80,7 @@ function extractMetaContent(html, attribute, value) {
 }
 
 function extractSections(html) {
-  const headings = Array.from(
-    html.matchAll(/<h([1-6])\b[^>]*>([\s\S]*?)<\/h\1\s*>/gi),
-  );
+  const headings = Array.from(html.matchAll(/<h([1-6])\b[^>]*>([\s\S]*?)<\/h\1\s*>/gi));
 
   return headings.map((heading, index) => {
     const start = (heading.index ?? 0) + heading[0].length;
@@ -99,10 +100,7 @@ function findSection(sections, title) {
 
 function extractTableRows(html) {
   return extractTagBlocks(html, "tr")
-    .map((row) => Array.from(
-      row.innerHtml.matchAll(/<(?:td|th)\b[^>]*>([\s\S]*?)<\/(?:td|th)\s*>/gi),
-      (cell) => textContent(cell[1]),
-    ))
+    .map((row) => Array.from(row.innerHtml.matchAll(/<(?:td|th)\b[^>]*>([\s\S]*?)<\/(?:td|th)\s*>/gi), (cell) => textContent(cell[1])))
     .filter((row) => row.length > 0);
 }
 
@@ -134,22 +132,19 @@ function parseWeightRange(value) {
 
 function extractPresentations(sectionHtml) {
   const presentationText = textContent(sectionHtml);
-  const matches = Array.from(
-    presentationText.matchAll(/(\d+(?:[.,]\d+)?)\s*(kg|kgs|g|gr)\b/gi),
-    (match) => {
-      const value = Number(match[1].replace(",", "."));
-      const unit = match[2].toLowerCase();
-      const weightGrams = unit.startsWith("k") ? Math.round(value * 1000) : Math.round(value);
-      return {
-        label: `${match[1]} ${match[2]}`,
-        weightGrams,
-      };
-    },
-  );
+  const matches = Array.from(presentationText.matchAll(/(\d+(?:[.,]\d+)?)\s*(kg|kgs|g|gr)\b/gi), (match) => {
+    const value = Number(match[1].replace(",", "."));
+    const unit = match[2].toLowerCase();
+    const weightGrams = unit.startsWith("k") ? Math.round(value * 1000) : Math.round(value);
+    return {
+      label: `${match[1]} ${match[2]}`,
+      weightGrams,
+    };
+  });
 
-  return matches.filter((presentation, index) => matches.findIndex(
-    (candidate) => candidate.weightGrams === presentation.weightGrams,
-  ) === index);
+  return matches.filter(
+    (presentation, index) => matches.findIndex((candidate) => candidate.weightGrams === presentation.weightGrams) === index,
+  );
 }
 
 function extractFeedingGuide(section) {
@@ -194,17 +189,14 @@ function extractImages(html, sourceUrl) {
   );
   for (const gallery of galleryBlocks) {
     const galleryHtml = gallery[2];
-    const url = extractAttribute(galleryHtml, "data-large_image")
-      ?? extractAttribute(galleryHtml, "data-src")
-      ?? extractAttribute(galleryHtml, "href");
+    const url =
+      extractAttribute(galleryHtml, "data-large_image") ??
+      extractAttribute(galleryHtml, "data-src") ??
+      extractAttribute(galleryHtml, "href");
     if (url) {
       candidates.push({
         url,
-        altText: textContent(
-          extractAttribute(galleryHtml, "data-thumb-alt")
-            ?? extractAttribute(galleryHtml, "alt")
-            ?? "",
-        ),
+        altText: textContent(extractAttribute(galleryHtml, "data-thumb-alt") ?? extractAttribute(galleryHtml, "alt") ?? ""),
       });
     }
   }
@@ -215,9 +207,8 @@ function extractImages(html, sourceUrl) {
 
     for (const match of html.matchAll(/<img\b([^>]*)>/gi)) {
       const attributes = match[1];
-      const url = extractAttribute(attributes, "data-lazy-src")
-        ?? extractAttribute(attributes, "data-src")
-        ?? extractAttribute(attributes, "src");
+      const url =
+        extractAttribute(attributes, "data-lazy-src") ?? extractAttribute(attributes, "data-src") ?? extractAttribute(attributes, "src");
       if (!url) continue;
       candidates.push({
         url,
@@ -239,15 +230,21 @@ function extractImages(html, sourceUrl) {
 function inferProductAttributes(name) {
   const key = normalizedKey(name);
   return {
-    lifeStage: key.includes("cachorro") ? "puppy"
-      : key.includes("senior") ? "senior"
-        : key.includes("adult") ? "adult" : null,
-    breedSize: key.includes("razas pequenas") ? "small"
-      : key.includes("medianos y grandes") ? "medium_large"
-        : key.includes("todas las razas") ? "all" : null,
-    line: key.includes("proteinas noveles") ? "Proteínas Noveles"
-      : key.includes("equilibrium") ? "Equilibrium"
-        : key.includes("premium") ? "Premium" : null,
+    lifeStage: key.includes("cachorro") ? "puppy" : key.includes("senior") ? "senior" : key.includes("adult") ? "adult" : null,
+    breedSize: key.includes("razas pequenas")
+      ? "small"
+      : key.includes("medianos y grandes")
+        ? "medium_large"
+        : key.includes("todas las razas")
+          ? "all"
+          : null,
+    line: key.includes("proteinas noveles")
+      ? "Proteínas Noveles"
+      : key.includes("equilibrium")
+        ? "Equilibrium"
+        : key.includes("premium")
+          ? "Premium"
+          : null,
   };
 }
 
@@ -270,11 +267,9 @@ export function productLinksFromCategory(html, categoryUrl) {
 
 export function parseProductDetail(html, sourceUrl) {
   const sections = extractSections(html);
-  const titleHeading = sections.find((section) => /old prince/i.test(section.title)
-    && !/menu|menú/i.test(section.title));
-  const name = titleHeading?.title ?? textContent(
-    extractMetaContent(html, "property", "og:title") ?? "",
-  ).replace(/\s*[–-]\s*Old Prince\s*$/i, "");
+  const titleHeading = sections.find((section) => /old prince/i.test(section.title) && !/menu|menú/i.test(section.title));
+  const name =
+    titleHeading?.title ?? textContent(extractMetaContent(html, "property", "og:title") ?? "").replace(/\s*[–-]\s*Old Prince\s*$/i, "");
   const ingredientsSection = findSection(sections, "Ingredientes");
   const presentationsSection = findSection(sections, "Presentaciones");
   const feedingSection = findSection(sections, "Cantidad diaria recomendada");
@@ -315,12 +310,7 @@ export async function fetchHtml(url, { timeoutMs = 30_000 } = {}) {
   }
 }
 
-export async function scrapeOldPrince({
-  categoryUrl = DEFAULT_CATEGORY_URL,
-  delayMs = 500,
-  limit = null,
-  fetchPage = fetchHtml,
-} = {}) {
+export async function scrapeOldPrince({ categoryUrl = DEFAULT_CATEGORY_URL, delayMs = 500, limit = null, fetchPage = fetchHtml } = {}) {
   const categoryHtml = await fetchPage(categoryUrl);
   const productUrls = productLinksFromCategory(categoryHtml, categoryUrl).slice(0, limit ?? undefined);
   if (productUrls.length === 0) throw new Error("No se encontraron productos en la categoría indicada.");

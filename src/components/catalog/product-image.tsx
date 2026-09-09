@@ -1,4 +1,7 @@
+"use client";
+
 import Image from "next/image";
+import { useState } from "react";
 
 import { productImageSources, type ProductImagePreset } from "@/lib/product-image-urls";
 
@@ -17,9 +20,16 @@ export function ProductImage({
   preset?: ProductImagePreset;
   sizes?: string;
 }) {
-  if (!src) {
+  const [failedSrc, setFailedSrc] = useState<string | null>(null);
+  const unavailable = !src || failedSrc === src;
+
+  if (unavailable) {
     return (
-      <div className={`flex items-center justify-center bg-soft-blue ${className}`} aria-label={`Imagen de ${alt} pendiente`}>
+      <div
+        role="img"
+        className={`flex h-full w-full items-center justify-center bg-soft-blue ${className}`}
+        aria-label={`Imagen de ${alt} no disponible`}
+      >
         <Image
           unoptimized
           src="/brand/patitas-isotipo.png"
@@ -43,6 +53,9 @@ export function ProductImage({
         preload={priority}
         loading={priority ? "eager" : undefined}
         fetchPriority={priority ? "high" : undefined}
+        onError={() => {
+          if (src) setFailedSrc(src);
+        }}
         sizes={sizes}
         className={`object-contain ${className}`}
       />

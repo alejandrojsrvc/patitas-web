@@ -1,31 +1,44 @@
-import { ArrowDown, ArrowUp, Sparkle, TextAa } from "@phosphor-icons/react/ssr";
-import Link from "next/link";
+"use client";
+
+import { useRouter } from "next/navigation";
+import { useTransition } from "react";
 
 import { catalogHref, type CatalogSearchParams } from "@/lib/catalog-search-params";
 
+const options = [
+  ["featured", "Destacados"],
+  ["name_asc", "Nombre"],
+  ["price_asc", "Menor precio"],
+  ["price_desc", "Mayor precio"],
+] as const;
+
 export function CatalogSortOptions({ current, pathname }: { current: CatalogSearchParams; pathname: string }) {
-  const options = [
-    ["featured", "Destacados", Sparkle],
-    ["name_asc", "Nombre", TextAa],
-    ["price_asc", "Menor precio", ArrowDown],
-    ["price_desc", "Mayor precio", ArrowUp],
-  ] as const;
+  const router = useRouter();
   const selected = first(current.sort) ?? "featured";
+  const [isPending, startTransition] = useTransition();
+
   return (
-    <div className="no-scrollbar flex max-w-full shrink overflow-x-auto rounded-xl bg-catalog-soft p-1" aria-label="Ordenar resultados">
-      {options.map(([value, label, Icon]) => (
-        <Link
-          key={value}
-          href={catalogHref(pathname, current, { sort: value, page: 1 })}
-          scroll={false}
-          aria-current={selected === value ? "page" : undefined}
-          className={`inline-flex min-h-9 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg px-2.5 py-2 text-xs transition-colors sm:px-3 ${selected === value ? "bg-brand-yellow font-semibold text-ink" : "text-muted hover:bg-soft-yellow hover:text-ink"}`}
-        >
-          <Icon size={14} weight={selected === value ? "bold" : "regular"} aria-hidden="true" />
-          {label}
-        </Link>
-      ))}
-    </div>
+    <label className="flex min-w-0 items-center justify-between gap-2 text-sm font-semibold text-ink">
+      <span className="shrink-0">{isPending ? "Ordenando…" : "Ordenar por"}</span>
+      <select
+        aria-label="Ordenar productos"
+        aria-busy={isPending}
+        disabled={isPending}
+        value={selected}
+        onChange={(event) =>
+          startTransition(() => {
+            router.push(catalogHref(pathname, current, { sort: event.target.value, page: 1 }), { scroll: false });
+          })
+        }
+        className="h-10 min-w-0 max-w-44 rounded-lg border border-catalog-line bg-white px-3 text-sm font-semibold text-ink outline-none focus:border-brand-blue"
+      >
+        {options.map(([value, label]) => (
+          <option key={value} value={value}>
+            {label}
+          </option>
+        ))}
+      </select>
+    </label>
   );
 }
 

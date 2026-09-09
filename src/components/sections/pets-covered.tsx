@@ -27,14 +27,10 @@ export function PetsCovered() {
     <section className="section-space bg-surface">
       <div className="container-shell">
         <div className="max-w-2xl">
-          <h2 className="display-heading text-4xl sm:text-5xl lg:text-[3.25rem]">
-            Perros y gatos. Cada uno con su propia Patitas.
-          </h2>
+          <h2 className="display-heading text-4xl sm:text-5xl lg:text-[3.25rem]">Perros y gatos. Cada uno con su propia Patitas.</h2>
           <p className="body-copy mt-5 max-w-xl text-lg">
-            La configuración parte de la mascota, no de un catálogo infinito.
-            Contanos qué consume tu perro o gato y armamos su Patitas con
-            los productos exactos que necesita, en la cantidad y frecuencia
-            que mejor se adapte.
+            La configuración parte de la mascota, no de un catálogo infinito. Contanos qué consume tu perro o gato y armamos su Patitas con
+            los productos exactos que necesita, en la cantidad y frecuencia que mejor se adapte.
           </p>
         </div>
 
@@ -42,13 +38,11 @@ export function PetsCovered() {
           {petGroups.map((group) => {
             const Icon = group.icon;
             return (
-              <article key={group.title} className={`relative min-h-[28rem] overflow-hidden rounded-[1.75rem] p-7 sm:p-10 ${group.className}`}>
-                <Icon
-                  size={260}
-                  weight="duotone"
-                  className="absolute -bottom-12 -right-8 opacity-20 sm:size-[320px]"
-                  aria-hidden="true"
-                />
+              <article
+                key={group.title}
+                className={`relative min-h-[28rem] overflow-hidden rounded-[1.75rem] p-7 sm:p-10 ${group.className}`}
+              >
+                <Icon size={260} weight="duotone" className="absolute -bottom-12 -right-8 opacity-20 sm:size-[320px]" aria-hidden="true" />
                 <div className="relative max-w-sm">
                   <Icon size={46} weight="duotone" aria-hidden="true" />
                   <h3 className="mt-6 font-display text-4xl font-semibold">{group.title}</h3>

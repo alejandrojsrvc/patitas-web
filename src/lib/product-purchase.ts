@@ -37,7 +37,10 @@ export function productDeliveryEstimate(now: Date): ProductDeliveryEstimate {
 
   return {
     cutoffAt: cutoffAt.toISOString(),
-    cutoffLabel: dateKey(cutoffDate) === dateKey(today) ? `Pedilo antes de las ${DELIVERY_CUTOFF_HOUR}:00` : `Pedilo antes del ${formatWeekday(cutoffDate)} a las ${DELIVERY_CUTOFF_HOUR}:00`,
+    cutoffLabel:
+      dateKey(cutoffDate) === dateKey(today)
+        ? `Pedilo antes de las ${DELIVERY_CUTOFF_HOUR}:00`
+        : `Pedilo antes del ${formatWeekday(cutoffDate)} a las ${DELIVERY_CUTOFF_HOUR}:00`,
     deliveryDate: dateKey(deliveryDate),
     deliveryLabel: dateKey(deliveryDate) === dateKey(tomorrow) ? "Llega mañana" : `Llega el ${formatDeliveryDate(deliveryDate)}`,
     remainingSeconds: Math.max(0, Math.floor((cutoffAt.getTime() - now.getTime()) / 1000)),

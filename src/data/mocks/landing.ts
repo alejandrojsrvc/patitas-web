@@ -35,12 +35,7 @@ export const kiaraPlan: SupplyPlan = {
   ],
 };
 
-export const foodBrands: Brand[] = [
-  { name: "Excellent" },
-  { name: "Pro Plan" },
-  { name: "Royal Canin" },
-  { name: "Old Prince" },
-];
+export const foodBrands: Brand[] = [{ name: "Excellent" }, { name: "Pro Plan" }, { name: "Royal Canin" }, { name: "Old Prince" }];
 
 export const addOns: Product[] = [
   {
@@ -82,13 +77,11 @@ export const faqs: FAQ[] = [
   },
   {
     question: "¿Puedo modificar una entrega?",
-    answer:
-      "Sí. Antes de cada entrega vas a poder cambiar productos, cantidades o la fecha según lo que necesites.",
+    answer: "Sí. Antes de cada entrega vas a poder cambiar productos, cantidades o la fecha según lo que necesites.",
   },
   {
     question: "¿Puedo saltar una entrega?",
-    answer:
-      "Sí. Si esa vez no necesitás reposición, podés saltarla sin perder la configuración de tu mascota.",
+    answer: "Sí. Si esa vez no necesitás reposición, podés saltarla sin perder la configuración de tu mascota.",
   },
   {
     question: "¿Puedo comprar una sola vez?",
@@ -97,17 +90,14 @@ export const faqs: FAQ[] = [
   },
   {
     question: "¿Qué pasa si todavía me queda alimento?",
-    answer:
-      "Podés retrasar o saltar la próxima entrega. La frecuencia ordena tus compras, pero vos conservás el control.",
+    answer: "Podés retrasar o saltar la próxima entrega. La frecuencia ordena tus compras, pero vos conservás el control.",
   },
   {
     question: "¿Qué zonas cubre Patitas?",
-    answer:
-      "La zona inicial prevista es Villa Crespo, CABA. Vamos a comunicar nuevas zonas a medida que ampliemos la cobertura.",
+    answer: "La zona inicial prevista es Villa Crespo, CABA. Vamos a comunicar nuevas zonas a medida que ampliemos la cobertura.",
   },
   {
     question: "¿Puedo agregar otros productos a mi próxima entrega?",
-    answer:
-      "Sí. Podés sumar snacks, juguetes y otros complementos a una entrega futura sin convertirlos en productos recurrentes.",
+    answer: "Sí. Podés sumar snacks, juguetes y otros complementos a una entrega futura sin convertirlos en productos recurrentes.",
   },
 ];

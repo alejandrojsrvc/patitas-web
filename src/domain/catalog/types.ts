@@ -73,16 +73,19 @@ export type PublicOffer = ProductOffer & {
   targets: Array<{ productId: string | null; variantId: string | null; categoryId: string | null; brandId: string | null }>;
 };
 
-export type ReplenishmentLeadInput = {
-  productSlug: string;
-  variantId: string;
-  petWeightKg: number;
-  lifeStage: string;
-  estimatedDurationDays: { min: number; max: number };
-  calculationSource: string;
-  email: string;
-  whatsapp?: string;
-  consent: { email: boolean; whatsapp: boolean; version: string };
+export type ReplenishmentEstimate = {
+  id: string;
+  accessToken?: string;
+  dailyGrams: { min: number; max: number };
+  durationDays: { min: number; max: number };
+  source: string;
+  sourceLabel: string;
+  sourceUrl: string | null;
+  estimatedDepletionDate: string;
+  assumptions: string[];
+  productId: string | null;
+  variantId: string | null;
+  custom: { brand: string; name: string; weightGrams: number } | null;
 };
 
 export type ProductTechnicalSheet = {
@@ -127,6 +130,32 @@ export type ProductPage = {
     total: number;
     totalPages: number;
   };
+};
+
+export type ProductAutocompleteItem = {
+  id: string;
+  productId: string;
+  slug: string;
+  species: string | null;
+  categorySlug: string;
+  name: string;
+  presentation: string | null;
+  displayName: string;
+  brand: {
+    id: string;
+    name: string;
+    slug: string;
+  };
+  image: {
+    url: string;
+    altText: string;
+  } | null;
+  salePrice: string;
+  currency: "ARS";
+};
+
+export type ProductAutocompleteResponse = {
+  items: ProductAutocompleteItem[];
 };
 
 export type StringFacetOption = {

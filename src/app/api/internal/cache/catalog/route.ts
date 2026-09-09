@@ -42,7 +42,10 @@ export async function POST(request: Request) {
   try {
     body = (await request.json()) as CacheRequest;
   } catch {
-    return NextResponse.json({ message: "El cuerpo debe ser JSON válido." }, { status: 400, headers: { "Cache-Control": "private, no-store" } });
+    return NextResponse.json(
+      { message: "El cuerpo debe ser JSON válido." },
+      { status: 400, headers: { "Cache-Control": "private, no-store" } },
+    );
   }
 
   const tags = tagsFor(body.scope, body.slug);

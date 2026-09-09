@@ -24,9 +24,7 @@ for (const url of urls) {
     const html = await response.text();
     const main = html.match(/<main\b[^>]*>([\s\S]*?)<\/main>/i)?.[1] ?? html;
     const text = stripMarkup(main);
-    const links = [...html.matchAll(/href=["']([^"']+)["']/gi)]
-      .map((match) => resolveInternalUrl(match[1], baseUrl))
-      .filter(Boolean);
+    const links = [...html.matchAll(/href=["']([^"']+)["']/gi)].map((match) => resolveInternalUrl(match[1], baseUrl)).filter(Boolean);
     for (const link of links) if (inbound.has(link)) inbound.set(link, inbound.get(link) + 1);
 
     pages.push({

@@ -1,14 +1,6 @@
 import type { WizardStep } from "../types";
 
-const stepLabels = [
-  "Mascota",
-  "Alimento",
-  "Consumo",
-  "Ritmo",
-  "Presentación",
-  "Esenciales",
-  "Tu Patitas",
-];
+const stepLabels = ["Mascota", "Alimento", "Consumo", "Ritmo", "Presentación", "Esenciales", "Tu Patitas"];
 
 type WizardShellProps = {
   step: WizardStep;
@@ -28,15 +20,8 @@ export function WizardShell({ step, children }: WizardShellProps) {
             {stepLabels.map((label, index) => {
               const number = index + 1;
               return (
-                <li
-                  key={label}
-                  aria-current={number === step ? "step" : undefined}
-                  className="min-w-0"
-                >
-                  <span
-                    className={`block h-1.5 rounded-full ${number <= step ? "bg-brand-blue" : "bg-[#cdd8eb]"}`}
-                    aria-hidden="true"
-                  />
+                <li key={label} aria-current={number === step ? "step" : undefined} className="min-w-0">
+                  <span className={`block h-1.5 rounded-full ${number <= step ? "bg-brand-blue" : "bg-[#cdd8eb]"}`} aria-hidden="true" />
                   <span className="sr-only">{label}</span>
                 </li>
               );

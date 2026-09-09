@@ -7,6 +7,12 @@
       "skillPath": "skills/copywriting/SKILL.md",
       "computedHash": "c8d63b1f77be04fd54981720de65697988810bd28331097dbe0aaf3e166d638a"
     },
+    "impeccable": {
+      "source": "pbakaus/impeccable",
+      "sourceType": "github",
+      "skillPath": ".agents/skills/impeccable/SKILL.md",
+      "computedHash": "cf74195b3f4924fd445a6fcf639a80b40e8dd34ee2615e4b5f19887fc5a43406"
+    },
     "next-dev-loop": {
       "source": "vercel/next.js",
       "sourceType": "github",

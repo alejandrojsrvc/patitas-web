@@ -1,57 +1,70 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import type { StorefrontShell } from "@/domain/storefront/types";
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
+import { emptyStorefrontShell, type StorefrontShell } from "@/domain/storefront/types";
 import { useCart } from "@/features/cart/cart-context";
 
-const storageKey = "patitas:session-shell";
-const SessionShellContext = createContext<StorefrontShell | null>(null);
+type SessionShellState = {
+  shell: StorefrontShell | null;
+  status: "loading" | "ready" | "error";
+  retry: () => void;
+};
+
+const SessionShellContext = createContext<SessionShellState | null>(null);
 
 export function SessionShellProvider({ children }: { children: React.ReactNode }) {
-  const { hydrate } = useCart();
+  const { refresh } = useCart();
   const [shell, setShell] = useState<StorefrontShell | null>(null);
-
+  const [status, setStatus] = useState<SessionShellState["status"]>("loading");
+  const requestVersion = useRef(0);
   const load = useCallback(async () => {
+    const version = ++requestVersion.current;
+    setStatus("loading");
     try {
+      // Let the cart request finish any cookie/session renewal first.
+      await refresh();
+      if (version !== requestVersion.current) return;
       const response = await fetch("/api/commerce/storefront/bootstrap", { cache: "no-store" });
-      if (!response.ok) return;
-      const next = await response.json() as StorefrontShell;
-      setShell(next);
-      hydrate(next.cart);
-      window.localStorage.setItem(storageKey, JSON.stringify(next));
+      if (version !== requestVersion.current) return;
+      if (!response.ok) {
+        if (response.status === 401)
+          setShell((current) => ({
+            ...(current ?? emptyStorefrontShell),
+            viewer: { authenticated: false },
+            location: null,
+          }));
+        if (version === requestVersion.current) setStatus(response.status === 401 ? "ready" : "error");
+        return;
+      }
+      const next = (await response.json()) as StorefrontShell;
+      if (version === requestVersion.current) {
+        setShell(next);
+        setStatus("ready");
+      }
+      // CartProvider owns the cart. Never hydrate it from a header summary or
+      // localStorage; neither contains authoritative cart items.
     } catch {
-      // La cache visual local mantiene el header usable si el API no responde.
+      if (version === requestVersion.current) setStatus("error");
     }
-  }, [hydrate]);
+  }, [refresh]);
 
   useEffect(() => {
-    let hydrationTimer: number | null = null;
-    let loadTimer: number | null = null;
-
-    try {
-      const cached = window.localStorage.getItem(storageKey);
-      if (cached) {
-        const parsed = JSON.parse(cached) as StorefrontShell;
-        hydrationTimer = window.setTimeout(() => {
-          setShell(parsed);
-          hydrate(parsed.cart);
-        }, 0);
-      }
-    } catch {
-      window.localStorage.removeItem(storageKey);
-    }
-    loadTimer = window.setTimeout(() => void load(), 0);
-    const refresh = () => void load();
+    const timer = window.setTimeout(() => void load(), 0);
+    const refresh = () => {
+      void load();
+    };
     window.addEventListener("patitas-session-changed", refresh);
     return () => {
-      if (hydrationTimer) window.clearTimeout(hydrationTimer);
-      if (loadTimer) window.clearTimeout(loadTimer);
+      window.clearTimeout(timer);
+      requestVersion.current += 1;
       window.removeEventListener("patitas-session-changed", refresh);
     };
-  }, [hydrate, load]);
+  }, [load]);
+  const retry = useCallback(() => {
+    void load();
+  }, [load]);
 
-  const value = useMemo(() => shell, [shell]);
-  return <SessionShellContext.Provider value={value}>{children}</SessionShellContext.Provider>;
+  return <SessionShellContext.Provider value={{ shell, status, retry }}>{children}</SessionShellContext.Provider>;
 }
 
 export function useSessionShell() {

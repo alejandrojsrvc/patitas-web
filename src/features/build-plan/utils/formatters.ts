@@ -20,10 +20,7 @@ export function formatReplenishmentDate(date: Date) {
     .toUpperCase();
 }
 
-export function formatConsumableQuantity(
-  quantity: number,
-  quantityLabel: string,
-) {
+export function formatConsumableQuantity(quantity: number, quantityLabel: string) {
   if (quantity !== 1) return `${quantity} ${quantityLabel}`;
   const singular = quantityLabel
     .replace(/^packs/, "pack")

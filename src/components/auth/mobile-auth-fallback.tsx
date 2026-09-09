@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { PawPrint } from "@phosphor-icons/react/ssr";
 
 type MobileAuthFallbackProps = {
   title: string;
@@ -8,14 +9,9 @@ type MobileAuthFallbackProps = {
   invalidMessage: string;
 };
 
-export function MobileAuthFallback({
-  title,
-  description,
-  appHref,
-  invalidMessage,
-}: MobileAuthFallbackProps) {
+export function MobileAuthFallback({ title, description, appHref, invalidMessage }: MobileAuthFallbackProps) {
   return (
-    <main className="flex min-h-screen items-center justify-center bg-cream px-5 py-12">
+    <main className="flex min-h-screen items-center justify-center bg-page-bg px-5 py-8 pb-[max(2rem,env(safe-area-inset-bottom))] pt-[max(2rem,env(safe-area-inset-top))]">
       <section className="w-full max-w-md rounded-3xl border border-border bg-white px-6 py-9 text-center shadow-[0_20px_55px_rgba(23,23,23,0.08)] sm:px-10 sm:py-11">
         <Image
           src="/brand/patitas-logo-horizontal.png"
@@ -27,13 +23,11 @@ export function MobileAuthFallback({
           className="mx-auto h-auto w-[180px]"
         />
 
-        <div className="mx-auto mt-9 flex size-16 items-center justify-center rounded-full bg-soft-blue text-3xl" aria-hidden="true">
-          🐾
+        <div className="mx-auto mt-9 flex size-16 items-center justify-center rounded-full bg-soft-blue text-brand-blue" aria-hidden="true">
+          <PawPrint size={34} weight="duotone" />
         </div>
 
-        <h1 className="mt-6 text-3xl font-semibold tracking-[-0.035em] text-ink">
-          {title}
-        </h1>
+        <h1 className="mt-6 text-3xl font-semibold tracking-[-0.035em] text-ink">{title}</h1>
 
         {appHref ? (
           <>
@@ -49,7 +43,7 @@ export function MobileAuthFallback({
             </p>
           </>
         ) : (
-          <p className="mt-4 rounded-xl bg-red-50 px-4 py-3 text-sm font-medium leading-6 text-red-700">
+          <p role="alert" className="mt-4 rounded-xl bg-error-surface px-4 py-3 text-sm font-medium leading-6 text-error">
             {invalidMessage}
           </p>
         )}

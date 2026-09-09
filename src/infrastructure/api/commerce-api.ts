@@ -1,6 +1,6 @@
 import "server-only";
 
-const apiUrl = (process.env.PATITAS_API_URL ?? "http://api.patitasinquietas.local/api/v1").replace(/\/$/, "");
+const apiUrl = (process.env.API_INTERNAL_URL ?? "http://api.patitasinquietas.local/api/v1").replace(/\/$/, "");
 const requestTimeoutMs = 15_000;
 
 export function requestCommerce(path: string, init?: RequestInit) {

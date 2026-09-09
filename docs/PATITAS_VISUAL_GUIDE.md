@@ -14,17 +14,17 @@ La referencia es una **marca DTC / producto digital moderno**, no un ecommerce t
 
 ## 2. Paleta
 
-| Token | Color | Uso |
-|---|---|---|
-| `brand-blue` | `#0055FF` | Marca, CTA y elementos protagonistas |
-| `brand-yellow` | `#FFEC00` | Acentos y momentos de energía |
-| `ink` | `#171717` | Texto principal |
-| `muted` | `#686868` | Texto secundario |
-| `cream` | `#FFFDF5` | Fondo principal |
-| `soft-blue` | `#EEF4FF` | Secciones y tarjetas |
-| `soft-yellow` | `#FFF9C7` | Highlights |
-| `border` | `#E8E8E3` | Bordes |
-| `white` | `#FFFFFF` | Tarjetas y superficies |
+| Token          | Color     | Uso                                  |
+| -------------- | --------- | ------------------------------------ |
+| `brand-blue`   | `#0055FF` | Marca, CTA y elementos protagonistas |
+| `brand-yellow` | `#FFEC00` | Acentos y momentos de energía        |
+| `ink`          | `#171717` | Texto principal                      |
+| `muted`        | `#686868` | Texto secundario                     |
+| `page-bg`      | `#F7F9FC` | Fondo claro principal                |
+| `soft-blue`    | `#EEF4FF` | Secciones y tarjetas                 |
+| `soft-yellow`  | `#FFF9C7` | Highlights                           |
+| `border`       | `#E8E8E3` | Bordes                               |
+| `white`        | `#FFFFFF` | Tarjetas y superficies               |
 
 No utilizar blanco puro como único fondo de toda la web.
 
@@ -41,6 +41,7 @@ Distribución visual aproximada:
 - **5% amarillo**
 
 ### Usarlo para
+
 - badges y highlights;
 - indicadores pequeños;
 - estados seleccionados;
@@ -48,6 +49,7 @@ Distribución visual aproximada:
 - algún CTA excepcional.
 
 ### Evitarlo para
+
 - párrafos;
 - grandes superficies repetidas;
 - navbar completa;
@@ -65,12 +67,14 @@ Botón amarillo: fondo `#FFEC00`, texto `#171717`.
 Se usa en toda la interfaz: H1, H2, H3, números protagonistas, frases de marca y texto funcional.
 
 **Desktop**
+
 - H1: `72px / 0.95 / 700`
 - H2: `52px / 1 / 650–700`
 - H3: `32px / 1.1 / 650`
 - Display: `88–104px`
 
 **Mobile**
+
 - H1: `44–48px`
 - H2: `36px`
 - H3: `26px`
@@ -101,21 +105,25 @@ No convertir todo en cápsulas.
 ## 6. Botones
 
 ### Primary
+
 Fondo `#0055FF`, texto blanco, altura `52–56px`, radius `12px`.
 
 **Armar mi Patitas →**
 
 ### Secondary
+
 Fondo blanco, texto `#171717`, borde `#DADADA`.
 
 **Ver cómo funciona**
 
 ### Yellow Action
+
 Uso excepcional. Fondo `#FFEC00`, texto `#171717`.
 
 **Agregar a mi próxima Patitas**
 
 ### Ghost
+
 Sin fondo, texto azul.
 
 **Ver detalles →**
@@ -127,8 +135,8 @@ Sin fondo, texto azul.
 Evitar sombras fuertes. Priorizar superficie + borde + espacio.
 
 ```css
-background: #FFFFFF;
-border: 1px solid #E8E8E3;
+background: #ffffff;
+border: 1px solid #e8e8e3;
 border-radius: 24px;
 ```
 
@@ -194,8 +202,9 @@ Puede existir mayor personalidad.
 
 > **Un gustito extra**
 >
-> Lick Mat Patitas  
-> + $12.500
+> Lick Mat Patitas
+>
+> - $12.500
 >
 > **+ Agregar a su próxima entrega**
 
@@ -233,14 +242,15 @@ Fondo `#FFEC00`, texto `#171717`, SN Pro `11–12px / 700`.
 
 Alternar principalmente:
 
-**Cream → White → Soft Blue → Blue → Cream**
+**Light Gray → White → Soft Blue → Blue → Light Gray**
 
 Ejemplo:
-- Hero → cream
+
+- Hero → page-bg
 - Cómo funciona → white
 - Ejemplo Patitas → soft blue
 - Beneficio → blue
-- Productos → cream
+- Productos → page-bg
 - Testimonios → white
 - CTA final → blue
 
@@ -262,6 +272,7 @@ H2 blanco, body blanco suavizado y un pequeño elemento amarillo de énfasis.
 Evitar stock genérico.
 
 Preferir:
+
 - mascotas reales;
 - hogares reales;
 - luz cálida;
@@ -293,6 +304,7 @@ Usar las formas del **isotipo oficial** como fuente del lenguaje gráfico:
 Utilizar **Phosphor Icons** para iconografía funcional, preferentemente pesos Regular/Bold.
 
 Para elementos de identidad, priorizar iconografía propia:
+
 - perro;
 - gato;
 - alimento;
@@ -402,6 +414,7 @@ El espacio en blanco forma parte de la percepción premium.
 > **Si todo llama la atención, nada llama la atención.**
 
 Por pantalla/sección:
+
 - un CTA principal;
 - un protagonista visual;
 - máximo un uso fuerte de amarillo.
@@ -413,7 +426,7 @@ Por pantalla/sección:
 **SN Pro** → personalidad, claridad y función.
 **#0055FF** → Patitas.  
 **#FFEC00** → energía.  
-**Crema/blanco** → tranquilidad.  
+**Gris claro/blanco** → confianza y tranquilidad.
 **Isotipo** → lenguaje gráfico.  
 **Fotografía real** → vínculo emocional.  
 **Espacio** → sensación premium.

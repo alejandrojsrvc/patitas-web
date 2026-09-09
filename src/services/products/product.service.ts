@@ -40,13 +40,11 @@ export class ProductService {
         mockDailyGramsPerKg: product.estimatedDailyGramsPerKg ?? undefined,
         presentations: product.variants
           .filter((v) => v.enabled && v.weightGrams != null)
-          .map(
-            (variant): FoodPresentation => ({
-              id: variant.id,
-              label: formatWeight(variant.weightGrams!),
-              grams: variant.weightGrams!,
-            }),
-          ),
+          .map((variant): FoodPresentation => ({
+            id: variant.id,
+            label: formatWeight(variant.weightGrams!),
+            grams: variant.weightGrams!,
+          })),
       }));
 
       brands.push({

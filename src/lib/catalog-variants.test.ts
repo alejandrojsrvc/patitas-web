@@ -29,11 +29,8 @@ function product(statuses: Array<["TODAY" | "LATER" | "OUT_OF_STOCK", boolean]>)
       fulfillment: {
         availability,
         purchasable,
-        label: availability === "TODAY"
-          ? "Hay presentaciones disponibles"
-          : availability === "LATER"
-            ? "Disponible bajo pedido"
-            : "Sin stock",
+        label:
+          availability === "TODAY" ? "Hay presentaciones disponibles" : availability === "LATER" ? "Disponible bajo pedido" : "Sin stock",
         availableQuantity: purchasable ? 5 : 0,
         orderBefore: null,
         deliveryDate: null,
@@ -43,15 +40,47 @@ function product(statuses: Array<["TODAY" | "LATER" | "OUT_OF_STOCK", boolean]>)
 }
 
 test("selecciona primero una variante en stock y comprable", () => {
-  assert.equal(selectInitialVariant(product([["OUT_OF_STOCK", false], ["TODAY", true]]))?.id, "variant-1");
+  assert.equal(
+    selectInitialVariant(
+      product([
+        ["OUT_OF_STOCK", false],
+        ["TODAY", true],
+      ]),
+    )?.id,
+    "variant-1",
+  );
 });
 
 test("prioriza bajo pedido cuando no hay stock inmediato", () => {
-  assert.equal(selectInitialVariant(product([["OUT_OF_STOCK", false], ["LATER", true]]))?.id, "variant-1");
+  assert.equal(
+    selectInitialVariant(
+      product([
+        ["OUT_OF_STOCK", false],
+        ["LATER", true],
+      ]),
+    )?.id,
+    "variant-1",
+  );
 });
 
 test("resume disponibilidad de un producto agrupado", () => {
-  assert.equal(variantAvailabilityCopy(product([["OUT_OF_STOCK", false], ["TODAY", true]])), "Hay presentaciones disponibles");
-  assert.equal(variantAvailabilityCopy(product([["OUT_OF_STOCK", false], ["LATER", true]])), "Disponible bajo pedido");
+  assert.equal(
+    variantAvailabilityCopy(
+      product([
+        ["OUT_OF_STOCK", false],
+        ["TODAY", true],
+      ]),
+    ),
+    "Hay presentaciones disponibles",
+  );
+  assert.equal(
+    variantAvailabilityCopy(
+      product([
+        ["OUT_OF_STOCK", false],
+        ["LATER", true],
+      ]),
+    ),
+    "Disponible bajo pedido",
+  );
   assert.equal(variantAvailabilityCopy(product([["OUT_OF_STOCK", false]])), "Sin stock");
 });

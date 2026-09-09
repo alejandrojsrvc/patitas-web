@@ -1,0 +1,19 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "routes": [
+    {
+      "src": "/api/commerce/products(?:/facets|/autocomplete)?/?$",
+      "methods": ["GET"],
+      "missing": [
+        {
+          "type": "header",
+          "key": "x-patitas-catalog-client",
+          "value": "storefront"
+        }
+      ],
+      "mitigate": {
+        "action": "deny"
+      }
+    }
+  ]
+}

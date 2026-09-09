@@ -10,11 +10,7 @@ type ConsumptionStepProps = {
   dispatch: React.Dispatch<BuildPlanAction>;
 };
 
-export function ConsumptionStep({
-  state,
-  errors,
-  dispatch,
-}: ConsumptionStepProps) {
+export function ConsumptionStep({ state, errors, dispatch }: ConsumptionStepProps) {
   return (
     <div>
       <StepIntro
@@ -39,9 +35,7 @@ export function ConsumptionStep({
             name="consumptionMode"
             value="estimated"
             checked={state.consumptionMode === "estimated"}
-            onChange={() =>
-              dispatch({ type: "set-consumption-mode", mode: "estimated" })
-            }
+            onChange={() => dispatch({ type: "set-consumption-mode", mode: "estimated" })}
             title="No estoy seguro"
             description="Armamos una estimación inicial con los datos disponibles."
             icon={<Question size={25} weight="duotone" />}
@@ -64,17 +58,13 @@ export function ConsumptionStep({
               min="1"
               max="365"
               value={state.durationDays}
-              onChange={(event) =>
-                dispatch({ type: "set-duration", durationDays: event.target.value })
-              }
+              onChange={(event) => dispatch({ type: "set-duration", durationDays: event.target.value })}
               aria-invalid={Boolean(errors.durationDays)}
               aria-describedby={errors.durationDays ? "duration-error" : undefined}
               className="h-14 w-full rounded-xl border border-[#d6d6d0] bg-surface px-4 pr-16 text-base text-ink outline-none transition-[border-color,box-shadow] focus:border-brand-blue focus:shadow-[0_0_0_4px_rgba(0,85,255,0.12)]"
               placeholder="Ej.: 14…"
             />
-            <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-sm text-muted">
-              días
-            </span>
+            <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-sm text-muted">días</span>
           </div>
           {errors.durationDays ? (
             <p id="duration-error" className="mt-2 text-sm font-semibold text-[#b42318]">
@@ -88,8 +78,7 @@ export function ConsumptionStep({
         <div className="mt-7 rounded-2xl bg-soft-yellow p-5 text-sm leading-6 text-ink">
           <p className="font-bold">Estimación inicial</p>
           <p className="mt-1">
-            Usaremos un cálculo mock basado en alimento, peso y etapa de vida.
-            No reemplaza una indicación veterinaria.
+            Usaremos un cálculo mock basado en alimento, peso y etapa de vida. No reemplaza una indicación veterinaria.
           </p>
         </div>
       ) : null}

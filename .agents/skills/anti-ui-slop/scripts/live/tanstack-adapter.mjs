@@ -17,29 +17,25 @@
  * the TanStack Router file-based route generator never treats it as a route.
  */
 
-import fs from 'node:fs';
-import path from 'node:path';
-import { buildLiveScriptSrc } from './frameworks/script-src.mjs';
+import fs from "node:fs";
+import path from "node:path";
+import { buildLiveScriptSrc } from "./frameworks/script-src.mjs";
 
-export const TANSTACK_MARKER_OPEN = '{/* uizze-live-tanstack-start */}';
-export const TANSTACK_MARKER_CLOSE = '{/* uizze-live-tanstack-end */}';
-export const TANSTACK_COMPONENT_DIR = 'src/uizze';
-export const TANSTACK_COMPONENT_BASENAME = 'UizzeLiveRoot';
+export const TANSTACK_MARKER_OPEN = "{/* uizze-live-tanstack-start */}";
+export const TANSTACK_MARKER_CLOSE = "{/* uizze-live-tanstack-end */}";
+export const TANSTACK_COMPONENT_DIR = "src/uizze";
+export const TANSTACK_COMPONENT_BASENAME = "UizzeLiveRoot";
 
 const ROOT_ROUTE_CANDIDATES = [
-  'src/routes/__root.tsx',
-  'src/routes/__root.jsx',
-  'src/routes/__root.ts',
-  'src/routes/__root.js',
-  'app/routes/__root.tsx',
-  'app/routes/__root.jsx',
+  "src/routes/__root.tsx",
+  "src/routes/__root.jsx",
+  "src/routes/__root.ts",
+  "src/routes/__root.js",
+  "app/routes/__root.tsx",
+  "app/routes/__root.jsx",
 ];
 
-const START_PACKAGES = [
-  '@tanstack/react-start',
-  '@tanstack/solid-start',
-  '@tanstack/start',
-];
+const START_PACKAGES = ["@tanstack/react-start", "@tanstack/solid-start", "@tanstack/start"];
 
 export function detectTanStackStartProject(cwd = process.cwd()) {
   if (!packageHasTanStackStart(cwd)) return null;
@@ -47,7 +43,7 @@ export function detectTanStackStartProject(cwd = process.cwd()) {
   if (!rootRoute) return null;
 
   const ext = path.extname(rootRoute);
-  const componentExt = ext === '.jsx' || ext === '.js' ? '.jsx' : '.tsx';
+  const componentExt = ext === ".jsx" || ext === ".js" ? ".jsx" : ".tsx";
   const componentFile = `${TANSTACK_COMPONENT_DIR}/${TANSTACK_COMPONENT_BASENAME}${componentExt}`;
   const componentImport = relativeImportSpecifier(rootRoute, componentFile);
 
@@ -55,36 +51,36 @@ export function detectTanStackStartProject(cwd = process.cwd()) {
 }
 
 export function applyTanStackLiveAdapter({ cwd = process.cwd(), port, token, project = detectTanStackStartProject(cwd) } = {}) {
-  if (!project) return { error: 'tanstack_not_detected' };
+  if (!project) return { error: "tanstack_not_detected" };
   if (!Number.isFinite(Number(port))) {
-    throw new Error('TanStack Start live adapter requires a numeric port');
+    throw new Error("TanStack Start live adapter requires a numeric port");
   }
 
   // Write the managed mount component.
   const componentAbs = path.join(cwd, project.componentFile);
   const componentBody = buildTanStackLiveRootComponent(Number(port), token);
   const componentExisted = fs.existsSync(componentAbs);
-  if (componentExisted && !isManagedComponent(fs.readFileSync(componentAbs, 'utf-8'))) {
+  if (componentExisted && !isManagedComponent(fs.readFileSync(componentAbs, "utf-8"))) {
     // A non-Uizze file already sits at our managed path — refuse to clobber.
     return {
       file: project.componentFile,
-      error: 'tanstack_component_conflict',
+      error: "tanstack_component_conflict",
       hint: `${project.componentFile} already exists and is not managed by Uizze Live`,
     };
   }
   fs.mkdirSync(path.dirname(componentAbs), { recursive: true });
-  fs.writeFileSync(componentAbs, componentBody, 'utf-8');
+  fs.writeFileSync(componentAbs, componentBody, "utf-8");
 
   // Patch the root document to import + render the mount component.
   const rootAbs = path.join(cwd, project.rootRoute);
-  const before = fs.readFileSync(rootAbs, 'utf-8');
+  const before = fs.readFileSync(rootAbs, "utf-8");
   const after = patchTanStackRoot(before, project.componentImport);
   const changed = after !== before;
-  if (changed) fs.writeFileSync(rootAbs, after, 'utf-8');
+  if (changed) fs.writeFileSync(rootAbs, after, "utf-8");
 
   return {
     file: project.rootRoute,
-    adapter: 'tanstack-start',
+    adapter: "tanstack-start",
     inserted: changed || !componentExisted,
     componentFile: project.componentFile,
     devOnly: true,
@@ -92,15 +88,15 @@ export function applyTanStackLiveAdapter({ cwd = process.cwd(), port, token, pro
 }
 
 export function removeTanStackLiveAdapter({ cwd = process.cwd(), project = detectTanStackStartProject(cwd) } = {}) {
-  if (!project) return { error: 'tanstack_not_detected' };
+  if (!project) return { error: "tanstack_not_detected" };
   let removed = false;
 
   const rootAbs = path.join(cwd, project.rootRoute);
   if (fs.existsSync(rootAbs)) {
-    const before = fs.readFileSync(rootAbs, 'utf-8');
+    const before = fs.readFileSync(rootAbs, "utf-8");
     const after = unpatchTanStackRoot(before);
     if (after !== before) {
-      fs.writeFileSync(rootAbs, after, 'utf-8');
+      fs.writeFileSync(rootAbs, after, "utf-8");
       removed = true;
     }
   }
@@ -110,18 +106,18 @@ export function removeTanStackLiveAdapter({ cwd = process.cwd(), project = detec
     fs.rmSync(componentAbs, { force: true });
     removed = true;
   }
-  pruneEmptyDir(path.dirname(componentAbs), path.join(cwd, 'src'));
+  pruneEmptyDir(path.dirname(componentAbs), path.join(cwd, "src"));
 
   return {
     file: project.rootRoute,
-    adapter: 'tanstack-start',
+    adapter: "tanstack-start",
     removed,
     componentFile: project.componentFile,
   };
 }
 
 export function patchTanStackRoot(content, componentImport) {
-  let out = String(content || '');
+  let out = String(content || "");
   const importStatement = `import UizzeLiveRoot from '${componentImport}';`;
 
   if (!out.includes(importStatement)) {
@@ -129,17 +125,14 @@ export function patchTanStackRoot(content, componentImport) {
   }
 
   if (!out.includes(TANSTACK_MARKER_OPEN)) {
-    const block =
-      `${TANSTACK_MARKER_OPEN}\n`
-      + `        <UizzeLiveRoot />\n`
-      + `        ${TANSTACK_MARKER_CLOSE}\n        `;
+    const block = `${TANSTACK_MARKER_OPEN}\n` + `        <UizzeLiveRoot />\n` + `        ${TANSTACK_MARKER_CLOSE}\n        `;
     // Anchor before <Scripts …/> (the stable TanStack Start document marker);
     // fall back to before </body>.
     const scriptsMatch = out.match(/<Scripts\b/);
     if (scriptsMatch) {
       out = out.slice(0, scriptsMatch.index) + block + out.slice(scriptsMatch.index);
     } else {
-      const bodyClose = out.lastIndexOf('</body>');
+      const bodyClose = out.lastIndexOf("</body>");
       if (bodyClose !== -1) {
         out = out.slice(0, bodyClose) + block + out.slice(bodyClose);
       }
@@ -150,24 +143,18 @@ export function patchTanStackRoot(content, componentImport) {
 }
 
 export function unpatchTanStackRoot(content) {
-  let out = String(content || '');
+  let out = String(content || "");
   // Remove exactly the inserted block (open marker → component → close marker →
   // trailing newline + the indent that leads back to the anchor). Leaving the
   // leading indent before the open marker intact hands it back to the anchor
   // (e.g. `<Scripts />`) so the file round-trips byte-for-byte.
   const blockRe = new RegExp(
-    escapeRegExp(TANSTACK_MARKER_OPEN)
-    + '\\s*<UizzeLiveRoot\\s*/>\\s*'
-    + escapeRegExp(TANSTACK_MARKER_CLOSE)
-    + '\\r?\\n?[ \\t]*',
-    'g',
+    escapeRegExp(TANSTACK_MARKER_OPEN) + "\\s*<UizzeLiveRoot\\s*/>\\s*" + escapeRegExp(TANSTACK_MARKER_CLOSE) + "\\r?\\n?[ \\t]*",
+    "g",
   );
-  out = out.replace(blockRe, '');
+  out = out.replace(blockRe, "");
   // Remove only the managed import line — not any following blank line.
-  out = out.replace(
-    new RegExp("^import UizzeLiveRoot from '[^']*';[ \\t]*\\r?\\n", 'gm'),
-    '',
-  );
+  out = out.replace(new RegExp("^import UizzeLiveRoot from '[^']*';[ \\t]*\\r?\\n", "gm"), "");
   return out;
 }
 
@@ -215,7 +202,7 @@ export default function UizzeLiveRoot() {
 // The managed mount component carries the `uizze-live-tanstack` marker in
 // its leading comment and its script data-attribute; user files never do.
 function isManagedComponent(content) {
-  return String(content || '').includes('uizze-live-tanstack');
+  return String(content || "").includes("uizze-live-tanstack");
 }
 
 function findRootRouteFile(cwd) {
@@ -226,10 +213,10 @@ function findRootRouteFile(cwd) {
 }
 
 function packageHasTanStackStart(cwd) {
-  const file = path.join(cwd, 'package.json');
+  const file = path.join(cwd, "package.json");
   if (!fs.existsSync(file)) return false;
   try {
-    const pkg = JSON.parse(fs.readFileSync(file, 'utf-8'));
+    const pkg = JSON.parse(fs.readFileSync(file, "utf-8"));
     const deps = {
       ...(pkg.dependencies || {}),
       ...(pkg.devDependencies || {}),
@@ -242,11 +229,10 @@ function packageHasTanStackStart(cwd) {
 }
 
 function relativeImportSpecifier(fromFile, toFile) {
-  const rel = path.posix.relative(
-    path.posix.dirname(fromFile.split(path.sep).join('/')),
-    toFile.split(path.sep).join('/'),
-  ).replace(/\.(tsx|ts|jsx|js)$/, '');
-  return rel.startsWith('.') ? rel : `./${rel}`;
+  const rel = path.posix
+    .relative(path.posix.dirname(fromFile.split(path.sep).join("/")), toFile.split(path.sep).join("/"))
+    .replace(/\.(tsx|ts|jsx|js)$/, "");
+  return rel.startsWith(".") ? rel : `./${rel}`;
 }
 
 function insertAfterLastImport(content, importStatement) {
@@ -259,7 +245,7 @@ function insertAfterLastImport(content, importStatement) {
   if (lastEnd === -1) {
     return `${importStatement}\n${content}`;
   }
-  return content.slice(0, lastEnd) + importStatement + '\n' + content.slice(lastEnd);
+  return content.slice(0, lastEnd) + importStatement + "\n" + content.slice(lastEnd);
 }
 
 function pruneEmptyDir(dir, stopDir) {
@@ -276,5 +262,5 @@ function pruneEmptyDir(dir, stopDir) {
 }
 
 function escapeRegExp(value) {
-  return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }

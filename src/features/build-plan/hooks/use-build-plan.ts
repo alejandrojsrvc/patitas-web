@@ -21,12 +21,7 @@ export type BuildPlanAction =
   | { type: "select-presentation"; presentationId: string }
   | {
       type: "update-custom-food";
-      value: Partial<
-        Pick<
-          BuildPlanState["food"],
-          "customBrand" | "customLine" | "customPresentationKg"
-        >
-      >;
+      value: Partial<Pick<BuildPlanState["food"], "customBrand" | "customLine" | "customPresentationKg">>;
     }
   | { type: "set-consumption-mode"; mode: ConsumptionMode }
   | { type: "set-duration"; durationDays: string }
@@ -75,22 +70,16 @@ function reducer(state: BuildPlanState, action: BuildPlanAction): BuildPlanState
     case "go-to-step":
       return { ...state, step: action.step };
     case "update-pet": {
-      const speciesChanged =
-        action.value.species !== undefined &&
-        action.value.species !== state.pet.species;
+      const speciesChanged = action.value.species !== undefined && action.value.species !== state.pet.species;
       const recommendationChanged =
         speciesChanged ||
-        (action.value.weight !== undefined &&
-          action.value.weight !== state.pet.weight) ||
-        (action.value.lifeStage !== undefined &&
-          action.value.lifeStage !== state.pet.lifeStage);
+        (action.value.weight !== undefined && action.value.weight !== state.pet.weight) ||
+        (action.value.lifeStage !== undefined && action.value.lifeStage !== state.pet.lifeStage);
       return {
         ...state,
         pet: { ...state.pet, ...action.value },
         submissionStatus: "idle",
-        selectedPresentationId: recommendationChanged
-          ? ""
-          : state.selectedPresentationId,
+        selectedPresentationId: recommendationChanged ? "" : state.selectedPresentationId,
         ...(speciesChanged
           ? {
               food: emptyFood,
@@ -185,16 +174,12 @@ function reducer(state: BuildPlanState, action: BuildPlanAction): BuildPlanState
         submissionStatus: "idle",
       };
     case "toggle-consumable": {
-      const exists = state.selectedConsumables.some(
-        (item) => item.id === action.selection.id,
-      );
+      const exists = state.selectedConsumables.some((item) => item.id === action.selection.id);
       return {
         ...state,
         submissionStatus: "idle",
         selectedConsumables: exists
-          ? state.selectedConsumables.filter(
-              (item) => item.id !== action.selection.id,
-            )
+          ? state.selectedConsumables.filter((item) => item.id !== action.selection.id)
           : [...state.selectedConsumables, action.selection],
       };
     }
@@ -202,16 +187,13 @@ function reducer(state: BuildPlanState, action: BuildPlanAction): BuildPlanState
       return {
         ...state,
         submissionStatus: "idle",
-        selectedConsumables: state.selectedConsumables.map((item) =>
-          item.id === action.selection.id ? action.selection : item,
-        ),
+        selectedConsumables: state.selectedConsumables.map((item) => (item.id === action.selection.id ? action.selection : item)),
       };
     case "update-lead":
       return {
         ...state,
         lead: { ...state.lead, ...action.value },
-        submissionStatus:
-          state.submissionStatus === "error" ? "idle" : state.submissionStatus,
+        submissionStatus: state.submissionStatus === "error" ? "idle" : state.submissionStatus,
       };
     case "set-submission-status":
       return { ...state, submissionStatus: action.status };

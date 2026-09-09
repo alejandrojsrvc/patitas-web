@@ -5,6 +5,7 @@ import { Analytics } from "@vercel/analytics/next";
 import { OrganizationJsonLd, WebsiteJsonLd } from "@/components/seo/json-ld";
 import { CartProvider } from "@/features/cart/cart-context";
 import { SessionShellProvider } from "@/features/session/session-shell-context";
+import { PetShoppingProvider } from "@/features/pets/pet-shopping-context";
 import "./globals.css";
 
 const googleAnalyticsId = process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID;
@@ -47,12 +48,7 @@ export const metadata: Metadata = {
   title: "Patitas Inquietas | Pet shop online en CABA",
   description: "Comprá alimento balanceado, arena y esenciales para perros y gatos en CABA.",
   applicationName: "Patitas Inquietas",
-  keywords: [
-    "abastecimiento para mascotas",
-    "alimento para perros",
-    "alimento para gatos",
-    "pet shop online CABA",
-  ],
+  keywords: ["abastecimiento para mascotas", "alimento para perros", "alimento para gatos", "pet shop online CABA"],
   manifest: "/site.webmanifest",
   openGraph: {
     title: "Patitas Inquietas | Pet shop online en CABA",
@@ -69,7 +65,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#fffdf5",
+  themeColor: "#f7f9fc",
   colorScheme: "light",
   viewportFit: "cover",
 };
@@ -80,15 +76,16 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body>
         <OrganizationJsonLd />
         <WebsiteJsonLd />
-        <CartProvider><SessionShellProvider>{children}</SessionShellProvider></CartProvider>
+        <CartProvider>
+          <SessionShellProvider>
+            <PetShoppingProvider>{children}</PetShoppingProvider>
+          </SessionShellProvider>
+        </CartProvider>
         <Analytics />
       </body>
       {googleAnalyticsId ? (
         <>
-          <Script
-            src={`https://www.googletagmanager.com/gtag/js?id=${googleAnalyticsId}`}
-            strategy="lazyOnload"
-          />
+          <Script src={`https://www.googletagmanager.com/gtag/js?id=${googleAnalyticsId}`} strategy="lazyOnload" />
           <Script id="google-analytics" strategy="lazyOnload">
             {`
               window.dataLayer = window.dataLayer || [];

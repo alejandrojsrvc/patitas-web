@@ -1,10 +1,4 @@
-import type {
-  BuildPlanState,
-  FoodBrand,
-  FoodPresentation,
-  PlanRecommendation,
-  RecommendationInput,
-} from "../types";
+import type { BuildPlanState, FoodBrand, FoodPresentation, PlanRecommendation, RecommendationInput } from "../types";
 import {
   calculateEstimatedDuration,
   calculateObservedDailyConsumption,
@@ -22,18 +16,10 @@ export type ResolvedFoodSelection = {
   mockDailyGramsPerKg?: number;
 };
 
-export function resolveFoodSelection(
-  state: BuildPlanState,
-  catalog: FoodBrand[],
-): ResolvedFoodSelection | null {
+export function resolveFoodSelection(state: BuildPlanState, catalog: FoodBrand[]): ResolvedFoodSelection | null {
   if (state.food.mode === "custom") {
     const kilograms = parseDecimalInput(state.food.customPresentationKg);
-    if (
-      !state.food.customBrand.trim() ||
-      !state.food.customLine.trim() ||
-      !Number.isFinite(kilograms) ||
-      kilograms <= 0
-    ) {
+    if (!state.food.customBrand.trim() || !state.food.customLine.trim() || !Number.isFinite(kilograms) || kilograms <= 0) {
       return null;
     }
 
@@ -51,9 +37,7 @@ export function resolveFoodSelection(
 
   const brand = catalog.find((item) => item.id === state.food.brandId);
   const line = brand?.lines.find((item) => item.id === state.food.lineId);
-  const presentation = line?.presentations.find(
-    (item) => item.id === state.food.presentationId,
-  );
+  const presentation = line?.presentations.find((item) => item.id === state.food.presentationId);
   if (!brand || !line || !presentation) return null;
 
   return {
@@ -64,30 +48,17 @@ export function resolveFoodSelection(
   };
 }
 
-export function getDailyConsumptionForState(
-  state: BuildPlanState,
-  catalog: FoodBrand[],
-) {
+export function getDailyConsumptionForState(state: BuildPlanState, catalog: FoodBrand[]) {
   const food = resolveFoodSelection(state, catalog);
   const weightKg = parseDecimalInput(state.pet.weight);
-  if (
-    !food ||
-    !state.pet.species ||
-    !state.pet.lifeStage ||
-    !state.consumptionMode ||
-    !Number.isFinite(weightKg) ||
-    weightKg <= 0
-  ) {
+  if (!food || !state.pet.species || !state.pet.lifeStage || !state.consumptionMode || !Number.isFinite(weightKg) || weightKg <= 0) {
     return null;
   }
 
   if (state.consumptionMode === "known") {
     const durationDays = Number(state.durationDays);
     if (!Number.isFinite(durationDays) || durationDays <= 0) return null;
-    return calculateObservedDailyConsumption(
-      food.currentPresentationGrams,
-      durationDays,
-    );
+    return calculateObservedDailyConsumption(food.currentPresentationGrams, durationDays);
   }
 
   return estimateDailyConsumption({
@@ -98,11 +69,7 @@ export function getDailyConsumptionForState(
   });
 }
 
-export function buildRecommendationForState(
-  state: BuildPlanState,
-  catalog: FoodBrand[],
-  startDate: Date,
-) {
+export function buildRecommendationForState(state: BuildPlanState, catalog: FoodBrand[], startDate: Date) {
   const food = resolveFoodSelection(state, catalog);
   const weightKg = parseDecimalInput(state.pet.weight);
   if (
@@ -117,12 +84,8 @@ export function buildRecommendationForState(
     return null;
   }
 
-  const observedDurationDays =
-    state.consumptionMode === "known" ? Number(state.durationDays) : undefined;
-  if (
-    state.consumptionMode === "known" &&
-    (!observedDurationDays || observedDurationDays <= 0)
-  ) {
+  const observedDurationDays = state.consumptionMode === "known" ? Number(state.durationDays) : undefined;
+  if (state.consumptionMode === "known" && (!observedDurationDays || observedDurationDays <= 0)) {
     return null;
   }
 
@@ -143,15 +106,10 @@ export function buildRecommendationForState(
   });
 }
 
-export function buildMockRecommendation(
-  input: RecommendationInput,
-): PlanRecommendation {
+export function buildMockRecommendation(input: RecommendationInput): PlanRecommendation {
   const dailyConsumptionGrams =
     input.consumptionMode === "known"
-      ? calculateObservedDailyConsumption(
-          input.currentPresentationGrams,
-          input.observedDurationDays!,
-        )
+      ? calculateObservedDailyConsumption(input.currentPresentationGrams, input.observedDurationDays!)
       : estimateDailyConsumption({
           species: input.species,
           weightKg: input.weightKg,
@@ -159,31 +117,18 @@ export function buildMockRecommendation(
           productGramsPerKg: input.mockDailyGramsPerKg,
         });
 
-  const periodConsumptionGrams = calculatePeriodConsumption(
-    dailyConsumptionGrams,
-    input.frequencyDays,
-  );
+  const periodConsumptionGrams = calculatePeriodConsumption(dailyConsumptionGrams, input.frequencyDays);
 
-  const automaticSelection = selectRecommendedPresentation(
-    periodConsumptionGrams,
-    input.availablePresentations,
-  );
+  const automaticSelection = selectRecommendedPresentation(periodConsumptionGrams, input.availablePresentations);
 
   const manuallySelected = input.selectedPresentationId
-    ? input.availablePresentations.find(
-        (presentation) => presentation.id === input.selectedPresentationId,
-      )
+    ? input.availablePresentations.find((presentation) => presentation.id === input.selectedPresentationId)
     : undefined;
 
   const presentation = manuallySelected ?? automaticSelection.presentation;
-  const bagQuantity = manuallySelected
-    ? Math.max(1, Math.ceil(periodConsumptionGrams / presentation.grams))
-    : automaticSelection.quantity;
+  const bagQuantity = manuallySelected ? Math.max(1, Math.ceil(periodConsumptionGrams / presentation.grams)) : automaticSelection.quantity;
   const deliveredGrams = presentation.grams * bagQuantity;
-  const estimatedDurationDays = calculateEstimatedDuration(
-    deliveredGrams,
-    dailyConsumptionGrams,
-  );
+  const estimatedDurationDays = calculateEstimatedDuration(deliveredGrams, dailyConsumptionGrams);
 
   return {
     petName: input.petName,
@@ -196,9 +141,6 @@ export function buildMockRecommendation(
     bagQuantity,
     deliveredGrams,
     estimatedDurationDays,
-    replenishmentDate: calculateReplenishmentDate(
-      input.startDate,
-      estimatedDurationDays,
-    ),
+    replenishmentDate: calculateReplenishmentDate(input.startDate, estimatedDurationDays),
   };
 }

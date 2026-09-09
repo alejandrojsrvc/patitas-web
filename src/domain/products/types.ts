@@ -2,12 +2,7 @@ export type Species = "dog" | "cat";
 
 export type LifeStage = "adult" | "puppy" | "kitten" | "senior";
 
-export type BreedSize =
-  | "small"
-  | "medium"
-  | "large"
-  | "medium_large"
-  | "all";
+export type BreedSize = "small" | "medium" | "large" | "medium_large" | "all";
 
 export type ProductVariant = {
   id: string;

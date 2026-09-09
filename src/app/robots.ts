@@ -11,7 +11,21 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: "*",
       allow: "/",
-      disallow: ["/checkout", "/mi-cuenta", "/api"],
+      disallow: [
+        "/buscar",
+        "/checkout",
+        "/mi-cuenta",
+        "/api",
+        "/*?*q=*",
+        "/*?*species=*",
+        "/*?*category=*",
+        "/*?*brand=*",
+        "/*?*lifeStage=*",
+        "/*?*weightGrams=*",
+        "/*?*minPrice=*",
+        "/*?*maxPrice=*",
+        "/*?*sort=*",
+      ],
     },
     sitemap: `${siteUrl}/sitemap.xml`,
   };

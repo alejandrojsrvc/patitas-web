@@ -7,20 +7,26 @@ import { authCookieNames, clearScopedToken, setAuthCookies } from "@/lib/auth-co
 
 export async function POST(request: Request) {
   try {
-    const input = await request.json() as { email?: string; password?: string };
+    const input = (await request.json()) as { email?: string; password?: string };
     if (!input.email?.trim() || !input.password) {
       return NextResponse.json({ message: "Ingresá tu email y contraseña." }, { status: 400 });
     }
-    const result = await authApi.login({ email: input.email.trim().toLowerCase(), password: input.password });
+    const result = await authApi.login(
+      { email: input.email.trim().toLowerCase(), password: input.password },
+      request.headers.get("X-Turnstile-Token") ?? undefined,
+    );
     const session = sessionFromResponse(result);
     const cartToken = (await cookies()).get(authCookieNames.cartToken)?.value;
-    const cartMerged = Boolean(session && cartToken && await mergeAnonymousCart(session.accessToken, cartToken));
+    const cartMerged = Boolean(session && cartToken && (await mergeAnonymousCart(session.accessToken, cartToken)));
     const response = NextResponse.json({ status: result.status, user: result.user, cartMerged });
     response.headers.set("Cache-Control", "private, no-store");
     if (session) setAuthCookies(response, session);
     if (cartMerged) clearScopedToken(response, "cartToken");
     return response;
   } catch (error) {
-    return NextResponse.json({ message: error instanceof Error ? error.message : "No pudimos iniciar sesión." }, { status: error instanceof AuthApiError ? error.status : 502 });
+    return NextResponse.json(
+      { message: error instanceof Error ? error.message : "No pudimos iniciar sesión." },
+      { status: error instanceof AuthApiError ? error.status : 502 },
+    );
   }
 }

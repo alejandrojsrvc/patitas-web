@@ -15,7 +15,7 @@ const groups = [
     title: "Comprar",
     links: [
       ["Marcas", "/marcas"],
-      ["Productos", "/buscar"],
+      ["Productos", "/perros"],
       ["Pet shop en CABA", "/pet-shop-caba"],
       ["Calculadora", "/calculadora-alimento"],
     ],
@@ -40,38 +40,11 @@ const groups = [
   },
 ] as const;
 
-function MercadoPagoIcon({ className }: { className?: string }) {
+function PaymentLogo({ src, alt, width, height }: { src: string; alt: string; width: number; height: number }) {
   return (
-    <svg viewBox="0 0 120 40" className={className} aria-label="Mercado Pago">
-      <rect width="120" height="40" rx="4" fill="#009ee3" />
-      <path d="M30 10l-8 20h6l2-5h7l-2 5h6L34 10h-4zm4 12l2-6 2 6h-4z" fill="white" />
-      <path d="M50 10l-4 10-4-10h-6l8 20h5l2-5 4 5h6l-8-20h-3z" fill="#009ee3" />
-      <text x="65" y="26" fill="white" fontFamily="Arial, sans-serif" fontWeight="bold" fontSize="14">
-        mercadopago
-      </text>
-    </svg>
-  );
-}
-
-function VisaIcon({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 80 50" className={className} aria-label="Visa">
-      <rect width="80" height="50" rx="6" fill="white" stroke="#e8e8e3" strokeWidth="1" />
-      <text x="40" y="30" fill="#1a1f71" fontFamily="Arial, sans-serif" fontWeight="bold" fontSize="20" textAnchor="middle">
-        VISA
-      </text>
-    </svg>
-  );
-}
-
-function MastercardIcon({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 80 50" className={className} aria-label="Mastercard">
-      <rect width="80" height="50" rx="6" fill="white" stroke="#e8e8e3" strokeWidth="1" />
-      <circle cx="32" cy="25" r="12" fill="#eb001b" />
-      <circle cx="48" cy="25" r="12" fill="#f79e1b" />
-      <path d="M40 15.2a12 12 0 0 1 0 19.6 12 12 0 0 1 0-19.6z" fill="#ff5f00" />
-    </svg>
+    <span className="flex h-8 w-16 shrink-0 items-center justify-center rounded-md bg-white px-1 shadow-sm">
+      <Image src={src} alt={alt} width={width} height={height} unoptimized className="h-auto max-h-6 max-w-full object-contain" />
+    </span>
   );
 }
 
@@ -126,12 +99,13 @@ export function SiteFooter() {
           <p className="text-xs text-white">© 2026 Patitas Inquietas</p>
           <p className="text-xs text-white">Buenos Aires, Argentina</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
           <span className="text-xs text-white">Medios de pago:</span>
-          <div className="flex items-center gap-2">
-            <MercadoPagoIcon className="h-8 w-auto" />
-            <VisaIcon className="h-8 w-auto" />
-            <MastercardIcon className="h-8 w-auto" />
+          <div className="flex flex-wrap items-center gap-1.5">
+            <PaymentLogo src="/brand/payments/mercado-pago.svg" alt="Mercado Pago" width={100} height={40} />
+            <PaymentLogo src="/brand/payments/visa.webp" alt="Visa" width={480} height={156} />
+            <PaymentLogo src="/brand/payments/mastercard.webp" alt="Mastercard" width={480} height={85} />
+            <PaymentLogo src="/brand/payments/american-express.svg" alt="American Express" width={1000} height={998} />
           </div>
         </div>
       </div>

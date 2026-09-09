@@ -1,7 +1,7 @@
 "use client";
 
 import { CaretLeft, CaretRight, MagnifyingGlassPlus, X } from "@phosphor-icons/react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import type { ProductMedia } from "@/domain/catalog/types";
 import { ProductImage } from "./product-image";
@@ -18,6 +18,9 @@ export function ProductGallery({
   const [selected, setSelected] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [zoomed, setZoomed] = useState(false);
+  const openerRef = useRef<HTMLButtonElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const wasOpen = useRef(false);
   const visibleMedia = useMemo(() => {
     if (!selectedVariantId) return media;
     const variantMedia = media.filter((item) => item.variantId === selectedVariantId);
@@ -27,11 +30,30 @@ export function ProductGallery({
   const current = visibleMedia[selected];
 
   useEffect(() => {
-    if (!lightboxOpen) return;
+    if (!lightboxOpen) {
+      if (wasOpen.current) openerRef.current?.focus();
+      wasOpen.current = false;
+      return;
+    }
+    wasOpen.current = true;
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     const closeOnEscape = (event: KeyboardEvent) => {
       if (event.key === "Escape") setLightboxOpen(false);
+      if (event.key !== "Tab") return;
+      const focusable = dialogRef.current?.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])',
+      );
+      if (!focusable?.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
     };
     window.addEventListener("keydown", closeOnEscape);
     return () => {
@@ -75,10 +97,11 @@ export function ProductGallery({
           </div>
         ) : null}
         <button
+          ref={openerRef}
           type="button"
           onClick={() => current?.url && setLightboxOpen(true)}
           disabled={!current?.url}
-          aria-label={current?.url ? `Ampliar imagen de ${productName}` : undefined}
+          aria-label={current?.url ? `Ampliar imagen de ${productName}` : `Imagen de ${productName} no disponible`}
           className="group relative aspect-square w-full overflow-hidden rounded-2xl bg-white text-left disabled:cursor-default"
         >
           <ProductImage
@@ -97,12 +120,16 @@ export function ProductGallery({
         </button>
       </div>
       {visibleMedia.length > 1 ? (
-        <div className="no-scrollbar mt-3 flex gap-2 overflow-x-auto pb-1 sm:hidden" aria-label="Imágenes del producto">
-          {thumbnails}
-        </div>
+        <>
+          <div className="no-scrollbar mt-3 flex snap-x gap-2 overflow-x-auto pb-1 sm:hidden" aria-label="Imágenes del producto">
+            {thumbnails}
+          </div>
+          <p className="mt-2 text-xs text-muted sm:hidden">Deslizá para ver más imágenes.</p>
+        </>
       ) : null}
       {lightboxOpen && current?.url ? (
         <div
+          ref={dialogRef}
           role="dialog"
           aria-modal="true"
           aria-label={`Galería ampliada de ${productName}`}
@@ -137,7 +164,7 @@ export function ProductGallery({
                 </button>
               </div>
             </div>
-            <div className="relative min-h-0 flex-1 overflow-hidden rounded-2xl bg-white">
+            <div className={`relative min-h-0 flex-1 rounded-2xl bg-white ${zoomed ? "overflow-auto" : "overflow-hidden"}`}>
               <ProductImage
                 src={current.url}
                 alt={current.altText ?? productName}

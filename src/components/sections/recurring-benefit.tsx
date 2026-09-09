@@ -1,9 +1,4 @@
-import {
-  Bone,
-  BowlFood,
-  Package,
-  PawPrint,
-} from "@phosphor-icons/react/ssr";
+import { Bone, BowlFood, Package, PawPrint } from "@phosphor-icons/react/ssr";
 
 const essentials = [
   { label: "Alimento", icon: BowlFood },
@@ -21,10 +16,8 @@ export function RecurringBenefit() {
             Vos cuidás de ellos. Nosotros nos acordamos.
           </h2>
           <p className="mt-6 max-w-xl text-lg leading-8 text-white/90 sm:text-xl">
-            El alimento, la arena, las bolsas, los snacks: todo lo que se
-            termina una y otra vez puede dejar de ocupar lugar en tu cabeza.
-            Patitas te lo organiza una vez y vos seguís teniendo el control
-            de cada entrega.
+            El alimento, la arena, las bolsas, los snacks: todo lo que se termina una y otra vez puede dejar de ocupar lugar en tu cabeza.
+            Patitas te lo organiza una vez y vos seguís teniendo el control de cada entrega.
           </p>
         </div>
 
@@ -37,9 +30,7 @@ export function RecurringBenefit() {
                 className={`${index === 0 ? "bg-brand-yellow text-ink" : "bg-[#0752e7] text-white"} flex min-h-36 flex-col justify-between p-5 sm:min-h-40 sm:p-6`}
               >
                 <Icon size={30} weight="duotone" aria-hidden="true" />
-                <span className="font-display text-xl font-semibold sm:text-2xl">
-                  {essential.label}
-                </span>
+                <span className="font-display text-xl font-semibold sm:text-2xl">{essential.label}</span>
               </li>
             );
           })}

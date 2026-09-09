@@ -9,16 +9,7 @@ type OptionCardProps = {
   invalid?: boolean;
 };
 
-export function OptionCard({
-  name,
-  value,
-  checked,
-  onChange,
-  title,
-  description,
-  icon,
-  invalid = false,
-}: OptionCardProps) {
+export function OptionCard({ name, value, checked, onChange, title, description, icon, invalid = false }: OptionCardProps) {
   return (
     <label
       data-invalid={invalid || undefined}
@@ -28,14 +19,7 @@ export function OptionCard({
           : "border-border bg-surface hover:border-[#b8c9eb]"
       }`}
     >
-      <input
-        type="radio"
-        name={name}
-        value={value}
-        checked={checked}
-        onChange={onChange}
-        className="sr-only"
-      />
+      <input type="radio" name={name} value={value} checked={checked} onChange={onChange} className="sr-only" />
       {icon ? (
         <span
           className={`flex size-11 shrink-0 items-center justify-center rounded-xl ${checked ? "bg-brand-blue text-white" : "bg-soft-blue text-brand-blue"}`}
@@ -46,9 +30,7 @@ export function OptionCard({
       ) : null}
       <span className="min-w-0 flex-1">
         <span className="block font-semibold text-ink">{title}</span>
-        {description ? (
-          <span className="mt-1 block text-sm text-muted">{description}</span>
-        ) : null}
+        {description ? <span className="mt-1 block text-sm text-muted">{description}</span> : null}
       </span>
       <span
         className={`size-5 shrink-0 rounded-full border-[5px] ${checked ? "border-brand-blue bg-surface" : "border-[#cfcfca] bg-surface"}`}

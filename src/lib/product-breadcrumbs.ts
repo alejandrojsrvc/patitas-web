@@ -11,25 +11,22 @@ export function productBreadcrumbs(product: Product): ProductBreadcrumbItem[] {
   return [
     { label: "Inicio", href: "/" },
     ...(product.species
-      ? [{
-          label: product.species === "dog" ? "Perros" : "Gatos",
-          href: product.species === "dog" ? "/perros" : "/gatos",
-        }]
+      ? [
+          {
+            label: product.species === "dog" ? "Perros" : "Gatos",
+            href: product.species === "dog" ? "/perros" : "/gatos",
+          },
+        ]
       : []),
-    ...(product.category
-      ? [{ label: product.category.name, href: categoryHref(product) }]
-      : []),
+    ...(product.category ? [{ label: product.category.name, href: categoryHref(product) }] : []),
     { label: productDisplayName(product), href: `/producto/${product.slug}` },
   ];
 }
 
 function categoryHref(product: Product) {
   if (product.species && product.category) {
-    return categoryPathForSpecies(product.species, product.category.slug)
-      ?? `/buscar?category=${encodeURIComponent(product.category.slug)}`;
+    return categoryPathForSpecies(product.species, product.category.slug) ?? (product.species === "dog" ? "/perros" : "/gatos");
   }
 
-  return product.category
-    ? `/buscar?category=${encodeURIComponent(product.category.slug)}`
-    : "/buscar";
+  return product.species === "dog" ? "/perros" : product.species === "cat" ? "/gatos" : "/";
 }

@@ -22,10 +22,7 @@ export function PetStep({ state, phase, errors, updatePet }: PetStepProps) {
     <div>
       {phase === 1 ? (
         <>
-          <StepIntro
-            title="¿Para quién armamos esta Patitas?"
-            description="Empecemos por lo esencial: ¿es perro o gato?"
-          />
+          <StepIntro title="¿Para quién armamos esta Patitas?" description="Empecemos por lo esencial: ¿es perro o gato?" />
           <fieldset aria-describedby={errors.species ? "species-error" : undefined}>
             <legend className="sr-only">Tipo de mascota</legend>
             <div className="grid grid-cols-2 gap-3">
@@ -59,13 +56,12 @@ export function PetStep({ state, phase, errors, updatePet }: PetStepProps) {
 
       {phase === 2 ? (
         <>
-          <StepIntro
-            title="¿Cómo se llama y cuánto pesa?"
-            description="Con estos dos datos empezamos a personalizar su plan."
-          />
+          <StepIntro title="¿Cómo se llama y cuánto pesa?" description="Con estos dos datos empezamos a personalizar su plan." />
           <div className="grid gap-5 sm:grid-cols-[1fr_11rem]">
             <div>
-              <label htmlFor="pet-name" className="font-semibold">¿Cómo se llama?</label>
+              <label htmlFor="pet-name" className="font-semibold">
+                ¿Cómo se llama?
+              </label>
               <input
                 id="pet-name"
                 name="petName"
@@ -78,10 +74,16 @@ export function PetStep({ state, phase, errors, updatePet }: PetStepProps) {
                 className="mt-2 h-14 w-full rounded-xl border border-[#d6d6d0] bg-surface px-4 text-base text-ink outline-none transition-[border-color,box-shadow] placeholder:text-[#85857f] focus:border-brand-blue focus:shadow-[0_0_0_4px_rgba(0,85,255,0.12)]"
                 placeholder="Ej.: Kiara…"
               />
-              {errors.name ? <p id="pet-name-error" className="mt-2 text-sm font-semibold text-[#b42318]">{errors.name}</p> : null}
+              {errors.name ? (
+                <p id="pet-name-error" className="mt-2 text-sm font-semibold text-[#b42318]">
+                  {errors.name}
+                </p>
+              ) : null}
             </div>
             <div>
-              <label htmlFor="pet-weight" className="font-semibold">Peso en kg</label>
+              <label htmlFor="pet-weight" className="font-semibold">
+                Peso en kg
+              </label>
               <div className="relative mt-2">
                 <input
                   id="pet-weight"
@@ -98,7 +100,11 @@ export function PetStep({ state, phase, errors, updatePet }: PetStepProps) {
                 />
                 <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-sm text-muted">kg</span>
               </div>
-              {errors.weight ? <p id="pet-weight-error" className="mt-2 text-sm font-semibold text-[#b42318]">{errors.weight}</p> : null}
+              {errors.weight ? (
+                <p id="pet-weight-error" className="mt-2 text-sm font-semibold text-[#b42318]">
+                  {errors.weight}
+                </p>
+              ) : null}
             </div>
           </div>
         </>
@@ -106,10 +112,7 @@ export function PetStep({ state, phase, errors, updatePet }: PetStepProps) {
 
       {phase === 3 ? (
         <>
-          <StepIntro
-            title={`${state.pet.name}, ¿en qué etapa está?`}
-            description="Elegí la opción que mejor describe su momento actual."
-          />
+          <StepIntro title={`${state.pet.name}, ¿en qué etapa está?`} description="Elegí la opción que mejor describe su momento actual." />
           <fieldset aria-describedby={errors.lifeStage ? "stage-error" : undefined}>
             <legend className="sr-only">Etapa de vida</legend>
             <div className="grid gap-3 sm:grid-cols-3">
@@ -126,7 +129,11 @@ export function PetStep({ state, phase, errors, updatePet }: PetStepProps) {
                 />
               ))}
             </div>
-            {errors.lifeStage ? <p id="stage-error" className="mt-2 text-sm font-semibold text-[#b42318]">{errors.lifeStage}</p> : null}
+            {errors.lifeStage ? (
+              <p id="stage-error" className="mt-2 text-sm font-semibold text-[#b42318]">
+                {errors.lifeStage}
+              </p>
+            ) : null}
           </fieldset>
         </>
       ) : null}

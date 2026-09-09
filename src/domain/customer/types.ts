@@ -51,15 +51,7 @@ export type CustomerAddressInput = {
 export type OrderSummary = {
   id: string;
   status: string;
-  paymentStatus:
-    | "UNPAID"
-    | "PENDING"
-    | "PROCESSING"
-    | "PAID"
-    | "FAILED"
-    | "PARTIALLY_REFUNDED"
-    | "REFUNDED"
-    | "CHARGED_BACK";
+  paymentStatus: "UNPAID" | "PENDING" | "PROCESSING" | "PAID" | "FAILED" | "PARTIALLY_REFUNDED" | "REFUNDED" | "CHARGED_BACK";
   canRetry: boolean;
   reconciliationRequired: boolean;
   reconciliationReason: string | null;
@@ -84,6 +76,17 @@ export type OrderSummary = {
   createdAt: string;
 };
 
+export type OrderListItem = {
+  id: string;
+  number: string | null;
+  status: string;
+  paymentStatus: OrderSummary["paymentStatus"];
+  total: string;
+  currency: "ARS";
+  lineCount: number;
+  createdAt: string;
+};
+
 export type CustomerPet = {
   id: string;
   customerId: string;
@@ -92,9 +95,22 @@ export type CustomerPet = {
   weightKg: string;
   lifeStage: "puppy" | "adult" | "senior";
   breed: string | null;
+  currentFood: {
+    source: "catalog" | "custom";
+    productId: string | null;
+    variantId: string | null;
+    brand: string;
+    name: string;
+    weightGrams: number | null;
+  } | null;
   createdAt: string;
   updatedAt: string;
 };
+
+export type PetCurrentFoodInput =
+  | { source: "catalog"; productId: string; variantId: string }
+  | { source: "custom"; brand: string; name: string; weightGrams: number }
+  | { source: "none" };
 
 export type CustomerPetInput = Pick<CustomerPet, "name" | "species" | "weightKg" | "lifeStage" | "breed">;
 

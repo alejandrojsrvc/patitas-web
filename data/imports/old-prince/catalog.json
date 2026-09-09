@@ -28,11 +28,7 @@
       ],
       "feedingGuide": {
         "title": "Cantidad diaria recomendada",
-        "headers": [
-          "Peso del animal",
-          "Mantenimiento",
-          "Reducción de peso"
-        ],
+        "headers": ["Peso del animal", "Mantenimiento", "Reducción de peso"],
         "rows": [
           {
             "animalWeight": {
@@ -40,15 +36,8 @@
               "maxKg": 5,
               "source": "2 - 5 kg"
             },
-            "values": [
-              "75 - 140 g",
-              "55 - 110 g"
-            ],
-            "sourceCells": [
-              "2 - 5 kg",
-              "75 - 140 g",
-              "55 - 110 g"
-            ]
+            "values": ["75 - 140 g", "55 - 110 g"],
+            "sourceCells": ["2 - 5 kg", "75 - 140 g", "55 - 110 g"]
           },
           {
             "animalWeight": {
@@ -56,15 +45,8 @@
               "maxKg": 10,
               "source": "6 - 10 kg"
             },
-            "values": [
-              "160 - 230 g",
-              "120 - 170 g"
-            ],
-            "sourceCells": [
-              "6 - 10 kg",
-              "160 - 230 g",
-              "120 - 170 g"
-            ]
+            "values": ["160 - 230 g", "120 - 170 g"],
+            "sourceCells": ["6 - 10 kg", "160 - 230 g", "120 - 170 g"]
           },
           {
             "animalWeight": {
@@ -72,15 +54,8 @@
               "maxKg": 20,
               "source": "11 - 20 kg"
             },
-            "values": [
-              "240 - 360 g",
-              "180 - 270 g"
-            ],
-            "sourceCells": [
-              "11 - 20 kg",
-              "240 - 360 g",
-              "180 - 270 g"
-            ]
+            "values": ["240 - 360 g", "180 - 270 g"],
+            "sourceCells": ["11 - 20 kg", "240 - 360 g", "180 - 270 g"]
           },
           {
             "animalWeight": {
@@ -88,15 +63,8 @@
               "maxKg": 30,
               "source": "21 - 30 kg"
             },
-            "values": [
-              "370 - 470 g",
-              "280 - 350 g"
-            ],
-            "sourceCells": [
-              "21 - 30 kg",
-              "370 - 470 g",
-              "280 - 350 g"
-            ]
+            "values": ["370 - 470 g", "280 - 350 g"],
+            "sourceCells": ["21 - 30 kg", "370 - 470 g", "280 - 350 g"]
           },
           {
             "animalWeight": {
@@ -104,15 +72,8 @@
               "maxKg": 40,
               "source": "31 - 40 kg"
             },
-            "values": [
-              "480 - 570 g",
-              "360 - 430 g"
-            ],
-            "sourceCells": [
-              "31 - 40 kg",
-              "480 - 570 g",
-              "360 - 430 g"
-            ]
+            "values": ["480 - 570 g", "360 - 430 g"],
+            "sourceCells": ["31 - 40 kg", "480 - 570 g", "360 - 430 g"]
           },
           {
             "animalWeight": {
@@ -120,15 +81,8 @@
               "maxKg": 50,
               "source": "41 - 50 kg"
             },
-            "values": [
-              "580 - 660 g",
-              "440 - 500 g"
-            ],
-            "sourceCells": [
-              "41 - 50 kg",
-              "580 - 660 g",
-              "440 - 500 g"
-            ]
+            "values": ["580 - 660 g", "440 - 500 g"],
+            "sourceCells": ["41 - 50 kg", "580 - 660 g", "440 - 500 g"]
           },
           {
             "animalWeight": {
@@ -136,105 +90,62 @@
               "maxKg": null,
               "source": "51 Kg o más"
             },
-            "values": [
-              "670 g o más",
-              "510 g o más"
-            ],
-            "sourceCells": [
-              "51 Kg o más",
-              "670 g o más",
-              "510 g o más"
-            ]
+            "values": ["670 g o más", "510 g o más"],
+            "sourceCells": ["51 Kg o más", "670 g o más", "510 g o más"]
           }
         ]
       },
       "composition": {
         "title": "Composicion centesimal",
-        "headers": [
-          "",
-          "Minimo",
-          "Máximo"
-        ],
+        "headers": ["", "Minimo", "Máximo"],
         "rows": [
           {
             "ingredient": "Proteína",
             "minimum": "30 %",
             "maximum": "",
-            "sourceCells": [
-              "Proteína",
-              "30 %",
-              ""
-            ]
+            "sourceCells": ["Proteína", "30 %", ""]
           },
           {
             "ingredient": "Extracto etéreo",
             "minimum": "8 %",
             "maximum": "",
-            "sourceCells": [
-              "Extracto etéreo",
-              "8 %",
-              ""
-            ]
+            "sourceCells": ["Extracto etéreo", "8 %", ""]
           },
           {
             "ingredient": "Humedad",
             "minimum": "",
             "maximum": "12%",
-            "sourceCells": [
-              "Humedad",
-              "",
-              "12%"
-            ]
+            "sourceCells": ["Humedad", "", "12%"]
           },
           {
             "ingredient": "Fibra cruda",
             "minimum": "",
             "maximum": "6,5 %",
-            "sourceCells": [
-              "Fibra cruda",
-              "",
-              "6,5 %"
-            ]
+            "sourceCells": ["Fibra cruda", "", "6,5 %"]
           },
           {
             "ingredient": "Minerales totales",
             "minimum": "",
             "maximum": "7 %",
-            "sourceCells": [
-              "Minerales totales",
-              "",
-              "7 %"
-            ]
+            "sourceCells": ["Minerales totales", "", "7 %"]
           },
           {
             "ingredient": "Calcio",
             "minimum": "0,9 %",
             "maximum": "1,2 %",
-            "sourceCells": [
-              "Calcio",
-              "0,9 %",
-              "1,2 %"
-            ]
+            "sourceCells": ["Calcio", "0,9 %", "1,2 %"]
           },
           {
             "ingredient": "Fósforo",
             "minimum": "0,6 %",
             "maximum": "0,9 %",
-            "sourceCells": [
-              "Fósforo",
-              "0,6 %",
-              "0,9 %"
-            ]
+            "sourceCells": ["Fósforo", "0,6 %", "0,9 %"]
           },
           {
             "ingredient": "Energía metabolizable",
             "minimum": "TC: 3400",
             "maximum": "BS: 3864",
-            "sourceCells": [
-              "Energía metabolizable",
-              "TC: 3400",
-              "BS: 3864"
-            ]
+            "sourceCells": ["Energía metabolizable", "TC: 3400", "BS: 3864"]
           }
         ]
       },
@@ -276,10 +187,7 @@
       ],
       "feedingGuide": {
         "title": "Cantidad diaria recomendada",
-        "headers": [
-          "Peso del animal",
-          "Gramos de alimento"
-        ],
+        "headers": ["Peso del animal", "Gramos de alimento"],
         "rows": [
           {
             "animalWeight": {
@@ -287,13 +195,8 @@
               "maxKg": 10,
               "source": "5 - 10 kg."
             },
-            "values": [
-              "110 - 180 g."
-            ],
-            "sourceCells": [
-              "5 - 10 kg.",
-              "110 - 180 g."
-            ]
+            "values": ["110 - 180 g."],
+            "sourceCells": ["5 - 10 kg.", "110 - 180 g."]
           },
           {
             "animalWeight": {
@@ -301,13 +204,8 @@
               "maxKg": 20,
               "source": "11 - 20 kg."
             },
-            "values": [
-              "190 -280 g."
-            ],
-            "sourceCells": [
-              "11 - 20 kg.",
-              "190 -280 g."
-            ]
+            "values": ["190 -280 g."],
+            "sourceCells": ["11 - 20 kg.", "190 -280 g."]
           },
           {
             "animalWeight": {
@@ -315,13 +213,8 @@
               "maxKg": 30,
               "source": "21 - 30 kg."
             },
-            "values": [
-              "290 - 370 g."
-            ],
-            "sourceCells": [
-              "21 - 30 kg.",
-              "290 - 370 g."
-            ]
+            "values": ["290 - 370 g."],
+            "sourceCells": ["21 - 30 kg.", "290 - 370 g."]
           },
           {
             "animalWeight": {
@@ -329,13 +222,8 @@
               "maxKg": 40,
               "source": "31 - 40 kg."
             },
-            "values": [
-              "380 - 450 g."
-            ],
-            "sourceCells": [
-              "31 - 40 kg.",
-              "380 - 450 g."
-            ]
+            "values": ["380 - 450 g."],
+            "sourceCells": ["31 - 40 kg.", "380 - 450 g."]
           },
           {
             "animalWeight": {
@@ -343,13 +231,8 @@
               "maxKg": 50,
               "source": "41 - 50 kg."
             },
-            "values": [
-              "460 - 520 g."
-            ],
-            "sourceCells": [
-              "41 - 50 kg.",
-              "460 - 520 g."
-            ]
+            "values": ["460 - 520 g."],
+            "sourceCells": ["41 - 50 kg.", "460 - 520 g."]
           },
           {
             "animalWeight": {
@@ -357,103 +240,62 @@
               "maxKg": 51,
               "source": "51 o más"
             },
-            "values": [
-              "530 g. o más"
-            ],
-            "sourceCells": [
-              "51 o más",
-              "530 g. o más"
-            ]
+            "values": ["530 g. o más"],
+            "sourceCells": ["51 o más", "530 g. o más"]
           }
         ]
       },
       "composition": {
         "title": "Composicion centesimal",
-        "headers": [
-          "",
-          "Minimo",
-          "Máximo"
-        ],
+        "headers": ["", "Minimo", "Máximo"],
         "rows": [
           {
             "ingredient": "Humedad",
             "minimum": "",
             "maximum": "12 %",
-            "sourceCells": [
-              "Humedad",
-              "",
-              "12 %"
-            ]
+            "sourceCells": ["Humedad", "", "12 %"]
           },
           {
             "ingredient": "Extracto etéreo",
             "minimum": "14 %",
             "maximum": "",
-            "sourceCells": [
-              "Extracto etéreo",
-              "14 %",
-              ""
-            ]
+            "sourceCells": ["Extracto etéreo", "14 %", ""]
           },
           {
             "ingredient": "Proteína",
             "minimum": "26 %",
             "maximum": "",
-            "sourceCells": [
-              "Proteína",
-              "26 %",
-              ""
-            ]
+            "sourceCells": ["Proteína", "26 %", ""]
           },
           {
             "ingredient": "Fibra cruda",
             "minimum": "",
             "maximum": "3,5 %",
-            "sourceCells": [
-              "Fibra cruda",
-              "",
-              "3,5 %"
-            ]
+            "sourceCells": ["Fibra cruda", "", "3,5 %"]
           },
           {
             "ingredient": "Minerales totales",
             "minimum": "",
             "maximum": "8 %",
-            "sourceCells": [
-              "Minerales totales",
-              "",
-              "8 %"
-            ]
+            "sourceCells": ["Minerales totales", "", "8 %"]
           },
           {
             "ingredient": "Calcio",
             "minimum": "1,0 %",
             "maximum": "1,5 %",
-            "sourceCells": [
-              "Calcio",
-              "1,0 %",
-              "1,5 %"
-            ]
+            "sourceCells": ["Calcio", "1,0 %", "1,5 %"]
           },
           {
             "ingredient": "Fósforo",
             "minimum": "0,6 %",
             "maximum": "1,2 %",
-            "sourceCells": [
-              "Fósforo",
-              "0,6 %",
-              "1,2 %"
-            ]
+            "sourceCells": ["Fósforo", "0,6 %", "1,2 %"]
           },
           {
             "ingredient": "Energía metabolizable",
             "minimum": "EM 85 TC: 3326",
             "maximum": "BS: 3780",
-            "sourceCells": [
-              "Energía metabolizable",
-              "EM 85 TC: 3326",
-              "BS: 3780"
-            ]
+            "sourceCells": ["Energía metabolizable", "EM 85 TC: 3326", "BS: 3780"]
           }
         ]
       },

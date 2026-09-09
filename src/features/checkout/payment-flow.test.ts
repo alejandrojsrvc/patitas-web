@@ -4,6 +4,7 @@ import test from "node:test";
 import type { CheckoutConfirmResult } from "@/domain/checkout/types";
 import type { OrderSummary } from "@/domain/customer/types";
 import {
+  checkoutAttemptKey,
   isPaymentPollingStatus,
   isIdempotencyConflict,
   isTerminalPaymentStatus,
@@ -12,6 +13,19 @@ import {
   paymentStatusMessage,
   pollPaymentOrder,
 } from "./payment-flow.ts";
+
+test("conserva el intento al recargar checkout y separa compras distintas", () => {
+  const values = new Map<string, string>();
+  const storage = {
+    getItem: (key: string) => values.get(key) ?? null,
+    setItem: (key: string, value: string) => {
+      values.set(key, value);
+    },
+  };
+  const first = checkoutAttemptKey("checkout-1", storage);
+  assert.equal(checkoutAttemptKey("checkout-1", storage), first);
+  assert.notEqual(checkoutAttemptKey("checkout-2", storage), first);
+});
 
 const paymentResult = {
   order: { id: "order-1", paymentStatus: "PENDING" },
@@ -27,7 +41,26 @@ const paymentResult = {
 
 function order(paymentStatus: OrderSummary["paymentStatus"]): OrderSummary {
   const now = new Date().toISOString();
-  return { id: "order-1", status: "PENDING_PAYMENT", paymentStatus, canRetry: paymentStatus === "FAILED", reconciliationRequired: false, reconciliationReason: null, reservationExpiresAt: null, subtotal: "10", discountTotal: "0", shippingCost: "0", total: "10", currency: "ARS", contactName: "Cliente", contactEmail: "cliente@example.com", petName: null, date: now, lines: [], createdAt: now };
+  return {
+    id: "order-1",
+    status: "PENDING_PAYMENT",
+    paymentStatus,
+    canRetry: paymentStatus === "FAILED",
+    reconciliationRequired: false,
+    reconciliationReason: null,
+    reservationExpiresAt: null,
+    subtotal: "10",
+    discountTotal: "0",
+    shippingCost: "0",
+    total: "10",
+    currency: "ARS",
+    contactName: "Cliente",
+    contactEmail: "cliente@example.com",
+    petName: null,
+    date: now,
+    lines: [],
+    createdAt: now,
+  };
 }
 
 test("usa el contrato nuevo de Mercado Pago y su paymentUrl para REDIRECT", () => {
@@ -66,7 +99,13 @@ test("PENDING y PROCESSING activan polling; PAID lo detiene", async () => {
 
 test("el polling se detiene en el límite", async () => {
   let calls = 0;
-  const result = await pollPaymentOrder(async () => { calls += 1; return order("PROCESSING"); }, { intervalMs: 0, maxAttempts: 3 });
+  const result = await pollPaymentOrder(
+    async () => {
+      calls += 1;
+      return order("PROCESSING");
+    },
+    { intervalMs: 0, maxAttempts: 3 },
+  );
   assert.equal(calls, 3);
   assert.equal(result.paymentStatus, "PROCESSING");
 });
@@ -74,7 +113,13 @@ test("el polling se detiene en el límite", async () => {
 test("el polling se detiene al desmontar mediante AbortSignal", async () => {
   const controller = new AbortController();
   let calls = 0;
-  const pending = pollPaymentOrder(async () => { calls += 1; return order("PENDING"); }, { intervalMs: 20, maxAttempts: 12, signal: controller.signal });
+  const pending = pollPaymentOrder(
+    async () => {
+      calls += 1;
+      return order("PENDING");
+    },
+    { intervalMs: 20, maxAttempts: 12, signal: controller.signal },
+  );
   controller.abort();
   const result = await pending;
   assert.equal(calls, 1);

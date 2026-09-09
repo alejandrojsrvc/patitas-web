@@ -2,8 +2,7 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { ImageResponse } from "next/og";
 
-export const alt =
-  "Patitas Inquietas: un perro y un gato asomándose juntos";
+export const alt = "Patitas Inquietas: un perro y un gato asomándose juntos";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -11,12 +10,8 @@ export default async function OpenGraphImage() {
   const [logo, hero, snPro, snProSemibold] = await Promise.all([
     readFile(path.join(process.cwd(), "public/brand/patitas-logo-horizontal.png")),
     readFile(path.join(process.cwd(), "public/brand/landing/hero-pets-playful-v1.png")),
-    readFile(
-      path.join(process.cwd(), "public/fonts/sn-pro/sn-pro-regular.ttf"),
-    ),
-    readFile(
-      path.join(process.cwd(), "public/fonts/sn-pro/sn-pro-semibold.ttf"),
-    ),
+    readFile(path.join(process.cwd(), "public/fonts/sn-pro/sn-pro-regular.ttf")),
+    readFile(path.join(process.cwd(), "public/fonts/sn-pro/sn-pro-semibold.ttf")),
   ]);
   const logoSrc = `data:image/png;base64,${logo.toString("base64")}`;
   const heroSrc = `data:image/png;base64,${hero.toString("base64")}`;
@@ -52,13 +47,7 @@ export default async function OpenGraphImage() {
           padding: "64px 0 64px 72px",
         }}
       >
-      <img
-        src={logoSrc}
-        alt=""
-        width={300}
-        height={33}
-        style={{ objectFit: "contain" }}
-      />
+        <img src={logoSrc} alt="" width={300} height={33} style={{ objectFit: "contain" }} />
         <div style={{ display: "flex", flexDirection: "column", width: 590 }}>
           <div
             style={{
@@ -82,18 +71,12 @@ export default async function OpenGraphImage() {
       fonts: [
         {
           name: "SN Pro",
-          data: snPro.buffer.slice(
-            snPro.byteOffset,
-            snPro.byteOffset + snPro.byteLength,
-          ) as ArrayBuffer,
+          data: snPro.buffer.slice(snPro.byteOffset, snPro.byteOffset + snPro.byteLength) as ArrayBuffer,
           weight: 400,
         },
         {
           name: "SN Pro",
-          data: snProSemibold.buffer.slice(
-            snProSemibold.byteOffset,
-            snProSemibold.byteOffset + snProSemibold.byteLength,
-          ) as ArrayBuffer,
+          data: snProSemibold.buffer.slice(snProSemibold.byteOffset, snProSemibold.byteOffset + snProSemibold.byteLength) as ArrayBuffer,
           weight: 600,
         },
       ],

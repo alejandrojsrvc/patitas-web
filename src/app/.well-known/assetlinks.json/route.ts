@@ -9,18 +9,19 @@ function certificateFingerprints() {
 
 export function GET() {
   const fingerprints = certificateFingerprints();
-  const associations = fingerprints.length > 0
-    ? [
-        {
-          relation: ["delegate_permission/common.handle_all_urls"],
-          target: {
-            namespace: "android_app",
-            package_name: ANDROID_PACKAGE_NAME,
-            sha256_cert_fingerprints: fingerprints,
+  const associations =
+    fingerprints.length > 0
+      ? [
+          {
+            relation: ["delegate_permission/common.handle_all_urls"],
+            target: {
+              namespace: "android_app",
+              package_name: ANDROID_PACKAGE_NAME,
+              sha256_cert_fingerprints: fingerprints,
+            },
           },
-        },
-      ]
-    : [];
+        ]
+      : [];
 
   return Response.json(associations, {
     headers: {

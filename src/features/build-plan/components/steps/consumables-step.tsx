@@ -1,10 +1,6 @@
 import { Check } from "@phosphor-icons/react";
 import { StepIntro } from "../step-intro";
-import type {
-  BuildPlanState,
-  ConsumableOption,
-  SelectedConsumable,
-} from "../../types";
+import type { BuildPlanState, ConsumableOption, SelectedConsumable } from "../../types";
 import type { BuildPlanAction } from "../../hooks/use-build-plan";
 import { formatConsumableQuantity } from "../../utils/formatters";
 
@@ -14,11 +10,7 @@ type ConsumablesStepProps = {
   dispatch: React.Dispatch<BuildPlanAction>;
 };
 
-export function ConsumablesStep({
-  state,
-  options,
-  dispatch,
-}: ConsumablesStepProps) {
+export function ConsumablesStep({ state, options, dispatch }: ConsumablesStepProps) {
   function getSelection(id: string) {
     return state.selectedConsumables.find((item) => item.id === id);
   }
@@ -92,10 +84,7 @@ export function ConsumablesStep({
                     >
                       {option.quantityOptions.map((quantity) => (
                         <option key={quantity} value={quantity}>
-                          {formatConsumableQuantity(
-                            quantity,
-                            option.quantityLabel,
-                          )}
+                          {formatConsumableQuantity(quantity, option.quantityLabel)}
                         </option>
                       ))}
                     </select>

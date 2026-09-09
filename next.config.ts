@@ -21,9 +21,22 @@ const securityHeaders = [
     key: "Permissions-Policy",
     value: "camera=(), microphone=(), geolocation=()",
   },
+  {
+    key: "Content-Security-Policy",
+    value: "base-uri 'self'; object-src 'none'; frame-ancestors 'none'; upgrade-insecure-requests",
+  },
+  {
+    key: "Cross-Origin-Opener-Policy",
+    value: "same-origin-allow-popups",
+  },
+  {
+    key: "X-DNS-Prefetch-Control",
+    value: "off",
+  },
 ];
 
 const nextConfig: NextConfig = {
+  output: "standalone",
   cacheComponents: true,
   images: {
     qualities: [60, 75],
@@ -55,6 +68,22 @@ const nextConfig: NextConfig = {
   allowedDevOrigins: ["patitasinquietas.local"],
   async headers() {
     return [
+      {
+        source: "/buscar",
+        headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow, noarchive" }],
+      },
+      {
+        source: "/perros/:path*",
+        headers: [{ key: "Cache-Control", value: "public, max-age=60, s-maxage=60, stale-while-revalidate=300" }],
+      },
+      {
+        source: "/gatos/:path*",
+        headers: [{ key: "Cache-Control", value: "public, max-age=60, s-maxage=60, stale-while-revalidate=300" }],
+      },
+      {
+        source: "/producto/:slug",
+        headers: [{ key: "Cache-Control", value: "public, max-age=60, s-maxage=60, stale-while-revalidate=300" }],
+      },
       {
         source: "/(.*)",
         headers: securityHeaders,

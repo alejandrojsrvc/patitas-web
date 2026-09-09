@@ -13,13 +13,7 @@ type FrequencyStepProps = {
   dispatch: React.Dispatch<BuildPlanAction>;
 };
 
-export function FrequencyStep({
-  state,
-  consumption15Days,
-  consumption30Days,
-  errors,
-  dispatch,
-}: FrequencyStepProps) {
+export function FrequencyStep({ state, consumption15Days, consumption30Days, errors, dispatch }: FrequencyStepProps) {
   return (
     <div>
       <StepIntro
@@ -54,8 +48,7 @@ export function FrequencyStep({
       </fieldset>
 
       <p className="mt-6 text-sm leading-6 text-muted">
-        La bolsa recomendada puede durar más o menos que este período. Te lo
-        mostramos en el próximo paso.
+        La bolsa recomendada puede durar más o menos que este período. Te lo mostramos en el próximo paso.
       </p>
       {errors.frequency ? (
         <p id="frequency-error" className="mt-3 text-sm font-semibold text-[#b42318]">

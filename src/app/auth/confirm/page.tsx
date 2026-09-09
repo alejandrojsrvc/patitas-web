@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { MobileAuthFallback } from "@/components/auth/mobile-auth-fallback";
+import { AccountConfirmation } from "@/components/auth/account-confirmation";
 
 export const metadata: Metadata = {
   title: "Confirmar cuenta | Patitas Inquietas",
@@ -21,17 +21,7 @@ export default async function ConfirmAccountPage({
   const query = await searchParams;
   const token = firstValue(query.token);
   const type = firstValue(query.type);
-  const supportedType = type === "signup" || type === "magiclink";
-  const appHref = token && supportedType
-    ? `patitas://auth/confirm?token=${encodeURIComponent(token)}&type=${encodeURIComponent(type)}`
-    : null;
+  const supportedType = type === "signup" || type === "magiclink" ? type : null;
 
-  return (
-    <MobileAuthFallback
-      title="Confirmá tu cuenta en la app"
-      description="Abrí Patitas Inquietas para terminar la confirmación y comenzar a usar tu cuenta."
-      appHref={appHref}
-      invalidMessage="Este enlace de confirmación está incompleto o no es válido. Solicitá un correo nuevo desde la aplicación."
-    />
-  );
+  return <AccountConfirmation token={token ?? null} type={supportedType} />;
 }

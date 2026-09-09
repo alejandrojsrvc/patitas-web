@@ -18,8 +18,7 @@ export function FinalCTA() {
             De lo que necesita tu mascota podemos acordarnos nosotros.
           </h2>
           <p className="mt-6 max-w-xl text-lg leading-8 text-white/90 sm:text-xl">
-            Probá una primera configuración y descubrí qué ritmo puede tener la
-            Patitas de tu mascota.
+            Probá una primera configuración y descubrí qué ritmo puede tener la Patitas de tu mascota.
           </p>
 
           <div className="mt-9 flex flex-col items-start gap-4 sm:flex-row sm:items-center">

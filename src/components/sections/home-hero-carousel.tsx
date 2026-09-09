@@ -45,14 +45,17 @@ export function HomeHeroCarousel() {
     setActiveSlide(nextSlide);
     setTrackIndex(nextTrackIndex);
 
-    transitionTimer.current = setTimeout(() => {
-      if (nextTrackIndex === 0 || nextTrackIndex === slides.length + 1) {
-        setTransitionEnabled(false);
-        setTrackIndex(nextTrackIndex === 0 ? slides.length : 1);
-      }
-      setMoving(false);
-      transitionTimer.current = null;
-    }, reducedMotion ? 0 : 520);
+    transitionTimer.current = setTimeout(
+      () => {
+        if (nextTrackIndex === 0 || nextTrackIndex === slides.length + 1) {
+          setTransitionEnabled(false);
+          setTrackIndex(nextTrackIndex === 0 ? slides.length : 1);
+        }
+        setMoving(false);
+        transitionTimer.current = null;
+      },
+      reducedMotion ? 0 : 520,
+    );
   }
 
   function showPrevious() {

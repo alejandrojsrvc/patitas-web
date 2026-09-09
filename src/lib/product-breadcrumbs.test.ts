@@ -37,10 +37,10 @@ test("omits unavailable levels while keeping the canonical product item", () => 
   ]);
 });
 
-test("falls back to catalog search when the category has no species", () => {
+test("falls back to the species catalog when the category has no species", () => {
   assert.deepEqual(productBreadcrumbs(productFixture({ species: null })), [
     { label: "Inicio", href: "/" },
-    { label: "Alimento seco", href: "/buscar?category=alimento-seco" },
+    { label: "Alimento seco", href: "/" },
     { label: "Royal Canin Adult Medium", href: "/producto/adult-medium" },
   ]);
 });

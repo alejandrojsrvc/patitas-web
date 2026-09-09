@@ -10,7 +10,7 @@ export async function mergeAnonymousCart(accessToken: string, cartToken: string)
       headers: { Authorization: `Bearer ${accessToken}` },
     });
     if (!response.ok) return false;
-    const payload = await response.json().catch(() => null) as { cartMerged?: boolean } | null;
+    const payload = (await response.json().catch(() => null)) as { cartMerged?: boolean } | null;
     return payload?.cartMerged === true;
   } catch {
     return false;

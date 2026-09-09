@@ -5,12 +5,9 @@ export function DeliveryRhythm() {
     <section className="section-space bg-surface">
       <div className="container-shell">
         <div className="max-w-2xl">
-          <h2 className="display-heading text-4xl sm:text-5xl lg:text-[3.25rem]">
-            Elegí el ritmo que mejor entra en tu casa.
-          </h2>
+          <h2 className="display-heading text-4xl sm:text-5xl lg:text-[3.25rem]">Elegí el ritmo que mejor entra en tu casa.</h2>
           <p className="body-copy mt-5 text-lg">
-            Dos formas simples de organizar la reposición. Sin cálculos
-            complicados ni un plan rígido.
+            Dos formas simples de organizar la reposición. Sin cálculos complicados ni un plan rígido.
           </p>
         </div>
 
@@ -21,8 +18,7 @@ export function DeliveryRhythm() {
               <Timer size={38} weight="duotone" className="text-brand-blue" aria-hidden="true" />
             </div>
             <p className="body-copy mt-5 max-w-md text-lg">
-              Para recibir cantidades más pequeñas, guardar menos y reponer
-              con mayor frecuencia.
+              Para recibir cantidades más pequeñas, guardar menos y reponer con mayor frecuencia.
             </p>
           </article>
           <article className="border-t border-border py-8 md:border-l md:border-t-0 md:pl-12 lg:py-12 lg:pl-16">
@@ -31,8 +27,7 @@ export function DeliveryRhythm() {
               <CalendarDots size={38} weight="duotone" className="text-brand-blue" aria-hidden="true" />
             </div>
             <p className="body-copy mt-5 max-w-md text-lg">
-              Para resolver todo el mes en una sola entrega y volver a pensar
-              en esto el mes siguiente.
+              Para resolver todo el mes en una sola entrega y volver a pensar en esto el mes siguiente.
             </p>
           </article>
         </div>

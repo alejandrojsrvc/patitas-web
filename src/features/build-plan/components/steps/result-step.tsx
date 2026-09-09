@@ -1,24 +1,8 @@
-import {
-  ArrowLeft,
-  BowlFood,
-  CalendarDots,
-  Cat,
-  CheckCircle,
-  Dog,
-  FloppyDisk,
-} from "@phosphor-icons/react";
+import { ArrowLeft, BowlFood, CalendarDots, Cat, CheckCircle, Dog, FloppyDisk } from "@phosphor-icons/react";
 import type { FormEvent } from "react";
 import type { BuildPlanAction } from "../../hooks/use-build-plan";
-import type {
-  BuildPlanState,
-  ConsumableOption,
-  PlanRecommendation,
-} from "../../types";
-import {
-  formatConsumableQuantity,
-  formatGrams,
-  formatReplenishmentDate,
-} from "../../utils/formatters";
+import type { BuildPlanState, ConsumableOption, PlanRecommendation } from "../../types";
+import { formatConsumableQuantity, formatGrams, formatReplenishmentDate } from "../../utils/formatters";
 
 type ResultStepProps = {
   state: BuildPlanState;
@@ -39,15 +23,7 @@ const lifeStageLabels = {
   senior: "Senior",
 };
 
-export function ResultStep({
-  state,
-  recommendation,
-  consumables,
-  errors,
-  dispatch,
-  onEdit,
-  onSubmit,
-}: ResultStepProps) {
+export function ResultStep({ state, recommendation, consumables, errors, dispatch, onEdit, onSubmit }: ResultStepProps) {
   const PetIcon = state.pet.species === "cat" ? Cat : Dog;
   const selectedExtras = state.selectedConsumables.map((selection) => ({
     ...selection,
@@ -58,16 +34,10 @@ export function ResultStep({
     <div>
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1
-            data-step-heading
-            tabIndex={-1}
-            className="display-heading text-4xl outline-none sm:text-5xl"
-          >
+          <h1 data-step-heading tabIndex={-1} className="display-heading text-4xl outline-none sm:text-5xl">
             La Patitas de {state.pet.name}
           </h1>
-          <p className="body-copy mt-4 text-lg">
-            Una propuesta inicial construida con lo que nos contaste.
-          </p>
+          <p className="body-copy mt-4 text-lg">Una propuesta inicial construida con lo que nos contaste.</p>
         </div>
         <button
           type="button"
@@ -93,9 +63,7 @@ export function ResultStep({
               </p>
             </div>
           </div>
-          <span className="rounded-full bg-brand-yellow px-3 py-1.5 text-xs font-bold text-ink">
-            PLAN INICIAL
-          </span>
+          <span className="rounded-full bg-brand-yellow px-3 py-1.5 text-xs font-bold text-ink">PLAN INICIAL</span>
         </div>
 
         <div className="p-6 sm:p-8">
@@ -104,9 +72,7 @@ export function ResultStep({
             <div>
               <p className="font-display text-2xl font-semibold">{recommendation.foodName}</p>
               <p className="mt-1 text-lg font-semibold text-brand-blue">
-                {recommendation.bagQuantity > 1
-                  ? `${recommendation.bagQuantity} bolsas de `
-                  : ""}
+                {recommendation.bagQuantity > 1 ? `${recommendation.bagQuantity} bolsas de ` : ""}
                 {recommendation.presentation.label}
               </p>
             </div>
@@ -115,33 +81,23 @@ export function ResultStep({
           <dl className="grid gap-6 py-6 sm:grid-cols-3">
             <div>
               <dt className="text-xs font-bold tracking-wide text-muted">CONSUMO APROXIMADO</dt>
-              <dd className="mt-2 font-display text-2xl font-semibold">
-                ≈ {formatGrams(recommendation.dailyConsumptionGrams)} g/día
-              </dd>
+              <dd className="mt-2 font-display text-2xl font-semibold">≈ {formatGrams(recommendation.dailyConsumptionGrams)} g/día</dd>
             </div>
             <div>
               <dt className="text-xs font-bold tracking-wide text-muted">DURACIÓN ESTIMADA</dt>
-              <dd className="mt-2 font-display text-2xl font-semibold">
-                ≈ {Math.round(recommendation.estimatedDurationDays)} días
-              </dd>
+              <dd className="mt-2 font-display text-2xl font-semibold">≈ {Math.round(recommendation.estimatedDurationDays)} días</dd>
             </div>
             <div>
               <dt className="text-xs font-bold tracking-wide text-muted">RITMO PREFERIDO</dt>
-              <dd className="mt-2 font-display text-2xl font-semibold">
-                Cada {recommendation.periodDays} días
-              </dd>
+              <dd className="mt-2 font-display text-2xl font-semibold">Cada {recommendation.periodDays} días</dd>
             </div>
           </dl>
 
           <div className="flex items-center gap-3 rounded-2xl bg-soft-yellow p-4">
             <CalendarDots size={24} weight="bold" aria-hidden="true" />
             <div>
-              <p className="text-xs font-bold tracking-wide">
-                REPOSICIÓN ESTIMADA SEGÚN DURACIÓN
-              </p>
-              <p className="mt-1 font-display text-2xl font-semibold">
-                {formatReplenishmentDate(recommendation.replenishmentDate)}
-              </p>
+              <p className="text-xs font-bold tracking-wide">REPOSICIÓN ESTIMADA SEGÚN DURACIÓN</p>
+              <p className="mt-1 font-display text-2xl font-semibold">{formatReplenishmentDate(recommendation.replenishmentDate)}</p>
             </div>
           </div>
 
@@ -164,26 +120,18 @@ export function ResultStep({
       </article>
 
       <section className="mt-10 border-t border-border pt-9">
-        <h2 className="display-heading text-3xl sm:text-4xl">
-          Estamos preparando las primeras entregas de Patitas.
-        </h2>
-        <p className="body-copy mt-4 max-w-xl">
-          Completá datos de prueba para ver cómo guardarías la Patitas de {state.pet.name}.
-        </p>
+        <h2 className="display-heading text-3xl sm:text-4xl">Estamos preparando las primeras entregas de Patitas.</h2>
+        <p className="body-copy mt-4 max-w-xl">Completá datos de prueba para ver cómo guardarías la Patitas de {state.pet.name}.</p>
         <p className="mt-4 rounded-xl bg-soft-yellow p-4 text-sm leading-6 text-ink">
-          Modo demostración: tus datos no salen de este navegador ni quedan
-          guardados cuando cerrás la sesión.
+          Modo demostración: tus datos no salen de este navegador ni quedan guardados cuando cerrás la sesión.
         </p>
 
         {state.submissionStatus === "success" ? (
           <div className="mt-6 rounded-2xl bg-soft-blue p-6" aria-live="polite">
             <CheckCircle size={34} weight="fill" className="text-brand-blue" aria-hidden="true" />
-            <p className="mt-3 font-display text-2xl font-semibold">
-              La Patitas de {state.pet.name} quedó preparada.
-            </p>
+            <p className="mt-3 font-display text-2xl font-semibold">La Patitas de {state.pet.name} quedó preparada.</p>
             <p className="mt-2 text-sm text-muted">
-              No enviamos información a ningún servidor. Podés seguir revisando
-              este resultado mientras mantengas abierta la sesión.
+              No enviamos información a ningún servidor. Podés seguir revisando este resultado mientras mantengas abierta la sesión.
             </p>
           </div>
         ) : (
@@ -199,9 +147,7 @@ export function ResultStep({
                 autoComplete="name"
                 disabled={state.submissionStatus === "submitting"}
                 value={state.lead.ownerName}
-                onChange={(event) =>
-                  dispatch({ type: "update-lead", value: { ownerName: event.target.value } })
-                }
+                onChange={(event) => dispatch({ type: "update-lead", value: { ownerName: event.target.value } })}
                 aria-invalid={Boolean(errors.ownerName)}
                 aria-describedby={errors.ownerName ? "owner-name-error" : undefined}
                 className={inputClass}
@@ -226,9 +172,7 @@ export function ResultStep({
                 spellCheck={false}
                 disabled={state.submissionStatus === "submitting"}
                 value={state.lead.email}
-                onChange={(event) =>
-                  dispatch({ type: "update-lead", value: { email: event.target.value } })
-                }
+                onChange={(event) => dispatch({ type: "update-lead", value: { email: event.target.value } })}
                 aria-invalid={Boolean(errors.email)}
                 aria-describedby={errors.email ? "lead-email-error" : undefined}
                 className={inputClass}
@@ -252,9 +196,7 @@ export function ResultStep({
                 autoComplete="tel"
                 disabled={state.submissionStatus === "submitting"}
                 value={state.lead.whatsapp}
-                onChange={(event) =>
-                  dispatch({ type: "update-lead", value: { whatsapp: event.target.value } })
-                }
+                onChange={(event) => dispatch({ type: "update-lead", value: { whatsapp: event.target.value } })}
                 className={inputClass}
                 placeholder="11 1234 5678…"
               />
@@ -293,9 +235,7 @@ export function ResultStep({
               className="inline-flex min-h-14 items-center justify-center gap-2 rounded-xl bg-brand-blue px-6 font-semibold text-white transition-colors hover:bg-[#0048dc] disabled:cursor-wait disabled:bg-[#4b7fe8] sm:col-span-2"
             >
               <FloppyDisk size={20} weight="bold" aria-hidden="true" />
-              {state.submissionStatus === "submitting"
-                ? "Guardando…"
-                : `Guardar la Patitas de ${state.pet.name}`}
+              {state.submissionStatus === "submitting" ? "Guardando…" : `Guardar la Patitas de ${state.pet.name}`}
             </button>
             {state.submissionStatus === "error" ? (
               <p className="text-sm font-semibold text-[#b42318] sm:col-span-2" aria-live="polite">

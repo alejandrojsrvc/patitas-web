@@ -1,62 +1,74 @@
 import type { Metadata } from "next";
-import { Suspense } from "react";
+import Link from "next/link";
 
-import { SiteFooter } from "@/components/layout/site-footer";
-import { SiteHeader } from "@/components/layout/site-header";
-import { emptyStorefrontShell, type ApiAccountSection } from "@/domain/storefront/types";
 import { AccountPage } from "@/features/account/account-page";
+import { AccountProvider } from "@/features/account/account-context";
+import { resolveAccountRoute } from "@/features/account/account-routing";
 import { SessionRefreshBoundary } from "@/features/auth/session-refresh-boundary";
-import { CartHydrator } from "@/features/cart/cart-context";
 import { getAccountScreen } from "@/infrastructure/api/commerce-server";
 
 export const metadata: Metadata = { title: "Mi cuenta | Patitas Inquietas", robots: { index: false, follow: false } };
+export const instant = false;
 
 type AccountRouteProps = {
   params: Promise<{ section?: string[] }>;
   searchParams: Promise<{ page?: string }>;
 };
 
-export default function AccountRoute({ params, searchParams }: AccountRouteProps) {
-  return <Suspense fallback={<AccountPageFallback />}><AccountRouteRuntime params={params} searchParams={searchParams} /></Suspense>;
-}
-
-async function AccountRouteRuntime({ params, searchParams }: AccountRouteProps) {
+export default async function AccountRoute({ params, searchParams }: AccountRouteProps) {
   const segments = (await params).section ?? [];
-  const section = (["resumen", "pedidos", "direcciones", "mascotas", "reposiciones"] as const).includes(segments[0] as never) ? segments[0] as "resumen" | "pedidos" | "direcciones" | "mascotas" | "reposiciones" : "resumen";
-  const apiSection = accountSectionMap[section];
   const requestedPage = Number((await searchParams).page);
   const page = Number.isInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1;
-  const result = await getAccountScreen({
-    section: apiSection,
-    orderId: section === "pedidos" ? segments[1] : undefined,
-    page: apiSection === "orders" ? page : undefined,
-    perPage: apiSection === "orders" ? 10 : undefined,
-  });
+  const route = resolveAccountRoute(segments, page);
+  const content = (
+    <AccountPage
+      key={`${route.section}:${route.request.orderId ?? route.request.page ?? 1}`}
+      section={route.section}
+      request={route.request}
+    />
+  );
 
+  if (route.section === "resumen") return content;
+
+  const result = await getAccountScreen(route.request);
   if (result.refreshRequired) {
-    return <SessionRefreshBoundary required failure={<AccountRefreshFailure />}><AccountPageFallback /></SessionRefreshBoundary>;
+    return (
+      <SessionRefreshBoundary required failure={<AccountSectionRefreshFailure />}>
+        <AccountSectionLoading />
+      </SessionRefreshBoundary>
+    );
   }
 
-  const shell = result.data?.shell ?? emptyStorefrontShell;
-  const screenKey = result.data?.shell.viewer.authenticated
-    ? `${result.data.shell.viewer.id}-${result.data.section.type}-${segments[1] ?? page}`
-    : "guest";
-
-  return <><CartHydrator cart={shell.cart} /><SiteHeader initialShell={shell} /><main id="contenido" className="container-shell min-h-[65vh] bg-white py-7 sm:py-12"><AccountPage key={screenKey} section={section} initialData={result.data} initialError={result.error} /></main><SiteFooter /></>;
+  return (
+    <AccountProvider
+      initialData={result.data}
+      initialError={result.error}
+      initialRequest={route.request}
+      initialGuest={!result.data && !result.error}
+    >
+      {content}
+    </AccountProvider>
+  );
 }
 
-function AccountPageFallback() {
-  return <><CartHydrator cart={emptyStorefrontShell.cart} /><SiteHeader initialShell={emptyStorefrontShell} /><main id="contenido" className="container-shell min-h-[65vh] bg-white py-7 sm:py-12"><div className="rounded-xl bg-white p-8 text-center text-muted">Cargando tu cuenta…</div></main><SiteFooter /></>;
+function AccountSectionLoading() {
+  return (
+    <div className="mt-7 space-y-4" aria-busy="true" aria-label="Cargando datos de tu cuenta">
+      <div className="h-8 w-2/3 animate-pulse rounded-lg bg-white" />
+      <div className="h-40 animate-pulse rounded-2xl bg-white" />
+      <div className="h-40 animate-pulse rounded-2xl bg-white" />
+    </div>
+  );
 }
 
-function AccountRefreshFailure() {
-  return <><CartHydrator cart={emptyStorefrontShell.cart} /><SiteHeader initialShell={emptyStorefrontShell} /><main id="contenido" className="container-shell min-h-[65vh] bg-white py-7 sm:py-12"><div className="rounded-xl bg-white p-8"><h1 className="font-display text-2xl font-semibold">No pudimos renovar tu sesión</h1><p className="mt-2 text-muted">Intentá nuevamente o iniciá sesión otra vez.</p></div></main><SiteFooter /></>;
+function AccountSectionRefreshFailure() {
+  return (
+    <section className="mt-7 rounded-2xl border border-catalog-line bg-white p-6">
+      <h2 className="font-display text-xl font-semibold">Tu sesión venció</h2>
+      <p className="mt-2 text-muted">Iniciá sesión de nuevo para consultar estos datos.</p>
+      <Link href="/mi-cuenta" className="mt-5 inline-flex min-h-11 items-center rounded-xl bg-brand-blue px-4 font-semibold text-white">
+        Iniciar sesión
+      </Link>
+    </section>
+  );
 }
-
-const accountSectionMap: Record<"resumen" | "pedidos" | "direcciones" | "mascotas" | "reposiciones", ApiAccountSection> = {
-  resumen: "overview",
-  pedidos: "orders",
-  direcciones: "addresses",
-  mascotas: "pets",
-  reposiciones: "replenishments",
-};

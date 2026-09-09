@@ -7,11 +7,7 @@ export type Pet = {
   weightKg: number;
 };
 
-export type ProductCategory =
-  | "food"
-  | "hygiene"
-  | "snack"
-  | "accessory";
+export type ProductCategory = "food" | "hygiene" | "snack" | "accessory";
 
 export type Product = {
   id: string;

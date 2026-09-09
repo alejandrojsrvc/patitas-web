@@ -6,6 +6,7 @@ import { CatalogFilterSidebar } from "./catalog-filter-sidebar";
 import { CatalogPagination } from "./catalog-pagination";
 import { CatalogSortOptions } from "./catalog-sort-options";
 import { ProductGrid } from "./product-grid";
+import { PetShoppingBar } from "@/features/pets/pet-shopping-bar";
 
 export function CatalogResults({
   result,
@@ -40,32 +41,29 @@ export function CatalogResults({
   };
 
   return (
-    <main id="contenido" className="bg-catalog-page pb-20">
+    <main id="contenido" className="bg-catalog-page pb-20 [overflow-anchor:none]">
       <CatalogIntro species={species} title={title} description={description} />
 
-      <section className="container-shell py-5 sm:py-7 lg:py-9">
-        <CatalogAppliedFilters pathname={pathname} current={current} species={species} {...filters} />
-        <div className="grid items-start gap-4 lg:grid-cols-[260px_minmax(0,1fr)] lg:gap-10">
-          <CatalogFilterSidebar pathname={pathname} current={current} species={species} {...filters} />
+      <section className="container-shell pb-8 pt-3 sm:pb-10 sm:pt-4">
+        <div className="grid items-start gap-4 lg:grid-cols-[240px_minmax(0,1fr)] lg:gap-8">
+          <CatalogFilterSidebar pathname={pathname} current={current} species={species} resultCount={result.meta.total} {...filters} />
 
           <div className="min-w-0">
-            <div className="mb-5 flex min-w-0 flex-col gap-3 border-b border-catalog-line pb-4 sm:mb-6 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:pb-5">
-              <div>
-                <p className="text-sm text-muted">
-                  <strong className="text-ink">{result.meta.total}</strong> productos
-                </p>
-                {result.meta.totalPages > 1 ? (
-                  <p className="mt-1 text-xs text-muted">
-                    Página {result.meta.page} de {result.meta.totalPages}
-                  </p>
-                ) : null}
-              </div>
-              <div className="flex min-w-0 items-center gap-2 text-sm font-semibold text-ink">
-                <span className="shrink-0">Ordenar</span>
-                <CatalogSortOptions current={current} pathname={pathname} />
-              </div>
+            <div className="mb-4 hidden min-h-11 min-w-0 items-center justify-between gap-4 border-b border-catalog-line pb-3 lg:flex">
+              <p className="text-sm text-muted">
+                <strong className="font-semibold text-ink">{result.meta.total}</strong> {result.meta.total === 1 ? "producto" : "productos"}
+              </p>
+              <CatalogSortOptions current={current} pathname={pathname} />
             </div>
-            <ProductGrid products={result.items} />
+            <CatalogAppliedFilters pathname={pathname} current={current} species={species} {...filters} />
+            <div className="mb-4">
+              <PetShoppingBar />
+            </div>
+            <ProductGrid
+              products={result.items}
+              emptyCopy="No encontramos productos con esta combinación. Quitá algún filtro para ampliar los resultados."
+              emptyAction={{ href: pathname, label: "Ver todos los productos" }}
+            />
             {result.meta.totalPages > 1 ? <CatalogPagination result={result} pathname={pathname} current={current} /> : null}
           </div>
         </div>
