@@ -36,10 +36,6 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
-  output: "standalone",
-  outputFileTracingIncludes: {
-    "*": ["./node_modules/@swc/helpers/esm/**"],
-  },
   cacheComponents: true,
   images: {
     qualities: [60, 75],
