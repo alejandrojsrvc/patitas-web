@@ -2,7 +2,9 @@ import "server-only";
 
 import type { AuthResponse, AuthSession, CurrentUser } from "@/domain/auth/types";
 
-const apiUrl = (process.env.API_INTERNAL_URL ?? "http://api.patitasinquietas.local/api/v1").replace(/\/$/, "");
+const apiUrl = process.env.API_URL?.trim().replace(/\/$/, "");
+if (!apiUrl) throw new Error("API_URL no está configurada.");
+const originVerifySecret = process.env.API_ORIGIN_VERIFY_SECRET?.trim();
 
 export class AuthApiError extends Error {
   constructor(
@@ -24,6 +26,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
         Accept: "application/json",
         ...(init?.body ? { "Content-Type": "application/json" } : {}),
         ...init?.headers,
+        ...(originVerifySecret ? { "X-Origin-Verify": originVerifySecret } : {}),
       },
     });
   } catch {

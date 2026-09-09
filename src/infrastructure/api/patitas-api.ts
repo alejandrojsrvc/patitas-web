@@ -14,7 +14,9 @@ import type {
   SitemapProductProjection,
 } from "@/domain/catalog/types";
 
-const apiUrl = (process.env.API_INTERNAL_URL ?? "http://api.patitasinquietas.local/api/v1").replace(/\/$/, "");
+const apiUrl = process.env.API_URL?.trim().replace(/\/$/, "");
+if (!apiUrl) throw new Error("API_URL no está configurada.");
+const originVerifySecret = process.env.API_ORIGIN_VERIFY_SECRET?.trim();
 const requestTimeoutMs = 15_000;
 
 export class PatitasApiError extends Error {
@@ -35,6 +37,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
       Accept: "application/json",
       ...(init?.body ? { "Content-Type": "application/json" } : {}),
       ...init?.headers,
+      ...(originVerifySecret ? { "X-Origin-Verify": originVerifySecret } : {}),
     },
   });
   if (!response.ok) {
