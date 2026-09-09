@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, unstable_rethrow } from "next/navigation";
 import Link from "next/link";
 import { CatalogPagination } from "@/components/catalog/catalog-pagination";
 import { ProductGrid } from "@/components/catalog/product-grid";
@@ -19,7 +19,8 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
       alternates: { canonical: `/marcas/${brand.slug}` },
       robots: hasCatalogFilterParams(await searchParams) ? { index: false, follow: false } : undefined,
     };
-  } catch {
+  } catch (error) {
+    unstable_rethrow(error);
     return {};
   }
 }

@@ -1,5 +1,6 @@
 import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
+import { unstable_rethrow } from "next/navigation";
 import type {
   Brand,
   CalculatorProductProjection,
@@ -159,7 +160,8 @@ export async function getCalculatorProducts() {
   cacheTag("catalog-products", "catalog-calculator-projection");
   try {
     return await catalogApi.calculatorProjection();
-  } catch {
+  } catch (error) {
+    unstable_rethrow(error);
     // Next prerender treats a rejected cache fill as fatal; the calculator renders its explicit empty state instead.
     return [];
   }
@@ -176,6 +178,7 @@ export async function safeCatalogCall<T>(operation: () => Promise<T>): Promise<{
   try {
     return { ok: true, data: await operation() };
   } catch (error) {
+    unstable_rethrow(error);
     return {
       ok: false,
       error: error instanceof Error ? error.message : "No pudimos consultar el catálogo.",

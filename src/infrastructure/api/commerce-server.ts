@@ -1,6 +1,7 @@
 import "server-only";
 
 import { cookies } from "next/headers";
+import { unstable_rethrow } from "next/navigation";
 
 import type { CheckoutScreen } from "@/domain/checkout/types";
 import type { CustomerProfile } from "@/domain/customer/types";
@@ -84,7 +85,8 @@ export async function getCheckoutBootstrap(sessionId: string): Promise<ServerBoo
         },
       };
     }
-  } catch {
+  } catch (error) {
+    unstable_rethrow(error);
     // El perfil es una mejora de precarga; no debe impedir continuar con el checkout.
   }
 
@@ -113,6 +115,7 @@ async function requestBootstrap<T>(
 
     return { data: payload as T, refreshRequired: false, error: null };
   } catch (error) {
+    unstable_rethrow(error);
     const timedOut = error instanceof DOMException && error.name === "TimeoutError";
     return {
       data: null,

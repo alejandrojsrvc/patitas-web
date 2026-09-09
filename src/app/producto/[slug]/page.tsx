@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, unstable_rethrow } from "next/navigation";
 
 import { ProductScreen } from "@/features/catalog/product-screen";
 import { getProduct, PatitasApiError } from "@/infrastructure/api/patitas-api";
@@ -18,7 +18,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       alternates: { canonical: `/producto/${product.slug}` },
       openGraph: { images: product.media[0]?.url ? [product.media[0].url] : undefined },
     };
-  } catch {
+  } catch (error) {
+    unstable_rethrow(error);
     return {};
   }
 }
