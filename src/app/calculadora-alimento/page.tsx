@@ -5,6 +5,8 @@ import { SiteHeader } from "@/components/layout/site-header";
 import { FoodCalculator } from "@/features/calculator/food-calculator";
 import { getCalculatorProducts, safeCatalogCall } from "@/infrastructure/api/patitas-api";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Calculadora de alimento para perros y gatos | Patitas",
   description: "Estimá cuánto debería durar una bolsa según el alimento, la presentación y el peso de tu mascota.",

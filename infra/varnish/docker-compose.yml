@@ -1,0 +1,43 @@
+services:
+  varnish:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      VARNISH_PURGE_SECRET: ${VARNISH_PURGE_SECRET:?VARNISH_PURGE_SECRET is required}
+      VARNISH_SIZE: 256M
+    expose:
+      - "80"
+      - "6081"
+    networks:
+      dokploy-network:
+        aliases:
+          - patitas-varnish
+      patitas-production:
+        aliases:
+          - patitas-varnish
+    tmpfs:
+      - /var/lib/varnish/varnishd:exec,size=128m
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 64M
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+      update_config:
+        parallelism: 1
+        order: start-first
+        failure_action: rollback
+      rollback_config:
+        parallelism: 1
+        order: stop-first
+
+networks:
+  dokploy-network:
+    external: true
+  patitas-production:
+    external: true
