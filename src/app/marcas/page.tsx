@@ -6,6 +6,7 @@ import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import { getBrands, resolveCatalogPath, safeCatalogCall } from "@/infrastructure/api/patitas-api";
 import { brandLogoUrl } from "@/lib/brand-assets";
+import { cloudflareImageUrl } from "@/lib/cloudflare-image-url";
 import { BreadcrumbJsonLd } from "@/components/seo/json-ld";
 import { catalogLandingMetadata } from "@/features/catalog/catalog-landing-page";
 
@@ -40,7 +41,14 @@ export default async function BrandsPage() {
                   >
                     {logoUrl ? (
                       <span className="relative h-16 w-full max-w-28">
-                        <Image src={logoUrl} alt={brand.name} fill unoptimized={logoUrl.startsWith("/")} sizes="112px" className="object-contain" />
+                        <Image
+                          src={cloudflareImageUrl(logoUrl, { width: 320, height: 180, fit: "contain", quality: 80 })}
+                          alt={brand.name}
+                          fill
+                          unoptimized
+                          sizes="112px"
+                          className="object-contain"
+                        />
                       </span>
                     ) : (
                       <span className="flex h-14 items-center justify-center text-brand-blue" aria-hidden="true">

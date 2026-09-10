@@ -1,6 +1,7 @@
 import { ArrowRight, CalendarBlank } from "@phosphor-icons/react/ssr";
 import Image from "next/image";
 import Link from "next/link";
+import { cloudflareImageUrl } from "@/lib/cloudflare-image-url";
 
 export function HomeHero() {
   return (
@@ -29,7 +30,7 @@ export function HomeHero() {
 
         <div className="relative min-h-[17rem] overflow-hidden rounded-2xl bg-soft-blue sm:min-h-[30rem] lg:min-h-[34rem]">
           <Image
-            src="/brand/landing/hero-petshop-clean-v1.png"
+            src={cloudflareImageUrl("/brand/landing/hero-petshop-clean-v1.png", { width: 1600, quality: 80 })}
             alt="Perro y gato junto a bolsas de alimento y otros esenciales"
             fill
             unoptimized

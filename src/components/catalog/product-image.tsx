@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useState } from "react";
 
 import { productImageSources, type ProductImagePreset } from "@/lib/product-image-urls";
+import { cloudflareImageUrl } from "@/lib/cloudflare-image-url";
 
 export function ProductImage({
   src,
@@ -32,7 +33,7 @@ export function ProductImage({
       >
         <Image
           unoptimized
-          src="/brand/patitas-isotipo.png"
+          src={cloudflareImageUrl("/brand/patitas-isotipo.png", { width: 320, quality: 75 })}
           alt=""
           width={736}
           height={876}
@@ -42,12 +43,24 @@ export function ProductImage({
     );
   }
   const sources = productImageSources(src, preset);
+  const imageOptions =
+    preset === "detail"
+      ? { width: 1000, height: 1000, fit: "contain" as const, quality: 85 }
+      : preset === "thumbnail"
+        ? { width: 240, height: 240, fit: "contain" as const, quality: 70 }
+        : { width: 320, height: 320, fit: "contain" as const, quality: 75 };
+  const transformedSrc = cloudflareImageUrl(sources.src, imageOptions);
+  const transformedDesktopSrc = sources.desktopSrc
+    ? cloudflareImageUrl(sources.desktopSrc, { ...imageOptions, width: 640 })
+    : undefined;
   return (
     <picture>
-      {sources.desktopSrc ? <source media="(min-width: 640px)" srcSet={sources.desktopSrc} /> : null}
+      {transformedDesktopSrc ? (
+        <source media="(min-width: 640px)" srcSet={`${transformedSrc} 320w, ${transformedDesktopSrc} 640w`} sizes={sizes} />
+      ) : null}
       <Image
         unoptimized
-        src={sources.src}
+        src={transformedSrc}
         alt={alt}
         fill
         preload={priority}

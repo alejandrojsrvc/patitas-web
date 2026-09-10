@@ -1,13 +1,14 @@
 import { CheckCircle } from "@phosphor-icons/react/ssr";
 import Image from "next/image";
 import { CtaLink } from "@/components/ui/cta-link";
+import { cloudflareImageUrl } from "@/lib/cloudflare-image-url";
 
 export function FinalCTA() {
   return (
     <section id="armar" className="anchor-section overflow-hidden bg-brand-blue py-18 text-white sm:py-24 lg:py-28">
       <div className="container-shell relative">
         <Image
-          src="/brand/patitas-isotipo.png"
+          src={cloudflareImageUrl("/brand/patitas-isotipo.png", { width: 640, quality: 80 })}
           alt=""
           width={736}
           height={876}

@@ -10,6 +10,7 @@ import { HomeHero } from "@/components/sections/home-hero";
 import { RecentProducts } from "@/components/sections/recent-products";
 import type { Brand } from "@/domain/catalog/types";
 import { brandLogoUrl } from "@/lib/brand-assets";
+import { cloudflareImageUrl } from "@/lib/cloudflare-image-url";
 import { getBrands, getProducts, safeCatalogCall } from "@/infrastructure/api/patitas-api";
 
 export const dynamic = "force-dynamic";
@@ -151,7 +152,7 @@ export default async function Home() {
                 >
                   <span className="absolute inset-0">
                     <Image
-                      src={category.image}
+                      src={cloudflareImageUrl(category.image, { width: 640, height: 960, fit: "cover", quality: 75 })}
                       alt=""
                       fill
                       unoptimized
@@ -234,7 +235,14 @@ export default async function Home() {
                     >
                       {logoUrl ? (
                         <span className="relative h-16 w-full max-w-28">
-                          <Image src={logoUrl} alt="" fill unoptimized={logoUrl.startsWith("/")} sizes="112px" className="object-contain" />
+                          <Image
+                            src={cloudflareImageUrl(logoUrl, { width: 320, height: 180, fit: "contain", quality: 80 })}
+                            alt=""
+                            fill
+                            unoptimized
+                            sizes="112px"
+                            className="object-contain"
+                          />
                         </span>
                       ) : (
                         <span className="flex h-12 items-center justify-center text-brand-blue" aria-hidden="true">

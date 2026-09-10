@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { cloudflareImageUrl } from "@/lib/cloudflare-image-url";
 import Link from "next/link";
 
 const groups = [
@@ -43,7 +44,14 @@ const groups = [
 function PaymentLogo({ src, alt, width, height }: { src: string; alt: string; width: number; height: number }) {
   return (
     <span className="flex h-8 w-16 shrink-0 items-center justify-center rounded-md bg-white px-1 shadow-sm">
-      <Image src={src} alt={alt} width={width} height={height} unoptimized className="h-auto max-h-6 max-w-full object-contain" />
+      <Image
+        src={cloudflareImageUrl(src, { width: 112, quality: 80 })}
+        alt={alt}
+        width={width}
+        height={height}
+        unoptimized
+        className="h-auto max-h-6 max-w-full object-contain"
+      />
     </span>
   );
 }
@@ -56,7 +64,7 @@ export function SiteFooter() {
       <div className="container-shell grid gap-12 lg:grid-cols-[1.2fr_2fr]">
         <div className="max-w-sm">
           <Image
-            src="/brand/patitas-logo-horizontal.png"
+            src={cloudflareImageUrl("/brand/patitas-logo-horizontal.png", { width: 448, quality: 85 })}
             alt="Patitas Inquietas"
             width={220}
             height={24}

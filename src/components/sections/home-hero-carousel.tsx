@@ -4,6 +4,7 @@ import { CaretLeft, CaretRight } from "@phosphor-icons/react/ssr";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { cloudflareImageUrl } from "@/lib/cloudflare-image-url";
 
 const slides = [
   {
@@ -90,7 +91,7 @@ export function HomeHeroCarousel() {
             className="relative h-full w-full shrink-0 focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-blue"
           >
             <Image
-              src={slide.src}
+              src={cloudflareImageUrl(slide.src, { width: 1600, quality: 80 })}
               alt={slide.alt}
               fill
               unoptimized

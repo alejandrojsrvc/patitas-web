@@ -11,6 +11,7 @@ import { CartLink } from "@/features/cart/cart-link";
 import { MobileNav } from "./mobile-nav";
 import { useSessionShell } from "@/features/session/session-shell-context";
 import { HeaderSearch, HeaderSearchProvider } from "./header-search";
+import { cloudflareImageUrl } from "@/lib/cloudflare-image-url";
 
 const navItems = [
   {
@@ -93,7 +94,7 @@ export function SiteHeaderClient({
         <div className="container-shell flex min-h-[4.5rem] items-center gap-3 py-2 sm:gap-5 lg:h-20 lg:min-h-0 lg:gap-6 lg:py-0">
           <Link href="/" aria-label="Patitas Inquietas, ir al inicio" translate="no" className="shrink-0">
             <Image
-              src="/brand/patitas-logo-horizontal.png"
+              src={cloudflareImageUrl("/brand/patitas-logo-horizontal.png", { width: 448, quality: 85 })}
               alt="Patitas Inquietas"
               width={220}
               height={24}

@@ -1,6 +1,7 @@
 import { Bone, BowlFood, Check, Dog, Package } from "@phosphor-icons/react/ssr";
 import Image from "next/image";
 import { CtaLink } from "@/components/ui/cta-link";
+import { cloudflareImageUrl } from "@/lib/cloudflare-image-url";
 
 export function Hero() {
   return (
@@ -44,7 +45,7 @@ export function Hero() {
           <div className="absolute -left-8 top-8 size-40 rounded-full bg-brand-yellow sm:size-52" aria-hidden="true" />
           <div className="relative min-h-[30rem] overflow-hidden rounded-[2rem] bg-brand-blue p-6 text-white sm:min-h-[36rem] sm:p-9">
             <Image
-              src="/brand/patitas-isotipo.png"
+              src={cloudflareImageUrl("/brand/patitas-isotipo.png", { width: 640, quality: 80 })}
               alt=""
               width={736}
               height={876}
