@@ -48,7 +48,7 @@ export function LandingPlanQuiz({ products }: LandingPlanQuizProps) {
   const [loading, setLoading] = useState(false);
 
   const availableProducts = useMemo(
-    () => (species ? products.filter((item) => !item.species || item.species === species) : products),
+    () => (species ? products.filter((item) => !item.species || item.species === toCatalogSpecies(species)) : products),
     [products, species],
   );
   const product = useMemo(
@@ -67,7 +67,7 @@ export function LandingPlanQuiz({ products }: LandingPlanQuizProps) {
 
   function chooseSpecies(nextSpecies: Species) {
     setSpecies(nextSpecies);
-    const nextProduct = products.find((item) => !item.species || item.species === nextSpecies);
+    const nextProduct = products.find((item) => !item.species || item.species === toCatalogSpecies(nextSpecies));
     setProductSlug(nextProduct?.slug ?? "");
     setVariantId(nextProduct ? (selectInitialVariant(nextProduct)?.id ?? "") : "");
     setResult(null);
@@ -428,4 +428,8 @@ export function LandingPlanQuiz({ products }: LandingPlanQuizProps) {
       </div>
     </form>
   );
+}
+
+function toCatalogSpecies(species: Species): Product["species"] {
+  return species === "dog" ? "DOG" : "CAT";
 }
