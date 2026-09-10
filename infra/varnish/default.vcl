@@ -54,11 +54,11 @@ sub vcl_recv {
     return (synth(200, "Purged"));
   }
 
-  if (req.http.host ~ "(?i)^www\\.patitasinquietas\\.com\\.ar(:[0-9]+)?$") {
+  if (req.http.host ~ "(?i)^www\.patitasinquietas\.com\.ar(:[0-9]+)?$") {
     return (synth(750, "Canonical redirect"));
   }
 
-  if (req.http.host !~ "(?i)^patitasinquietas\\.com\\.ar(:[0-9]+)?$") {
+  if (req.http.host !~ "(?i)^patitasinquietas\.com\.ar(:[0-9]+)?$") {
     return (synth(421, "Misdirected Request"));
   }
 
@@ -70,7 +70,7 @@ sub vcl_recv {
     return (pass);
   }
 
-  if (req.url ~ "\\?") {
+  if (req.url ~ "\?") {
     return (pass);
   }
 
