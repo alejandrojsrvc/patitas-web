@@ -28,9 +28,9 @@ acl purgers {
 sub vcl_recv {
   if (req.url == "/_varnish/health") {
     if (std.healthy(default)) {
-      return (synth(200, "healthy"));
+      return (synth(200, "OK"));
     }
-    return (synth(503, "backend unhealthy"));
+    return (synth(503, "Backend unhealthy"));
   }
 
   if (req.method == "PURGE") {
@@ -47,10 +47,10 @@ sub vcl_recv {
       return (synth(403, "Forbidden"));
     }
     if (!req.http.X-Patitas-XKey || req.http.X-Patitas-XKey !~ "^[a-z0-9][a-z0-9:_ -]{0,4095}$") {
-      return (synth(400, "Invalid XKey list"));
+      return (synth(400, "Invalid cache key"));
     }
-    ban("obj.http.X-Patitas-Cache-Class == catalog");
-    set req.http.X-Purged-Objects = "0";
+
+    ban("obj.http.X-Patitas-Cache-Key ~ " + regsuball(req.http.X-Patitas-XKey, " ", "|"));
     return (synth(200, "Purged"));
   }
 
@@ -62,74 +62,24 @@ sub vcl_recv {
     return (synth(421, "Misdirected Request"));
   }
 
-  unset req.http.X-Patitas-Cache-Class;
-  unset req.http.X-Patitas-Original-Cookie;
-
   if (req.method != "GET" && req.method != "HEAD") {
     return (pass);
   }
-  if (req.http.Authorization || req.http.Upgrade) {
+
+  if (req.http.Authorization || req.http.Cookie) {
     return (pass);
   }
+
   if (req.url ~ "\\?") {
     return (pass);
   }
-  if (
-    req.http.RSC ||
-    req.http.Next-Router-State-Tree ||
-    req.http.Next-Router-Prefetch ||
-    req.http.Next-Router-Segment-Prefetch ||
-    req.http.Next-Url ||
-    req.http.Purpose ~ "(?i)prefetch" ||
-    req.http.Sec-Purpose ~ "(?i)prefetch" ||
-    req.http.Accept ~ "(?i)text/x-component"
-  ) {
-    return (pass);
-  }
 
-  if (
-    req.url ~ "^/(api|auth|mi-cuenta|carrito|checkout|pedido)(/|$)" ||
-    req.url == "/buscar" ||
-    req.url == "/healthz"
-  ) {
-    return (pass);
-  }
-
-  if (req.url ~ "^/_next/static/") {
-    set req.http.X-Patitas-Cache-Class = "asset";
-  } else if (
-    req.url == "/" ||
-    req.url ~ "^/(perros|gatos)(/|$)" ||
-    req.url ~ "^/marcas(/|$)" ||
-    req.url ~ "^/producto/[^/]+$" ||
-    req.url == "/calculadora-alimento" ||
-    req.url == "/sitemap.xml"
-  ) {
+  if (req.url ~ "^/(perros|gatos|marcas)(/.*)?$") {
     set req.http.X-Patitas-Cache-Class = "catalog";
-  } else if (
-    req.url == "/robots.txt" ||
-    req.url == "/pet-shop-caba" ||
-    req.url == "/reponer" ||
-    req.url ~ "^/guias(/|$)" ||
-    req.url ~ "^/(preguntas-frecuentes|envios|cambios-y-devoluciones|contacto|terminos|privacidad|defensa-del-consumidor|arrepentimiento)$"
-  ) {
-    set req.http.X-Patitas-Cache-Class = "static";
+  } else if (req.url ~ "^/producto/[^/]+$") {
+    set req.http.X-Patitas-Cache-Class = "product";
   } else {
     return (pass);
-  }
-
-  if (req.http.Cookie) {
-    set req.http.X-Patitas-Original-Cookie = req.http.Cookie;
-    set req.http.Cookie = regsuball(req.http.Cookie, "(^|;[ \\t]*)patitas-visitor-id=[^;]*", "");
-    set req.http.Cookie = regsuball(req.http.Cookie, "^;[ \\t]*", "");
-    set req.http.Cookie = regsuball(req.http.Cookie, ";[ \\t]*;", ";");
-    if (req.http.Cookie ~ "(^|;[ \\t]*)patitas-") {
-      set req.http.Cookie = req.http.X-Patitas-Original-Cookie;
-      unset req.http.X-Patitas-Original-Cookie;
-      return (pass);
-    }
-    unset req.http.Cookie;
-    unset req.http.X-Patitas-Original-Cookie;
   }
 
   if (!req.http.X-Forwarded-Proto) {
@@ -140,53 +90,32 @@ sub vcl_recv {
 }
 
 sub vcl_backend_response {
-  if (!bereq.http.X-Patitas-Cache-Class) {
-    return (deliver);
-  }
-
-  if (beresp.http.Set-Cookie || beresp.http.Vary == "*") {
+  if (beresp.http.Content-Type !~ "(?i)text/html") {
     set beresp.uncacheable = true;
     set beresp.ttl = 0s;
-    set beresp.http.Cache-Control = "private, no-store";
-    set beresp.http.Cloudflare-CDN-Cache-Control = "private, no-store";
     return (deliver);
   }
 
   if (beresp.status == 200) {
-    if (bereq.http.X-Patitas-Cache-Class == "asset") {
-      set beresp.ttl = 365d;
-      set beresp.grace = 1h;
-      set beresp.http.Cache-Control = "public, max-age=31536000, immutable";
-      set beresp.http.Cloudflare-CDN-Cache-Control = "public, max-age=31536000, immutable";
-    } else if (bereq.http.X-Patitas-Cache-Class == "static") {
-      set beresp.ttl = 24h;
-      set beresp.grace = 1h;
-      set beresp.http.Cache-Control = "public, max-age=0, must-revalidate";
-      set beresp.http.Cloudflare-CDN-Cache-Control = "no-store";
-    } else {
-      set beresp.ttl = 15m;
-      set beresp.grace = 1h;
-      set beresp.http.Cache-Control = "public, max-age=0, must-revalidate";
-      set beresp.http.Cloudflare-CDN-Cache-Control = "no-store";
-    }
-  } else if (beresp.status == 301 || beresp.status == 308) {
-    set beresp.ttl = 1h;
-    set beresp.grace = 0s;
+    set beresp.ttl = 12h;
+    set beresp.grace = 1h;
+    set beresp.http.Cache-Control = "public, max-age=43200";
     set beresp.http.Cloudflare-CDN-Cache-Control = "no-store";
-  } else if (beresp.status == 404 && bereq.http.X-Patitas-Cache-Class != "asset") {
-    set beresp.ttl = 1m;
+  } else if (beresp.status == 404) {
+    set beresp.ttl = 60s;
     set beresp.grace = 0s;
-    set beresp.http.Cache-Control = "public, max-age=0, must-revalidate";
+    set beresp.http.Cache-Control = "public, max-age=60";
     set beresp.http.Cloudflare-CDN-Cache-Control = "no-store";
   } else {
     set beresp.uncacheable = true;
     set beresp.ttl = 0s;
-    set beresp.http.Cache-Control = "private, no-store";
-    set beresp.http.Cloudflare-CDN-Cache-Control = "private, no-store";
     return (deliver);
   }
 
-  set beresp.http.X-Patitas-Cache-Class = bereq.http.X-Patitas-Cache-Class;
+  set beresp.http.X-Patitas-Cache-Key = "catalog";
+  if (bereq.http.X-Patitas-Cache-Class == "product") {
+    set beresp.http.X-Patitas-Cache-Key = "catalog product:" + regsub(bereq.url, "^/producto/", "");
+  }
 
   set beresp.http.X-Patitas-Cacheable = "1";
   return (deliver);
@@ -213,35 +142,37 @@ sub vcl_deliver {
     set resp.http.X-Varnish-Cache = "PASS";
   }
 
-  unset resp.http.X-Patitas-Cache-Class;
+  unset resp.http.X-Patitas-Cache-Key;
   unset resp.http.X-Patitas-Cacheable;
 }
 
 sub vcl_synth {
   set resp.http.Cache-Control = "no-store";
-  set resp.http.Cloudflare-CDN-Cache-Control = "private, no-store";
 
   if (resp.status == 750) {
     set resp.status = 308;
     set resp.reason = "Permanent Redirect";
     set resp.http.Location = "https://patitasinquietas.com.ar" + req.url;
+    synthetic("redirect");
     return (deliver);
   }
 
   if (req.method == "PURGE" && resp.status == 200) {
-    set resp.http.Content-Type = "application/json; charset=utf-8";
-    set resp.http.X-Purged-Objects = req.http.X-Purged-Objects;
-    synthetic("{\"ok\":true}");
+    set resp.http.Content-Type = "text/plain; charset=utf-8";
+    synthetic("ok");
     return (deliver);
   }
 
   if (req.url == "/_varnish/health") {
-    set resp.http.Content-Type = "application/json; charset=utf-8";
+    set resp.http.Content-Type = "text/plain; charset=utf-8";
     if (resp.status == 200) {
-      synthetic("{\"status\":\"ok\"}");
+      synthetic("healthy");
     } else {
-      synthetic("{\"status\":\"unhealthy\"}");
+      synthetic("unhealthy");
     }
     return (deliver);
   }
+
+  synthetic(resp.reason);
+  return (deliver);
 }
