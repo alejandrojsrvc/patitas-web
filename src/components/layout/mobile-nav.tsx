@@ -4,11 +4,23 @@ import { List, MapPin, UserCircle, X } from "@phosphor-icons/react";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-const categoryLinks = [
-  ["Alimento para perros", "/perros/alimentos-balanceados"],
-  ["Alimento para gatos", "/gatos/alimentos-balanceados"],
-  ["Snacks y premios", "/perros/snacks"],
-  ["Arena e higiene", "/gatos/higiene"],
+const shoppingGroups = [
+  {
+    label: "Perros",
+    href: "/perros",
+    links: [
+      ["Alimento balanceado", "/perros/alimentos-balanceados"],
+      ["Snacks y premios", "/perros/snacks"],
+    ],
+  },
+  {
+    label: "Gatos",
+    href: "/gatos",
+    links: [
+      ["Alimento balanceado", "/gatos/alimentos-balanceados"],
+      ["Arena e higiene", "/gatos/higiene"],
+    ],
+  },
 ] as const;
 
 export function MobileNav({
@@ -80,13 +92,12 @@ export function MobileNav({
   }, [closeMenu, isOpen]);
 
   const links = [
-    ["Perros", "/perros"],
-    ["Gatos", "/gatos"],
     ["Marcas", "/marcas"],
-    ["Calculadora", "/calculadora-alimento"],
+    ["Calculadora de alimento", "/calculadora-alimento"],
     [replenishmentLabel, replenishmentHref],
     ["Envíos", "/envios"],
-    ["Preguntas frecuentes", "/preguntas-frecuentes"],
+    ["Ayuda", "/preguntas-frecuentes"],
+    ["Contacto", "/contacto"],
   ] as const;
 
   return (
@@ -98,7 +109,11 @@ export function MobileNav({
         aria-expanded={isOpen}
         aria-controls="mobile-menu"
         aria-label={isOpen ? "Cerrar menú" : "Abrir menú"}
-        className={`touch-target flex items-center justify-center rounded-xl ${onBrand ? "text-white hover:bg-white/10" : "text-ink hover:bg-catalog-soft"}`}
+        className={`touch-target flex items-center justify-center rounded-xl ${
+          onBrand
+            ? "text-white hover:bg-white/10 focus-visible:outline-brand-yellow"
+            : "text-ink hover:bg-catalog-soft focus-visible:outline-brand-blue"
+        }`}
       >
         {isOpen ? <X size={22} weight="bold" /> : <List size={23} weight="bold" />}
       </button>
@@ -127,8 +142,8 @@ export function MobileNav({
                 </>
               ) : sessionStatus === "error" ? (
                 <>
-                  <span className="block truncate text-sm font-semibold text-ink">No pudimos actualizar tu cuenta</span>
-                  <span className="block text-xs text-muted">Intentá nuevamente más tarde</span>
+                  <span className="block truncate text-sm font-semibold text-ink">No pudimos cargar tus datos</span>
+                  <span className="block text-xs text-muted">Podés reintentar ahora</span>
                 </>
               ) : displayName ? (
                 <>
@@ -167,49 +182,64 @@ export function MobileNav({
               onClick={onSessionRetry}
               className="mb-3 flex min-h-11 w-full items-center justify-center rounded-xl border border-catalog-line bg-white px-3 py-2.5 text-sm font-semibold text-brand-blue hover:bg-soft-blue"
             >
-              Reintentar actualización
+              Reintentar
             </button>
           ) : null}
 
-          <nav aria-label="Navegación mobile" className="grid gap-1">
-            {links.map(([label, href]) => (
-              <Link
-                key={href}
-                href={href}
-                scroll={!isCatalogPath(href)}
-                aria-current={isCurrentPath(currentPath, href) ? "page" : undefined}
-                onClick={() => setIsOpen(false)}
-                className="flex min-h-11 items-center rounded-xl px-3 py-2.5 font-semibold text-ink hover:bg-soft-blue hover:text-brand-blue"
-              >
-                {label}
-              </Link>
-            ))}
-
-            <div className="mt-2 border-t border-catalog-line pt-2">
-              <span className="px-3 text-xs font-semibold text-muted">Categorías</span>
-              <div className="mt-1 grid grid-cols-2 gap-1">
-                {categoryLinks.map(([label, href]) => (
-                  <Link
-                    key={href}
-                    href={href}
-                    scroll={false}
-                    aria-current={isCurrentPath(currentPath, href) ? "page" : undefined}
-                    onClick={() => setIsOpen(false)}
-                    className="flex min-h-11 items-center rounded-xl px-3 py-2.5 text-sm font-semibold text-ink hover:bg-soft-blue hover:text-brand-blue"
-                  >
-                    {label}
-                  </Link>
+          <nav aria-label="Navegación principal" className="grid gap-1">
+            <div className="rounded-xl bg-white p-2">
+              <p className="px-2 pb-1 text-base font-semibold text-ink">Comprar</p>
+              <div className="grid grid-cols-2 gap-2">
+                {shoppingGroups.map((group) => (
+                  <div key={group.href} className="min-w-0 rounded-lg bg-catalog-soft p-1">
+                    <Link
+                      href={group.href}
+                      scroll={false}
+                      aria-current={isCurrentPath(currentPath, group.href) ? "page" : undefined}
+                      onClick={() => setIsOpen(false)}
+                      className={`flex min-h-11 items-center rounded-lg px-2 text-sm font-semibold ${
+                        isCurrentPath(currentPath, group.href) ? "bg-white text-brand-blue" : "text-ink hover:bg-white hover:text-brand-blue"
+                      }`}
+                    >
+                      {group.label}
+                    </Link>
+                    {group.links.map(([label, href]) => (
+                      <Link
+                        key={href}
+                        href={href}
+                        scroll={false}
+                        aria-current={isCurrentPath(currentPath, href) ? "page" : undefined}
+                        onClick={() => setIsOpen(false)}
+                        className={`flex min-h-11 items-center rounded-lg px-2 py-2 text-sm leading-5 ${
+                          isCurrentPath(currentPath, href)
+                            ? "bg-white font-semibold text-brand-blue"
+                            : "text-ink hover:bg-white hover:text-brand-blue"
+                        }`}
+                      >
+                        {label}
+                      </Link>
+                    ))}
+                  </div>
                 ))}
               </div>
             </div>
 
-            <Link
-              href="/contacto"
-              onClick={() => setIsOpen(false)}
-              className="mt-2 flex min-h-12 items-center rounded-xl bg-brand-blue px-3 py-3 font-semibold text-white"
-            >
-              Contacto
-            </Link>
+            <div className="mt-2 border-t border-catalog-line pt-2">
+              {links.map(([label, href]) => (
+                <Link
+                  key={href}
+                  href={href}
+                  scroll={!isCatalogPath(href)}
+                  aria-current={isCurrentPath(currentPath, href) ? "page" : undefined}
+                  onClick={() => setIsOpen(false)}
+                  className={`flex min-h-11 items-center rounded-xl px-3 py-2.5 text-sm font-semibold ${
+                    isCurrentPath(currentPath, href) ? "bg-soft-blue text-brand-blue" : "text-ink hover:bg-soft-blue hover:text-brand-blue"
+                  }`}
+                >
+                  {label}
+                </Link>
+              ))}
+            </div>
           </nav>
         </div>
       ) : null}

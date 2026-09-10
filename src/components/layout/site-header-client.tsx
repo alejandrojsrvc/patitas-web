@@ -18,21 +18,18 @@ const navItems = [
     href: "/perros",
     groups: [
       {
-        label: "Alimentos",
+        label: "Alimento",
         links: [
-          ["Alimentos balanceados", "/perros/alimentos-balanceados"],
-          ["Alimentos húmedos", "/perros/alimentos-humedos"],
+          ["Alimento balanceado", "/perros/alimentos-balanceados"],
+          ["Alimento húmedo", "/perros/alimentos-humedos"],
         ],
       },
       {
-        label: "Premios y complementos",
-        links: [["Snacks y premios", "/perros/snacks"]],
-      },
-      {
-        label: "Higiene y paseo",
+        label: "Premios, higiene y paseo",
         links: [
-          ["Ver higiene y paseo", "/perros/higiene"],
-          ["Bolsitas para perros", "/perros/higiene/bolsas"],
+          ["Snacks y premios", "/perros/snacks"],
+          ["Higiene y paseo para perros", "/perros/higiene"],
+          ["Bolsitas para paseo", "/perros/higiene/bolsas"],
         ],
       },
     ] as const,
@@ -42,27 +39,24 @@ const navItems = [
     href: "/gatos",
     groups: [
       {
-        label: "Alimentos",
+        label: "Alimento",
         links: [
-          ["Alimentos balanceados", "/gatos/alimentos-balanceados"],
-          ["Alimentos húmedos", "/gatos/alimentos-humedos"],
+          ["Alimento balanceado", "/gatos/alimentos-balanceados"],
+          ["Alimento húmedo", "/gatos/alimentos-humedos"],
         ],
       },
       {
-        label: "Premios y complementos",
-        links: [["Snacks y premios", "/gatos/snacks"]],
-      },
-      {
-        label: "Higiene",
+        label: "Premios e higiene",
         links: [
-          ["Ver arena e higiene", "/gatos/higiene"],
+          ["Snacks y premios", "/gatos/snacks"],
+          ["Higiene para gatos", "/gatos/higiene"],
           ["Arena para gatos", "/gatos/higiene/arena"],
         ],
       },
     ] as const,
   },
   { label: "Marcas", href: "/marcas" },
-  { label: "Calculadora", href: "/calculadora-alimento" },
+  { label: "Calculadora de alimento", href: "/calculadora-alimento" },
 ] as const;
 
 export function SiteHeaderClient({
@@ -85,7 +79,7 @@ export function SiteHeaderClient({
       `${effectiveShell.location.street} ${effectiveShell.location.number}, ${effectiveShell.location.city}`
     : null;
   const replenishmentHref = effectiveShell.viewer.authenticated ? "/mi-cuenta/reposiciones" : "/reponer";
-  const replenishmentLabel = effectiveShell.viewer.authenticated ? "Mis reposiciones" : "Reponer";
+  const replenishmentLabel = effectiveShell.viewer.authenticated ? "Mis reposiciones" : "Organizar reposición";
 
   return (
     <HeaderSearchProvider key={searchQuery ?? ""} initialQuery={searchQuery}>
@@ -108,11 +102,11 @@ export function SiteHeaderClient({
           {!minimal ? (
             <Link
               href="/mi-cuenta/direcciones"
-              className="hidden min-w-0 max-w-44 shrink-0 items-center gap-2 rounded-xl px-2.5 py-2 text-white hover:bg-white/10 lg:inline-flex"
+              className="hidden min-w-0 max-w-44 shrink-0 items-center gap-2 rounded-xl px-2.5 py-2 text-white hover:bg-white/10 focus-visible:outline-brand-yellow lg:inline-flex"
             >
               <MapPin size={22} weight="bold" className="shrink-0 text-brand-yellow" aria-hidden="true" />
               <span className="min-w-0">
-                <span className="block text-[11px] leading-tight text-white">Tu dirección</span>
+                <span className="block text-xs leading-tight text-white">Tu dirección</span>
                 <span className="block truncate text-xs font-semibold leading-tight">
                   {sessionPending
                     ? "Cargando…"
@@ -130,11 +124,11 @@ export function SiteHeaderClient({
             <Link
               href="/mi-cuenta"
               aria-label="Mi cuenta"
-              className="inline-flex min-w-0 max-w-40 items-center gap-2 rounded-xl px-2.5 py-2 text-white hover:bg-white/10"
+              className="inline-flex min-w-0 max-w-40 items-center gap-2 rounded-xl px-2.5 py-2 text-white hover:bg-white/10 focus-visible:outline-brand-yellow"
             >
               <UserCircle size={23} weight="bold" className="shrink-0" aria-hidden="true" />
               <span className="min-w-0">
-                <span className="block truncate text-[11px] font-semibold leading-tight">
+                <span className="block truncate text-xs font-semibold leading-tight">
                   {sessionPending ? "Cargando…" : sessionError && !sessionShell?.shell ? "No disponible" : (displayName ?? "Ingresá")}
                 </span>
                 <span className="block text-xs leading-tight text-white">Mi cuenta</span>
@@ -144,7 +138,7 @@ export function SiteHeaderClient({
               <button
                 type="button"
                 onClick={sessionShell.retry}
-                className="rounded-lg px-2 py-2 text-[11px] font-semibold text-brand-yellow hover:bg-white/10"
+                className="rounded-lg px-2 py-2 text-xs font-semibold text-brand-yellow hover:bg-white/10"
               >
                 Reintentar
               </button>
@@ -176,22 +170,17 @@ export function SiteHeaderClient({
               mobile
               className="container-shell relative border-t border-white/15 pb-3 pt-3 lg:hidden"
             />
-            <nav aria-label="Categorías" className="hidden lg:block">
-              <div className="container-shell flex h-11 items-center gap-1 text-[13px] font-semibold">
-                <Link
-                  href="/perros"
-                  scroll={false}
-                  className="mr-2 inline-flex h-8 items-center rounded-lg bg-brand-yellow px-3 text-ink hover:bg-[#f1df00]"
-                >
-                  Catálogo
-                </Link>
+            <nav aria-label="Navegación principal" className="hidden lg:block">
+              <div className="container-shell flex h-11 items-center gap-1 text-sm font-semibold">
                 {navItems.map((item) => (
                   <NavItem key={item.href} item={item} currentPath={pathname} />
                 ))}
                 <Link
                   href={replenishmentHref}
                   aria-current={isCurrentPath(pathname, replenishmentHref) ? "page" : undefined}
-                  className="whitespace-nowrap px-3 py-2 text-white hover:text-brand-yellow"
+                  className={`whitespace-nowrap rounded-lg px-3 py-2 text-white hover:text-brand-yellow focus-visible:outline-brand-yellow ${
+                    isCurrentPath(pathname, replenishmentHref) ? "bg-white/10 text-brand-yellow" : ""
+                  }`}
                 >
                   {replenishmentLabel}
                 </Link>
@@ -199,14 +188,18 @@ export function SiteHeaderClient({
                   <Link
                     href="/envios"
                     aria-current={isCurrentPath(pathname, "/envios") ? "page" : undefined}
-                    className="whitespace-nowrap px-3 py-2 text-white hover:text-brand-yellow"
+                    className={`whitespace-nowrap rounded-lg px-3 py-2 text-white hover:text-brand-yellow focus-visible:outline-brand-yellow ${
+                      isCurrentPath(pathname, "/envios") ? "bg-white/10 text-brand-yellow" : ""
+                    }`}
                   >
                     Envíos
                   </Link>
                   <Link
                     href="/preguntas-frecuentes"
                     aria-current={isCurrentPath(pathname, "/preguntas-frecuentes") ? "page" : undefined}
-                    className="whitespace-nowrap px-3 py-2 text-white hover:text-brand-yellow"
+                    className={`whitespace-nowrap rounded-lg px-3 py-2 text-white hover:text-brand-yellow focus-visible:outline-brand-yellow ${
+                      isCurrentPath(pathname, "/preguntas-frecuentes") ? "bg-white/10 text-brand-yellow" : ""
+                    }`}
                   >
                     Ayuda
                   </Link>
@@ -227,7 +220,7 @@ function NavItem({ item, currentPath }: { item: (typeof navItems)[number]; curre
   const menuId = `menu-${item.href.replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "")}`;
 
   function scheduleClose() {
-    timeoutRef.current = setTimeout(() => setOpen(false), 120);
+    timeoutRef.current = setTimeout(() => setOpen(false), 180);
   }
 
   function cancelClose() {
@@ -254,7 +247,9 @@ function NavItem({ item, currentPath }: { item: (typeof navItems)[number]; curre
         href={item.href}
         scroll={!isCatalogPath(item.href)}
         aria-current={isCurrentPath(currentPath, item.href) ? "page" : undefined}
-        className="whitespace-nowrap px-3 py-2 text-white hover:text-brand-yellow"
+        className={`whitespace-nowrap rounded-lg px-3 py-2 text-white hover:text-brand-yellow focus-visible:outline-brand-yellow ${
+          isCurrentPath(currentPath, item.href) ? "bg-white/10 text-brand-yellow" : ""
+        }`}
       >
         {item.label}
       </Link>
@@ -283,7 +278,7 @@ function NavItem({ item, currentPath }: { item: (typeof navItems)[number]; curre
           cancelClose();
           setOpen(true);
           window.requestAnimationFrame(() => {
-            const menuItems = navRef.current?.querySelectorAll<HTMLAnchorElement>('[role="menuitem"]');
+            const menuItems = navRef.current?.querySelectorAll<HTMLAnchorElement>("[data-menu-link]");
             if (!menuItems?.length) return;
             menuItems[event.key === "ArrowDown" ? 0 : menuItems.length - 1]?.focus({ preventScroll: true });
           });
@@ -300,10 +295,11 @@ function NavItem({ item, currentPath }: { item: (typeof navItems)[number]; curre
         href={item.href}
         scroll={!isCatalogPath(item.href)}
         aria-expanded={open}
-        aria-haspopup="menu"
         aria-controls={open ? menuId : undefined}
         aria-current={isCurrentPath(currentPath, item.href) ? "page" : undefined}
-        className="inline-flex items-center gap-1 whitespace-nowrap px-3 py-2 text-white hover:text-brand-yellow"
+        className={`inline-flex items-center gap-1 whitespace-nowrap rounded-lg px-3 py-2 text-white hover:text-brand-yellow focus-visible:outline-brand-yellow ${
+          isCurrentPath(currentPath, item.href) ? "bg-white/10 text-brand-yellow" : ""
+        }`}
       >
         {item.label}
         <CaretDown size={14} className={`transition-transform duration-150 ${open ? "rotate-180" : ""}`} />
@@ -311,32 +307,28 @@ function NavItem({ item, currentPath }: { item: (typeof navItems)[number]; curre
       {open ? (
         <div
           id={menuId}
-          role="menu"
-          aria-label={`${item.label}: categorías`}
+          role="group"
           aria-labelledby={`${menuId}-trigger`}
-          className="absolute left-0 top-full z-50 w-[min(34rem,calc(100vw-2rem))] rounded-2xl border border-catalog-line bg-white p-3 text-ink shadow-[0_20px_48px_rgba(23,23,23,0.16)]"
+          className="absolute left-0 top-full z-50 w-[min(30rem,calc(100vw-2rem))] rounded-xl bg-white p-3 text-ink shadow-[0_14px_36px_rgba(23,23,23,0.14)]"
         >
-          <div className="mb-2 flex items-center justify-between gap-4 border-b border-catalog-line px-2 pb-3">
-            <div>
-              <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted">Comprar para</p>
-              <p className="mt-1 font-display text-lg font-semibold text-ink">{item.label}</p>
-            </div>
+          <div className="flex items-center justify-between gap-4 px-2 pb-2">
+            <p className="text-base font-semibold text-ink">Comprar para {item.label.toLowerCase()}</p>
             <MenuLink
               href={item.href}
-              label="Ver todo"
+              label={`Ver todo para ${item.label.toLowerCase()}`}
               currentPath={currentPath}
               onNavigate={() => setOpen(false)}
               onEscape={() => {
                 setOpen(false);
                 focusTrigger();
               }}
-              featured
+              quiet
             />
           </div>
-          <div className="grid grid-cols-2 gap-3 px-1 pb-1">
+          <div className="grid grid-cols-2 gap-2 rounded-lg bg-catalog-soft p-2">
             {item.groups.map((group) => (
-              <div key={group.label} className="min-w-0">
-                <p className="px-2 pb-1 text-[10px] font-bold uppercase tracking-[0.14em] text-muted">{group.label}</p>
+              <div key={group.label} className="min-w-0 px-1 py-1">
+                <p className="px-2 pb-1.5 text-xs font-bold text-muted">{group.label}</p>
                 <div role="group" aria-label={group.label}>
                   {group.links.map(([label, href]) => (
                     <MenuLink
@@ -344,6 +336,7 @@ function NavItem({ item, currentPath }: { item: (typeof navItems)[number]; curre
                       href={href}
                       label={label}
                       currentPath={currentPath}
+                      onNavigate={() => setOpen(false)}
                       onEscape={() => {
                         setOpen(false);
                         focusTrigger();
@@ -366,31 +359,40 @@ function MenuLink({
   currentPath,
   onNavigate,
   onEscape,
-  featured = false,
+  quiet = false,
 }: {
   href: string;
   label: string;
   currentPath: string | null;
   onNavigate?: () => void;
   onEscape?: () => void;
-  featured?: boolean;
+  quiet?: boolean;
 }) {
+  const current = isCurrentPath(currentPath, href);
+
   return (
     <Link
       href={href}
       scroll={!isCatalogPath(href)}
-      role="menuitem"
-      aria-current={isCurrentPath(currentPath, href) ? "page" : undefined}
+      data-menu-link
+      aria-current={current ? "page" : undefined}
       onClick={onNavigate}
       onKeyDown={(event) => {
-        if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+        if (["ArrowDown", "ArrowUp", "Home", "End"].includes(event.key)) {
           event.preventDefault();
           event.stopPropagation();
-          const menu = event.currentTarget.closest('[role="menu"]');
-          const menuItems = menu?.querySelectorAll<HTMLAnchorElement>('[role="menuitem"]');
+          const menu = event.currentTarget.closest<HTMLElement>("[aria-labelledby]");
+          const menuItems = menu?.querySelectorAll<HTMLAnchorElement>("[data-menu-link]");
           if (!menuItems?.length) return;
           const index = Array.from(menuItems).indexOf(event.currentTarget);
-          const nextIndex = event.key === "ArrowDown" ? (index + 1) % menuItems.length : (index - 1 + menuItems.length) % menuItems.length;
+          const nextIndex =
+            event.key === "Home"
+              ? 0
+              : event.key === "End"
+                ? menuItems.length - 1
+                : event.key === "ArrowDown"
+                  ? (index + 1) % menuItems.length
+                  : (index - 1 + menuItems.length) % menuItems.length;
           menuItems[nextIndex]?.focus({ preventScroll: true });
         } else if (event.key === "Escape") {
           event.preventDefault();
@@ -398,10 +400,12 @@ function MenuLink({
           onEscape?.();
         }
       }}
-      className={`flex min-h-10 items-center rounded-lg px-2.5 py-2 text-sm transition-colors ${
-        featured
-          ? "bg-soft-blue font-semibold text-brand-blue hover:bg-brand-blue hover:text-white"
-          : "text-ink hover:bg-soft-blue hover:text-brand-blue"
+      className={`flex min-h-11 items-center rounded-lg px-2.5 py-2 text-sm transition-colors focus-visible:outline-brand-blue ${
+        quiet
+          ? "min-h-0 px-0 font-semibold text-brand-blue underline-offset-4 hover:underline"
+          : current
+            ? "bg-white font-semibold text-brand-blue"
+            : "text-ink hover:bg-white hover:text-brand-blue"
       }`}
     >
       {label}
