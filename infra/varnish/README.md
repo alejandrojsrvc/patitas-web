@@ -10,10 +10,11 @@ Este servicio se despliega como una aplicación Compose separada en Dokploy. Tra
 - Dominio apex: backend `patitas-varnish`, puerto `80`, HTTPS con el certificado existente.
 - `www` debe redirigir con 308 a `https://patitasinquietas.com.ar`, preservando path y query. El VCL contiene la misma redirección como fallback.
 - El API usa `http://patitas-varnish:6081/_cache/xkey`; Traefik nunca debe apuntar al puerto 6081.
+- La invalidación usa el `ban` nativo de Varnish: cualquier purge de catálogo invalida todas las páginas de catálogo cacheadas.
 
 ## Cloudflare
 
-Cloudflare conserva TLS, proxy, WAF y la regla existente de imágenes. El HTML no se almacena en el edge: Varnish envía `Cloudflare-CDN-Cache-Control: no-store` para que exista una sola capa de caché documental y XKey invalide de inmediato sin una segunda credencial en la VPS.
+Cloudflare conserva TLS, proxy, WAF y la regla existente de imágenes. El HTML no se almacena en el edge: Varnish envía `Cloudflare-CDN-Cache-Control: no-store` para que exista una sola capa de caché documental.
 
 El allowlist resultante es:
 

@@ -1,7 +1,6 @@
 vcl 4.1;
 
 import std;
-import xkey;
 
 backend default {
   .host = "patitas-web";
@@ -50,7 +49,8 @@ sub vcl_recv {
     if (!req.http.X-Patitas-XKey || req.http.X-Patitas-XKey !~ "^[a-z0-9][a-z0-9:_ -]{0,4095}$") {
       return (synth(400, "Invalid XKey list"));
     }
-    set req.http.X-Purged-Objects = xkey.purge(req.http.X-Patitas-XKey);
+    ban("obj.http.X-Patitas-Cache-Class == catalog");
+    set req.http.X-Purged-Objects = "0";
     return (synth(200, "Purged"));
   }
 
@@ -186,25 +186,7 @@ sub vcl_backend_response {
     return (deliver);
   }
 
-  if (bereq.http.X-Patitas-Cache-Class == "catalog") {
-    if (bereq.url == "/") {
-      set beresp.http.xkey = "catalog catalog:home";
-    } else if (bereq.url ~ "^/(perros|gatos)(/|$)") {
-      set beresp.http.xkey = "catalog catalog:list catalog:taxonomy";
-    } else if (bereq.url == "/marcas") {
-      set beresp.http.xkey = "catalog catalog:brands catalog:taxonomy";
-    } else if (bereq.url ~ "^/marcas/[^/]+$") {
-      set beresp.http.xkey = "catalog catalog:list catalog:brands brand:" + regsub(bereq.url, "^/marcas/", "");
-    } else if (bereq.url ~ "^/producto/[^/]+$") {
-      set beresp.http.xkey = "catalog catalog:products product:" + regsub(bereq.url, "^/producto/", "");
-    } else if (bereq.url == "/calculadora-alimento") {
-      set beresp.http.xkey = "catalog catalog:calculator";
-    } else if (bereq.url == "/sitemap.xml") {
-      set beresp.http.xkey = "catalog catalog:sitemap catalog:taxonomy";
-    }
-  } else if (bereq.http.X-Patitas-Cache-Class == "static") {
-    set beresp.http.xkey = "site:static";
-  }
+  set beresp.http.X-Patitas-Cache-Class = bereq.http.X-Patitas-Cache-Class;
 
   set beresp.http.X-Patitas-Cacheable = "1";
   return (deliver);
@@ -231,7 +213,7 @@ sub vcl_deliver {
     set resp.http.X-Varnish-Cache = "PASS";
   }
 
-  unset resp.http.xkey;
+  unset resp.http.X-Patitas-Cache-Class;
   unset resp.http.X-Patitas-Cacheable;
 }
 
