@@ -90,6 +90,12 @@ sub vcl_recv {
 }
 
 sub vcl_backend_response {
+  if (!bereq.http.X-Patitas-Cache-Class) {
+    set beresp.uncacheable = true;
+    set beresp.ttl = 0s;
+    return (deliver);
+  }
+
   if (beresp.http.Content-Type !~ "(?i)text/html") {
     set beresp.uncacheable = true;
     set beresp.ttl = 0s;
