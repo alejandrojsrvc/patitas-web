@@ -36,6 +36,7 @@ const securityHeaders = [
 ];
 
 const publicDocumentCacheHeaders = [{ key: "Cache-Control", value: "public, max-age=0, must-revalidate" }];
+const publicAssetCacheHeaders = [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }];
 const privateDocumentCacheHeaders = [{ key: "Cache-Control", value: "private, no-cache, no-store, max-age=0, must-revalidate" }];
 
 const nextConfig: NextConfig = {
@@ -76,6 +77,10 @@ const nextConfig: NextConfig = {
       {
         source: "/sitemap.xml",
         headers: publicDocumentCacheHeaders,
+      },
+      {
+        source: "/brand/:path*",
+        headers: publicAssetCacheHeaders,
       },
       {
         source: "/",

@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import Script from "next/script";
-import { Analytics } from "@vercel/analytics/next";
 import { OrganizationJsonLd, WebsiteJsonLd } from "@/components/seo/json-ld";
 import { CartProvider } from "@/features/cart/cart-context";
 import { SessionShellProvider } from "@/features/session/session-shell-context";
@@ -78,7 +77,6 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             <PetShoppingProvider>{children}</PetShoppingProvider>
           </SessionShellProvider>
         </CartProvider>
-        <Analytics />
       </body>
       {googleAnalyticsId ? (
         <>

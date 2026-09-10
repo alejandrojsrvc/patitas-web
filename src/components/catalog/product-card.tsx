@@ -61,11 +61,11 @@ export function ProductCard({
       </Link>
 
       <div className="flex flex-1 flex-col">
-        <p className="h-4 overflow-hidden text-ellipsis whitespace-nowrap text-xs leading-5 text-muted">
+        <p className="flex min-h-8 items-center overflow-hidden text-ellipsis whitespace-nowrap text-xs leading-5 text-muted">
           <Link
             href={`/marcas/${product.brand.slug}`}
             prefetch={false}
-            className="block max-w-full overflow-hidden text-ellipsis whitespace-nowrap hover:underline"
+            className="inline-flex min-h-8 max-w-full items-center overflow-hidden text-ellipsis whitespace-nowrap px-1 -mx-1 hover:underline"
             title={product.brand.name}
           >
             {product.brand.name}
@@ -79,7 +79,7 @@ export function ProductCard({
           <Link
             href={`/producto/${product.slug}`}
             prefetch={false}
-            className="block max-w-full underline-offset-4 hover:underline"
+            className="flex min-h-8 max-w-full items-start underline-offset-4 hover:underline"
             title={product.name}
           >
             {product.name}
