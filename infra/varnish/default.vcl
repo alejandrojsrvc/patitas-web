@@ -74,7 +74,7 @@ sub vcl_recv {
     return (pass);
   }
 
-  if (req.url ~ "^/(perros|gatos|marcas)(/.*)?$") {
+  if (req.url == "/" || req.url ~ "^/(perros|gatos|marcas)(/.*)?$") {
     set req.http.X-Patitas-Cache-Class = "catalog";
   } else if (req.url ~ "^/producto/[^/]+$") {
     set req.http.X-Patitas-Cache-Class = "product";
