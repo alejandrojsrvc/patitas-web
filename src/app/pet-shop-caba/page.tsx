@@ -4,7 +4,8 @@ import { Calculator, MapPin, Package, ShoppingBagOpen } from "@phosphor-icons/re
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3001";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
+if (!siteUrl) throw new Error("NEXT_PUBLIC_SITE_URL no está configurada.");
 
 export const metadata: Metadata = {
   title: "Pet shop online en CABA | Patitas Inquietas",

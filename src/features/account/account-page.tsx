@@ -865,8 +865,8 @@ function Pets({
                   pet.currentFood
                     ? `/buscar?q=${encodeURIComponent(`${pet.currentFood.brand} ${pet.currentFood.name}`)}`
                     : pet.species === "dog"
-                      ? "/perros/alimentos"
-                      : "/gatos/alimentos"
+                      ? "/perros/alimentos-balanceados"
+                      : "/gatos/alimentos-balanceados"
                 }
                 className="inline-flex min-h-10 items-center text-sm font-semibold text-ink hover:text-brand-blue"
               >

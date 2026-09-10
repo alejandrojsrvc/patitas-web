@@ -44,17 +44,17 @@ const categories = [
   {
     title: "Alimento para perros",
     image: "/brand/landing/categories/dog-food.webp",
-    links: [["Ver alimentos", "/perros/alimentos"]],
+    links: [["Ver alimentos", "/perros/alimentos-balanceados"]],
   },
   {
     title: "Alimento para gatos",
     image: "/brand/landing/categories/cat-food.webp",
-    links: [["Ver alimentos", "/gatos/alimentos"]],
+    links: [["Ver alimentos", "/gatos/alimentos-balanceados"]],
   },
   {
     title: "Arena e higiene",
     image: "/brand/landing/categories/cat-hygiene.webp",
-    links: [["Ver arena", "/gatos/arena"]],
+    links: [["Ver arena", "/gatos/higiene/arena"]],
   },
   {
     title: "Snacks y premios",
@@ -64,7 +64,7 @@ const categories = [
   {
     title: "Bolsitas y esenciales",
     image: "/brand/landing/categories/walk-essentials.webp",
-    links: [["Ver esenciales", "/perros/bolsas"]],
+    links: [["Ver esenciales", "/perros/higiene/bolsas"]],
   },
 ] as const;
 
@@ -273,7 +273,7 @@ export default async function Home() {
             </div>
             <div className="flex w-full shrink-0 flex-col gap-3 sm:w-auto">
               <Link
-                href="/perros/alimentos"
+                href="/perros/alimentos-balanceados"
                 className="inline-flex min-h-14 items-center justify-center gap-2 rounded-xl bg-brand-blue px-6 font-semibold text-white transition-colors hover:bg-[#0048dc]"
               >
                 Comprar alimento <ArrowRight size={19} weight="bold" aria-hidden="true" />

@@ -18,7 +18,7 @@ export default async function GuidePage({ params }: Props) {
   const guide = guides[slug];
   if (!guide) notFound();
   const isDogGuide = slug.includes("perro");
-  const catalogHref = isDogGuide ? "/perros/alimentos" : "/gatos/alimentos";
+  const catalogHref = isDogGuide ? "/perros/alimentos-balanceados" : "/gatos/alimentos-balanceados";
   const catalogLabel = isDogGuide ? "Ver alimento para perros" : "Ver alimento para gatos";
   const schema = {
     "@context": "https://schema.org",

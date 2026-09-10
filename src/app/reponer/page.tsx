@@ -35,7 +35,7 @@ export default function ReplenishPage() {
                 Probar calculadora
               </Link>
               <Link
-                href="/perros/alimentos"
+                href="/perros/alimentos-balanceados"
                 className="inline-flex min-h-14 items-center justify-center rounded-xl border border-white/35 px-6 font-semibold text-white hover:bg-white/10"
               >
                 Ver alimentos

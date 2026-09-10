@@ -5,10 +5,10 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 const categoryLinks = [
-  ["Alimentos", "/perros/alimentos"],
-  ["Snacks", "/perros/snacks"],
-  ["Arena", "/gatos/arena"],
-  ["Paseo", "/perros/bolsas"],
+  ["Alimento para perros", "/perros/alimentos-balanceados"],
+  ["Alimento para gatos", "/gatos/alimentos-balanceados"],
+  ["Snacks y premios", "/perros/snacks"],
+  ["Arena e higiene", "/gatos/higiene"],
 ] as const;
 
 export function MobileNav({

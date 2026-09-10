@@ -3,7 +3,8 @@ import type { ProductBreadcrumbItem } from "@/lib/product-breadcrumbs";
 import { productDisplayName } from "@/lib/product-seo";
 
 export function ProductStructuredData({ product, breadcrumbs }: { product: ProductDetail; breadcrumbs: ProductBreadcrumbItem[] }) {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3001";
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
+  if (!siteUrl) throw new Error("NEXT_PUBLIC_SITE_URL no está configurada.");
   const productUrl = `${siteUrl}/producto/${product.slug}`;
   const displayName = productDisplayName(product);
   const schema = {

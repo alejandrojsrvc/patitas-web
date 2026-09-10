@@ -1,8 +1,7 @@
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
-  ? process.env.NEXT_PUBLIC_SITE_URL
-  : process.env.VERCEL_PROJECT_PRODUCTION_URL
-    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
-    : "http://localhost:3001";
+import type { CatalogBreadcrumb } from "@/domain/catalog/types";
+
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
+if (!siteUrl) throw new Error("NEXT_PUBLIC_SITE_URL no está configurada.");
 
 export function OrganizationJsonLd() {
   const data = {
@@ -51,5 +50,19 @@ export function FAQJsonLd({ faqs }: { faqs: { question: string; answer: string }
     })),
   };
 
+  return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }} />;
+}
+
+export function BreadcrumbJsonLd({ breadcrumbs }: { breadcrumbs: CatalogBreadcrumb[] }) {
+  const data = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: breadcrumbs.map((item, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: item.label,
+      item: `${siteUrl}${item.href === "/" ? "" : item.href}`,
+    })),
+  };
   return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }} />;
 }

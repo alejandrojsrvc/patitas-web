@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 
 import { CatalogFailure } from "@/components/catalog/catalog-failure";
 import { CatalogIntro } from "@/components/catalog/catalog-intro";
+import { CatalogLoadingContent } from "@/components/catalog/catalog-loading-content";
 import { CatalogResults } from "@/components/catalog/catalog-results";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeaderClient } from "@/components/layout/site-header-client";
@@ -109,25 +110,7 @@ function SearchEmptyState() {
 }
 
 function SearchCatalogLoading({ title }: { title: string }) {
-  return (
-    <main id="contenido" className="bg-catalog-page pb-20 [overflow-anchor:none]" aria-busy="true" aria-label="Cargando catálogo">
-      <CatalogIntro title={title} description={description} />
-      <section className="container-shell pb-10 pt-3 sm:pt-4">
-        <div className="mb-4 h-14 animate-pulse border-y border-catalog-line lg:hidden" />
-        <div className="grid gap-4 lg:grid-cols-[240px_minmax(0,1fr)] lg:gap-8">
-          <div className="hidden h-80 animate-pulse border-y border-catalog-line lg:block" />
-          <div>
-            <div className="mb-4 h-16 animate-pulse rounded-xl bg-soft-blue" />
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 xl:grid-cols-4">
-              {Array.from({ length: 8 }, (_, index) => (
-                <div key={index} className="aspect-[0.62] animate-pulse rounded-xl bg-white" />
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-    </main>
-  );
+  return <CatalogLoadingContent title={title} description={description} />;
 }
 
 function toSearchParams(search: string): CatalogSearchParams {
