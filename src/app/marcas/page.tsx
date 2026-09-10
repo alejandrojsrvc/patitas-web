@@ -9,6 +9,8 @@ import { brandLogoUrl } from "@/lib/brand-assets";
 import { BreadcrumbJsonLd } from "@/components/seo/json-ld";
 import { catalogLandingMetadata } from "@/features/catalog/catalog-landing-page";
 
+export const dynamic = "force-dynamic";
+
 export async function generateMetadata(): Promise<Metadata> {
   return catalogLandingMetadata("/marcas", {});
 }

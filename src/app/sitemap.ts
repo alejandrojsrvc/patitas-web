@@ -5,7 +5,7 @@ import { getCatalogLandings, getSitemapProducts, safeCatalogCall } from "@/infra
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
 if (!siteUrl) throw new Error("NEXT_PUBLIC_SITE_URL no está configurada.");
 
-export const revalidate = 21_600;
+export const dynamic = "force-dynamic";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [products, landings] = await Promise.all([

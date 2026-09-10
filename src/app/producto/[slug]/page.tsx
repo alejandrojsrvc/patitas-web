@@ -7,6 +7,8 @@ import { productDisplayName, productSeoTitle } from "@/lib/product-seo";
 
 type Props = { params: Promise<{ slug: string }> };
 
+export const dynamic = "force-dynamic";
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   try {
     const product = await getProduct((await params).slug);

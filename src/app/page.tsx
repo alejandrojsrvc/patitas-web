@@ -12,6 +12,8 @@ import type { Brand } from "@/domain/catalog/types";
 import { brandLogoUrl } from "@/lib/brand-assets";
 import { getBrands, getProducts, safeCatalogCall } from "@/infrastructure/api/patitas-api";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Pet shop online en CABA | Patitas Inquietas",
   description:

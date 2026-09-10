@@ -35,6 +35,9 @@ const securityHeaders = [
   },
 ];
 
+const publicDocumentCacheHeaders = [{ key: "Cache-Control", value: "public, max-age=0, must-revalidate" }];
+const privateDocumentCacheHeaders = [{ key: "Cache-Control", value: "private, no-cache, no-store, max-age=0, must-revalidate" }];
+
 const nextConfig: NextConfig = {
   images: {
     qualities: [60, 75],
@@ -68,27 +71,82 @@ const nextConfig: NextConfig = {
     return [
       {
         source: "/robots.txt",
-        headers: [{ key: "Cache-Control", value: "public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400" }],
+        headers: publicDocumentCacheHeaders,
       },
       {
         source: "/sitemap.xml",
-        headers: [{ key: "Cache-Control", value: "public, max-age=0, s-maxage=21600, stale-while-revalidate=86400" }],
+        headers: publicDocumentCacheHeaders,
+      },
+      {
+        source: "/",
+        headers: publicDocumentCacheHeaders,
       },
       {
         source: "/buscar",
-        headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow, noarchive" }],
+        headers: [
+          { key: "X-Robots-Tag", value: "noindex, nofollow, noarchive" },
+          ...privateDocumentCacheHeaders,
+        ],
       },
       {
         source: "/perros/:path*",
-        headers: [{ key: "Cache-Control", value: "public, max-age=60, s-maxage=0, must-revalidate" }],
+        headers: publicDocumentCacheHeaders,
       },
       {
         source: "/gatos/:path*",
-        headers: [{ key: "Cache-Control", value: "public, max-age=60, s-maxage=0, must-revalidate" }],
+        headers: publicDocumentCacheHeaders,
+      },
+      {
+        source: "/marcas/:path*",
+        headers: publicDocumentCacheHeaders,
       },
       {
         source: "/producto/:slug",
-        headers: [{ key: "Cache-Control", value: "public, max-age=60, s-maxage=0, must-revalidate" }],
+        headers: publicDocumentCacheHeaders,
+      },
+      {
+        source: "/calculadora-alimento",
+        headers: publicDocumentCacheHeaders,
+      },
+      {
+        source: "/pet-shop-caba",
+        headers: publicDocumentCacheHeaders,
+      },
+      {
+        source: "/reponer",
+        headers: publicDocumentCacheHeaders,
+      },
+      {
+        source: "/guias/:path*",
+        headers: publicDocumentCacheHeaders,
+      },
+      {
+        source: "/:information(preguntas-frecuentes|envios|cambios-y-devoluciones|contacto|terminos|privacidad|defensa-del-consumidor|arrepentimiento)",
+        headers: publicDocumentCacheHeaders,
+      },
+      {
+        source: "/api/:path*",
+        headers: privateDocumentCacheHeaders,
+      },
+      {
+        source: "/auth/:path*",
+        headers: privateDocumentCacheHeaders,
+      },
+      {
+        source: "/mi-cuenta/:path*",
+        headers: privateDocumentCacheHeaders,
+      },
+      {
+        source: "/carrito/:path*",
+        headers: privateDocumentCacheHeaders,
+      },
+      {
+        source: "/checkout/:path*",
+        headers: privateDocumentCacheHeaders,
+      },
+      {
+        source: "/pedido/:path*",
+        headers: privateDocumentCacheHeaders,
       },
       {
         source: "/(.*)",

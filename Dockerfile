@@ -61,4 +61,7 @@ USER nextjs
 
 EXPOSE 3000
 
+HEALTHCHECK --interval=10s --timeout=3s --start-period=15s --retries=3 \
+  CMD ["node", "-e", "fetch('http://127.0.0.1:3000/healthz').then((response) => { if (!response.ok) process.exit(1); }).catch(() => process.exit(1));"]
+
 CMD ["node", "node_modules/next/dist/bin/next", "start"]

@@ -5,6 +5,8 @@ import type { CatalogSearchParams } from "@/lib/catalog-search-params";
 
 type Props = { params: Promise<{ segments?: string[] }>; searchParams: Promise<CatalogSearchParams> };
 
+export const dynamic = "force-dynamic";
+
 const pathFor = (segments: string[] = []) => `/perros${segments.length ? `/${segments.join("/")}` : ""}`;
 
 export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {

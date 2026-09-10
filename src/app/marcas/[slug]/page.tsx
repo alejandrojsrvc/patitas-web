@@ -5,6 +5,8 @@ import type { CatalogSearchParams } from "@/lib/catalog-search-params";
 
 type Props = { params: Promise<{ slug: string }>; searchParams: Promise<CatalogSearchParams> };
 
+export const dynamic = "force-dynamic";
+
 export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
   return catalogLandingMetadata(`/marcas/${(await params).slug}`, await searchParams);
 }
