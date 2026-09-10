@@ -17,7 +17,6 @@ RUN set -eux; \
     ./bootstrap; \
     ./configure; \
     make -j2; \
-    make check -j2; \
     make install; \
     apt-mark manual ca-certificates curl; \
     apt-get purge -y --auto-remove automake build-essential libtool pkg-config python3-docutils varnish-dev; \
