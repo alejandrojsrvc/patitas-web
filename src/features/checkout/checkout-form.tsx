@@ -162,7 +162,7 @@ export function CheckoutForm({
   const [accountPrefilling, setAccountPrefilling] = useState(
     Boolean(
       initialSession &&
-      initialSession.paymentMethod !== "MERCADO_PAGO" &&
+      !initialSession.paymentMethod &&
       initialPaymentMethods.some((method) => method.paymentMethod === "MERCADO_PAGO"),
     ),
   );
@@ -183,7 +183,9 @@ export function CheckoutForm({
   const [sessionInvalid, setSessionInvalid] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const sessionAlertRef = useRef<HTMLDivElement>(null);
-  const selectablePaymentMethods = initialPaymentMethods.filter((method) => method.paymentMethod === "MERCADO_PAGO");
+  const selectablePaymentMethods = initialPaymentMethods.filter(
+    (method) => method.paymentMethod === "MERCADO_PAGO" || method.paymentMethod === "PAYWAY",
+  );
   const busy = loading || couponLoading || scheduleLoading || accountPrefilling || paymentState !== "idle";
   const anonymousCheckout = !initialViewer?.authenticated;
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<AvailablePaymentMethod["paymentMethod"] | "">(
@@ -1336,10 +1338,10 @@ export function CheckoutForm({
                   {paymentState === "tokenizing"
                     ? "Validando los datos de tu tarjeta…"
                     : paymentState === "redirecting"
-                      ? "Redirigiendo a Mercado Pago…"
+                      ? `Redirigiendo a ${paymentMethodLabel(selectedPaymentMethod)}…`
                       : paymentState === "creating-order" && selectedPaymentMethod === "PAYWAY"
                         ? "Enviando el pago…"
-                        : "Conectando con Mercado Pago…"}
+                      : `Conectando con ${paymentMethodLabel(selectedPaymentMethod)}…`}
                 </InlineStatus>
               ) : null}
               {!checkoutReady && !busy && !sessionInvalid && missingRequirements.length ? (
@@ -1369,7 +1371,9 @@ export function CheckoutForm({
                 aria-describedby={!checkoutReady && missingRequirements.length ? "checkout-requirements" : undefined}
                 className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-brand-blue px-5 font-semibold text-white transition-colors hover:bg-[#0048dc] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
               >
-                <span>{busy ? (paymentState === "redirecting" ? "Redirigiendo…" : "Actualizando…") : "Pagar con Mercado Pago"}</span>
+                <span>
+                  {busy ? (paymentState === "redirecting" ? "Redirigiendo…" : "Actualizando…") : `Pagar con ${paymentMethodLabel(selectedPaymentMethod)}`}
+                </span>
                 <ArrowRight size={18} weight="bold" aria-hidden="true" />
               </button>
             ) : null}

@@ -1087,7 +1087,7 @@ function Orders({ orders, detail, meta }: { orders: OrderListItem[]; detail: Ord
         </Link>
         <div className="mt-5 flex flex-wrap items-start justify-between gap-4">
           <div>
-            <h2 className="font-display text-2xl font-semibold">Pedido {detail.id}</h2>
+            <h2 className="font-display text-2xl font-semibold">Pedido #{detail.number ?? detail.id}</h2>
             <p className="mt-2 text-sm text-muted">
               {orderStatus(detail.status)} · {formatAccountDate(detail.createdAt)}
             </p>
@@ -1114,6 +1114,17 @@ function Orders({ orders, detail, meta }: { orders: OrderListItem[]; detail: Ord
           <span>Total</span>
           <span>{formatMoney(Number(detail.total))}</span>
         </div>
+        {detail.shipment ? (
+          <section className="mt-6 rounded-xl bg-soft-blue p-4">
+            <p className="text-sm font-semibold">Entrega: {shipmentStatusLabel(detail.shipment.status)}</p>
+            {detail.shipment.trackingNumber ? <p className="mt-1 text-sm text-muted">Seguimiento: {detail.shipment.trackingNumber}</p> : null}
+            <ol className="mt-3 space-y-2 text-sm text-muted">
+              {detail.shipment.events.map((event) => <li key={event.id}><strong>{shipmentStatusLabel(event.status)}</strong> · {event.visibleMessage}</li>)}
+            </ol>
+            {detail.shipment.trackingUrl ? <a className="mt-3 inline-block text-sm font-semibold text-brand-blue" href={detail.shipment.trackingUrl} target="_blank" rel="noreferrer">Ver seguimiento</a> : null}
+          </section>
+        ) : null}
+        <OrderClaimForm orderId={detail.id} />
         {detail.canRetry && !detail.reconciliationRequired ? <OrderRetryButton orderId={detail.id} /> : null}
       </article>
     );
@@ -1177,6 +1188,19 @@ function Orders({ orders, detail, meta }: { orders: OrderListItem[]; detail: Ord
       ) : null}
     </div>
   );
+}
+
+function OrderClaimForm({ orderId }: { orderId: string }) {
+  const [type, setType] = useState("DELIVERY_DELAY");
+  const [message, setMessage] = useState("");
+  const [sent, setSent] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  async function submit(event: React.FormEvent) {
+    event.preventDefault(); setError(null);
+    try { await requestAccountJson(`/me/orders/${encodeURIComponent(orderId)}/claims`, { method: "POST", body: JSON.stringify({ type, message }) }); setSent(true); setMessage(""); }
+    catch (cause) { setError(cause instanceof Error ? cause.message : "No pudimos enviar el reclamo."); }
+  }
+  return <form onSubmit={submit} className="mt-6 border-t border-catalog-line pt-5"><p className="text-sm font-semibold">¿Necesitás ayuda con este pedido?</p><div className="mt-3 flex flex-wrap gap-3"><select value={type} onChange={(event) => setType(event.target.value)} className="rounded-xl border border-catalog-line p-3 text-sm"><option value="DELIVERY_DELAY">Demora en la entrega</option><option value="ADDRESS_CHANGE">Cambiar dirección</option><option value="MISSING_PACKAGE">Paquete faltante</option><option value="DAMAGED_PACKAGE">Paquete dañado</option><option value="OTHER">Otro motivo</option></select><input required minLength={3} value={message} onChange={(event) => setMessage(event.target.value)} placeholder="Contanos qué pasó" className="min-w-52 flex-1 rounded-xl border border-catalog-line p-3 text-sm" /><button className="rounded-xl bg-brand-blue px-4 py-3 text-sm font-semibold text-white">Enviar consulta</button></div>{sent ? <p className="mt-2 text-sm text-brand-blue">Recibimos tu consulta.</p> : null}{error ? <p role="alert" className="mt-2 text-sm text-[#8d2020]">{error}</p> : null}</form>;
 }
 
 function OrderRetryButton({ orderId }: { orderId: string }) {
@@ -1706,6 +1730,9 @@ function orderStatus(status: string) {
       } as Record<string, string>
     )[status] ?? "Estado no disponible"
   );
+}
+function shipmentStatusLabel(status: string) {
+  return ({ PENDING: "Recibido", PREPARING: "Preparando", READY_FOR_DISPATCH: "Listo para despachar", SHIPPED: "Despachado", OUT_FOR_DELIVERY: "En camino", DELIVERED: "Entregado", FAILED: "Incidencia", RETURNED: "Devuelto" } as Record<string, string>)[status] ?? "Estado no disponible";
 }
 function sectionMatchesData(section: AccountSection, type: AccountScreen["section"]["type"]) {
   if (section === "pedidos") return type === "orders" || type === "order-detail";

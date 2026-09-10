@@ -147,6 +147,7 @@ export function PaymentOrderView({ orderId, heading = "Estado de tu pedido" }: {
       </p>
       <h2 className="mt-2 font-display text-3xl font-semibold">{isPaid ? "¡Gracias por tu compra!" : heading}</h2>
       <p className="mt-3 max-w-xl text-lg leading-7 text-muted">{paymentStatusMessage(status)}</p>
+      <p className="mt-3 max-w-xl text-sm text-muted">Si compraste como invitado, revisá tu email: desde ahí vas a poder activar tu cuenta y consultar el pedido.</p>
       {polling ? (
         <p className="mt-4 rounded-xl bg-soft-blue p-4 text-sm text-ink" role="status">
           Estamos consultando la confirmación automáticamente.
@@ -162,7 +163,7 @@ export function PaymentOrderView({ orderId, heading = "Estado de tu pedido" }: {
           {error}
         </p>
       ) : null}
-      <p className="mt-4 text-sm text-muted">Pedido {order.id}</p>
+      <p className="mt-4 text-sm text-muted">Pedido #{order.number ?? order.id}</p>
       <ul className="mt-7 divide-y divide-catalog-line border-y border-catalog-line">
         {order.lines.map((line) => (
           <li key={line.variantId} className="flex justify-between gap-4 py-4">
@@ -188,6 +189,18 @@ export function PaymentOrderView({ orderId, heading = "Estado de tu pedido" }: {
           className="inline-flex min-h-12 items-center gap-2 rounded-xl bg-catalog-canvas px-5 font-semibold text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue"
         >
           <ArrowLeft size={17} /> Seguir comprando
+        </Link>
+        <Link
+          href={`/mi-cuenta/pedidos/${encodeURIComponent(order.id)}`}
+          className="inline-flex min-h-12 items-center rounded-xl border border-catalog-line px-5 font-semibold text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue"
+        >
+          Ver este pedido
+        </Link>
+        <Link
+          href="/mi-cuenta/pedidos"
+          className="inline-flex min-h-12 items-center rounded-xl border border-catalog-line px-5 font-semibold text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue"
+        >
+          Ver mis pedidos
         </Link>
         {order.canRetry && !order.reconciliationRequired ? (
           <button

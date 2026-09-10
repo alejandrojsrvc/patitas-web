@@ -50,6 +50,7 @@ export type CustomerAddressInput = {
 
 export type OrderSummary = {
   id: string;
+  number?: string | null;
   status: string;
   paymentStatus: "UNPAID" | "PENDING" | "PROCESSING" | "PAID" | "FAILED" | "PARTIALLY_REFUNDED" | "REFUNDED" | "CHARGED_BACK";
   canRetry: boolean;
@@ -73,6 +74,17 @@ export type OrderSummary = {
     unitPrice: string;
     lineTotal: string;
   }>;
+  paymentMethod?: string | null;
+  paymentProvider?: string | null;
+  shippingAddress?: Record<string, unknown>;
+  deliveryInstructions?: string | null;
+  shippingEstimate?: string | null;
+  shippingDeliveryDate?: string | null;
+  shippingDeliverySlot?: string | null;
+  trackingNumber?: string | null;
+  payments?: Array<{ id: string; amount: string; currency: string; method: string; provider: string | null; externalPaymentId: string | null; paidAt: string | null; createdAt: string }>;
+  statusEvents?: Array<{ id: string; status: string; occurredAt: string }>;
+  shipment?: { id: string; status: string; carrier: string | null; trackingNumber: string | null; trackingUrl: string | null; estimatedDate: string | null; estimatedSlot: string | null; events: Array<{ id: string; status: string; visibleMessage: string; occurredAt: string }> } | null;
   createdAt: string;
 };
 

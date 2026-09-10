@@ -414,6 +414,8 @@ function isAllowed(path: string, method: string) {
   if (path === "/me/addresses" && ["GET", "POST"].includes(method)) return true;
   if (/^\/me\/addresses\/[^/]+$/.test(path) && ["PATCH", "DELETE"].includes(method)) return true;
   if (/^\/me\/orders(\/[^/]+)?$/.test(path) && method === "GET") return true;
+  if (/^\/me\/orders\/[^/]+\/(shipment|claims)$/.test(path) && ["GET", "POST"].includes(method)) return true;
+  if (/^\/me\/orders\/[^/]+\/address$/.test(path) && method === "PATCH") return true;
   if (path === "/me/pets" && ["GET", "POST"].includes(method)) return true;
   if (/^\/me\/pets\/[^/]+$/.test(path) && method === "PATCH") return true;
   if (/^\/me\/pets\/[^/]+\/current-food$/.test(path) && method === "PUT") return true;

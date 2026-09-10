@@ -62,6 +62,8 @@ export const authApi = {
     }),
   passwordReset: (input: { token: string; newPassword: string }) =>
     request<void>("/auth/password-reset", { method: "POST", body: JSON.stringify(input) }),
+  guestActivation: (input: { token: string; password: string; fullName?: string }) =>
+    request<{ status: "authenticated"; orderId: string; session: AuthSession }>("/auth/guest-activation", { method: "POST", body: JSON.stringify(input) }),
   refresh: (refreshToken: string) => request<AuthResponse>("/auth/refresh", { method: "POST", body: JSON.stringify({ refreshToken }) }),
   current: (accessToken: string) => request<CurrentUser>("/me", { headers: { Authorization: `Bearer ${accessToken}` } }),
   logout: (accessToken: string) => request<void>("/auth/logout", { method: "POST", headers: { Authorization: `Bearer ${accessToken}` } }),
