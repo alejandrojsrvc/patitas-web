@@ -17,7 +17,7 @@ export function HomeHero() {
 
           <div className="mt-8 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
             <Link
-              href="/perros/alimentos"
+              href="/perros/alimentos-balanceados"
               className="inline-flex min-h-14 items-center justify-center gap-2 rounded-xl bg-brand-blue px-6 py-3.5 text-center font-semibold text-white transition-colors hover:bg-[#0048dc] active:bg-[#003fbe]"
             >
               Comprar alimento <ArrowRight size={19} weight="bold" aria-hidden="true" />

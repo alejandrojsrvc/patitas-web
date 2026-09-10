@@ -2,6 +2,8 @@ import "server-only";
 import { unstable_rethrow } from "next/navigation";
 import type {
   Brand,
+  CatalogLandingManifest,
+  CatalogPathResolution,
   CalculatorProductProjection,
   FoodDurationResult,
   ProductDetail,
@@ -60,8 +62,11 @@ function catalogQuery(filters: ProductFilters, includePagination: boolean) {
     ["q", filters.q],
     ["species", filters.species],
     ["category", filters.category],
+    ["foodType", filters.foodType],
+    ["categorySlug", filters.categorySlug],
     ["minPrice", filters.minPrice],
     ["maxPrice", filters.maxPrice],
+    ["availability", filters.availability],
     ["featured", filters.featured],
     ["sort", includePagination ? filters.sort : undefined],
     ["page", includePagination ? filters.page : undefined],
@@ -83,6 +88,8 @@ export const catalogApi = {
   product: (slug: string) => request<ProductDetail>(`/products/${encodeURIComponent(slug)}`),
   brands: () => request<Brand[]>("/brands"),
   brand: (slug: string) => request<Brand>(`/brands/${encodeURIComponent(slug)}`),
+  taxonomy: (path: string) => request<CatalogPathResolution>(`/catalog/taxonomy/resolve?path=${encodeURIComponent(path)}`),
+  taxonomyLandings: () => request<CatalogLandingManifest>("/catalog/taxonomy/landings"),
   calculatorProjection: () => request<CalculatorProductProjection[]>("/products/projections/calculator"),
   sitemapProjection: () => request<SitemapProductProjection[]>("/products/projections/sitemap"),
   offers: () => request<PublicOffer[]>("/offers"),
@@ -135,6 +142,14 @@ export async function getBrands() {
 
 export async function getBrand(slug: string) {
   return catalogApi.brand(slug);
+}
+
+export async function resolveCatalogPath(path: string) {
+  return catalogApi.taxonomy(path);
+}
+
+export async function getCatalogLandings() {
+  return catalogApi.taxonomyLandings();
 }
 
 export async function getCalculatorProducts() {

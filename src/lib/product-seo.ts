@@ -31,7 +31,7 @@ export function productDisplayName(product: Product) {
 export function productSeoTitle(product: Product) {
   const displayName = productDisplayName(product);
   const normalizedName = normalized(displayName);
-  const speciesCopy = product.species === "dog" ? "perros" : product.species === "cat" ? "gatos" : null;
+  const speciesCopy = product.species === "DOG" ? "perros" : product.species === "CAT" ? "gatos" : null;
 
   if (!speciesCopy || normalizedName.includes(speciesCopy) || normalizedName.includes(speciesCopy.slice(0, -1))) {
     return `${displayName} | Patitas Inquietas`;

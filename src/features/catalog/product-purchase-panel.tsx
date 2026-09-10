@@ -355,8 +355,9 @@ function ProductDurationCalculatorForm({
   const [loading, setLoading] = useState(false);
   const requestController = useRef<AbortController | null>(null);
   const lifeStageOptions = getLifeStageOptions(product.species);
-  const defaultLifeStage = lifeStageOptions.some((option) => option.value === product.lifeStage)
-    ? product.lifeStage!
+  const productLifeStage = calculatorLifeStage(product.lifeStage, product.species);
+  const defaultLifeStage = lifeStageOptions.some((option) => option.value === productLifeStage)
+    ? productLifeStage!
     : lifeStageOptions[0].value;
   const [weight, setWeight] = useState(activePet?.weightKg ?? "");
   const [lifeStage, setLifeStage] = useState(() => petLifeStageForCalculator(activePet, product, defaultLifeStage));
@@ -371,7 +372,7 @@ function ProductDurationCalculatorForm({
       setError("Ingresá un peso válido en kilos, por ejemplo 12.");
       return;
     }
-    const species = product.species ?? activePet?.species;
+    const species = product.species?.toLowerCase() ?? activePet?.species;
     if (!species) {
       setError("No pudimos identificar si el alimento es para perro o gato.");
       return;
@@ -517,13 +518,18 @@ function getLifeStageOptions(species: Product["species"]) {
     { value: "adult", label: "Adulto" },
     { value: "senior", label: "Senior" },
   ];
-  if (species === "dog") return [{ value: "puppy", label: "Cachorro" }, ...commonOptions];
-  if (species === "cat") return [{ value: "kitten", label: "Gatito" }, ...commonOptions];
+  if (species === "DOG") return [{ value: "puppy", label: "Cachorro" }, ...commonOptions];
+  if (species === "CAT") return [{ value: "kitten", label: "Gatito" }, ...commonOptions];
   return [{ value: "puppy", label: "Cachorro" }, { value: "kitten", label: "Gatito" }, ...commonOptions];
 }
 
 function lifeStageCopy(value: string) {
   return ({ puppy: "Cachorro", kitten: "Gatito", adult: "Adulto", senior: "Senior" } as Record<string, string>)[value] ?? value;
+}
+
+function calculatorLifeStage(stage: Product["lifeStage"], species: Product["species"]) {
+  if (stage === "PUPPY") return species === "CAT" ? "kitten" : "puppy";
+  return stage?.toLowerCase();
 }
 
 function petLifeStageForCalculator(activePet: CustomerPet | null, product: Product, fallback: string) {

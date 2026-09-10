@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 
-import { catalogHref, type CatalogSearchParams } from "@/lib/catalog-search-params";
+import { catalogHref, type CatalogNavigation, type CatalogSearchParams } from "@/lib/catalog-search-params";
 
 const options = [
   ["featured", "Destacados"],
@@ -12,7 +12,15 @@ const options = [
   ["price_desc", "Mayor precio"],
 ] as const;
 
-export function CatalogSortOptions({ current, pathname }: { current: CatalogSearchParams; pathname: string }) {
+export function CatalogSortOptions({
+  current,
+  pathname,
+  navigation,
+}: {
+  current: CatalogSearchParams;
+  pathname: string;
+  navigation?: CatalogNavigation;
+}) {
   const router = useRouter();
   const selected = first(current.sort) ?? "featured";
   const [isPending, startTransition] = useTransition();
@@ -27,7 +35,7 @@ export function CatalogSortOptions({ current, pathname }: { current: CatalogSear
         value={selected}
         onChange={(event) =>
           startTransition(() => {
-            router.push(catalogHref(pathname, current, { sort: event.target.value, page: 1 }), { scroll: false });
+            router.push(catalogHref(pathname, current, { sort: event.target.value, page: 1 }, navigation), { scroll: false });
           })
         }
         className="h-10 min-w-0 max-w-44 rounded-lg border border-catalog-line bg-white px-3 text-sm font-semibold text-ink outline-none focus:border-brand-blue"

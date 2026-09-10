@@ -21,7 +21,7 @@ COPY --from=dependencies /app/node_modules ./node_modules
 COPY . .
 
 ARG API_URL=https://api.patitasinquietas.com.ar/api/v1
-ARG NEXT_PUBLIC_SITE_URL=https://www.patitasinquietas.com.ar
+ARG NEXT_PUBLIC_SITE_URL
 ARG NEXT_PUBLIC_WHATSAPP_URL
 ARG NEXT_PUBLIC_GOOGLE_ANALYTICS_ID
 ARG NEXT_PUBLIC_GOOGLE_MAPS_API_KEY

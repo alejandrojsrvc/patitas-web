@@ -1,19 +1,19 @@
 import Link from "next/link";
 
-import { categoryPathForSpecies } from "@/data/catalog-routes";
-import type { ProductDetail } from "@/domain/catalog/types";
+import type { CatalogLanding, CatalogSpecies, LifeStage, ProductDetail } from "@/domain/catalog/types";
+import { findBestCatalogLanding } from "@/data/catalog-routes";
 
-export function ProductTechnicalInfo({ product }: { product: ProductDetail }) {
+export function ProductTechnicalInfo({ product, catalogLandings }: { product: ProductDetail; catalogLandings: CatalogLanding[] }) {
   const technicalSheet = product.technicalSheet;
   const presentations = product.variants.map((variant) => variant.presentation ?? formatWeight(variant.weightGrams) ?? "Presentación");
   const species = technicalSheet.species ?? product.species;
   const lifeStage = technicalSheet.lifeStage ?? product.lifeStage;
-  const categoryHref =
-    product.category && species
-      ? categoryPathForSpecies(species, product.category.slug) ?? speciesPath(species)
-      : product.category
-        ? "/"
-        : null;
+  const categoryHref = findBestCatalogLanding(catalogLandings, {
+    species: species ?? undefined,
+    category: product.classification.category ?? undefined,
+    foodType: product.classification.foodType ?? undefined,
+    categorySlug: product.classification.category === "HYGIENE" ? product.category?.slug : undefined,
+  })?.seo.canonical;
 
   return (
     <section className="mt-12 border-t border-catalog-line pt-8 sm:mt-16 sm:pt-10" aria-labelledby="technical-info-title">
@@ -46,14 +46,14 @@ export function ProductTechnicalInfo({ product }: { product: ProductDetail }) {
             {species ? (
               <TechnicalRow label="Para">
                 <Link href={speciesPath(species)} className="font-semibold text-brand-blue hover:underline">
-                  {species === "dog" ? "Perros" : "Gatos"}
+                  {species === "DOG" ? "Perros" : "Gatos"}
                 </Link>
               </TechnicalRow>
             ) : null}
             {lifeStage ? (
               <TechnicalRow label="Etapa">
-                <Link href={stagePath(species, lifeStage)} className="font-semibold text-brand-blue hover:underline">
-                  {stageCopy(lifeStage)}
+                <Link href={stagePath(catalogLandings, product, species, lifeStage)} className="font-semibold text-brand-blue hover:underline">
+                  {stageCopy(lifeStage, species)}
                 </Link>
               </TechnicalRow>
             ) : null}
@@ -100,17 +100,25 @@ function TechnicalRow({ label, children }: { label: string; children: React.Reac
   );
 }
 
-function speciesPath(species: "dog" | "cat") {
-  return species === "dog" ? "/perros" : "/gatos";
+function speciesPath(species: CatalogSpecies) {
+  return species === "DOG" ? "/perros" : "/gatos";
 }
 
-function stagePath(species: "dog" | "cat" | null, stage: string) {
-  const params = new URLSearchParams({ lifeStage: stage });
-  return `${species ? speciesPath(species) : "/perros"}?${params.toString()}`;
+function stagePath(landings: CatalogLanding[], product: ProductDetail, species: CatalogSpecies | null, stage: string) {
+  return (
+    findBestCatalogLanding(landings, {
+      species: species ?? undefined,
+      category: product.classification.category ?? undefined,
+      foodType: product.classification.foodType ?? undefined,
+      categorySlug: product.classification.category === "HYGIENE" ? product.category?.slug : undefined,
+      lifeStage: stage as LifeStage,
+    })?.seo.canonical ?? `${species ? speciesPath(species) : "/perros"}?lifeStage=${encodeURIComponent(stage)}`
+  );
 }
 
-function stageCopy(stage: string) {
-  return ({ puppy: "Cachorro", kitten: "Gatito", adult: "Adulto", senior: "Senior" } as Record<string, string>)[stage] ?? stage;
+function stageCopy(stage: string, species: CatalogSpecies | null) {
+  if (stage === "PUPPY") return species === "CAT" ? "Gatito" : "Cachorro";
+  return ({ ADULT: "Adulto", SENIOR: "Senior" } as Record<string, string>)[stage] ?? stage;
 }
 
 function formatWeight(weightGrams: number | null) {

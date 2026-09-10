@@ -94,7 +94,7 @@ export function PetShoppingBar({ product }: { product?: Product }) {
                 <p className="mt-1 flex items-center gap-1.5 text-sm font-semibold text-brand-blue">
                   <Check size={15} weight="bold" aria-hidden="true" /> Es su alimento habitual
                 </p>
-              ) : product?.species && product.species !== activePet.species ? (
+              ) : product?.species && product.species.toLowerCase() !== activePet.species ? (
                 <p className="mt-1 text-sm text-[#8d2020]">Este producto no coincide con la especie registrada de {activePet.name}.</p>
               ) : null}
             </div>
@@ -388,7 +388,7 @@ function petSummary(pet: CustomerPet) {
 }
 
 function catalogLifeStage(pet: CustomerPet) {
-  return pet.species === "cat" && pet.lifeStage === "puppy" ? "kitten" : pet.lifeStage;
+  return pet.lifeStage === "puppy" ? "PUPPY" : pet.lifeStage.toUpperCase();
 }
 
 function formatWeight(weightGrams: number) {
@@ -397,6 +397,9 @@ function formatWeight(weightGrams: number) {
 
 function isFoodForPet(item: ProductAutocompleteItem, pet: CustomerPet) {
   const species = item.species?.trim().toLowerCase();
-  const matchesSpecies = pet.species === "dog" ? species === "dog" || species === "perro" : species === "cat" || species === "gato";
+  const matchesSpecies =
+    pet.species === "dog"
+      ? species === "dog" || species === "perro"
+      : species === "cat" || species === "gato";
   return matchesSpecies && ["alimento-seco", "alimento-humedo"].includes(item.categorySlug);
 }

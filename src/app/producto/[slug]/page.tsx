@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound, unstable_rethrow } from "next/navigation";
 
 import { ProductScreen } from "@/features/catalog/product-screen";
-import { getProduct, PatitasApiError } from "@/infrastructure/api/patitas-api";
+import { getCatalogLandings, getProduct, PatitasApiError, safeCatalogCall } from "@/infrastructure/api/patitas-api";
 import { productDisplayName, productSeoTitle } from "@/lib/product-seo";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -15,6 +15,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       title: productSeoTitle(product),
       description: product.description ?? `Comprá ${displayName} y compará sus presentaciones disponibles.`,
       alternates: { canonical: `/producto/${product.slug}` },
+      robots: { index: true, follow: true },
       openGraph: { images: product.media[0]?.url ? [product.media[0].url] : undefined },
     };
   } catch (error) {
@@ -37,5 +38,6 @@ async function ProductPageContent({ slug }: { slug: string }) {
     throw error;
   }
 
-  return <ProductScreen product={product} />;
+  const catalogLandings = await safeCatalogCall(() => getCatalogLandings());
+  return <ProductScreen product={product} catalogLandings={catalogLandings.ok ? catalogLandings.data.items : []} />;
 }

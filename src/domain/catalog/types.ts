@@ -1,4 +1,8 @@
-export type Species = "dog" | "cat";
+export type CatalogSpecies = "DOG" | "CAT";
+export type ProductCategory = "FOOD" | "SNACK" | "HYGIENE";
+export type FoodType = "DRY" | "WET";
+export type LifeStage = "PUPPY" | "ADULT" | "SENIOR";
+export type CatalogAvailability = "AVAILABLE" | "OUT_OF_STOCK";
 export type FulfillmentAvailability = "TODAY" | "TOMORROW" | "LATER" | "OUT_OF_STOCK";
 
 export type CatalogReference = {
@@ -56,11 +60,12 @@ export type Product = {
   slug: string;
   description: string | null;
   line: string | null;
-  species: Species | null;
-  lifeStage: string | null;
+  species: CatalogSpecies | null;
+  lifeStage: LifeStage | null;
   breedSize: string | null;
   brand: Brand;
   category: CatalogReference | null;
+  classification: { category: ProductCategory | null; foodType: FoodType | null };
   media: ProductMedia[];
   variants: ProductVariant[];
   offers: ProductOffer[];
@@ -89,7 +94,7 @@ export type ReplenishmentEstimate = {
 };
 
 export type ProductTechnicalSheet = {
-  species: Species | null;
+  species: CatalogSpecies | null;
   lifeStage: string | null;
   breedSize: string | null;
   line: string | null;
@@ -136,7 +141,7 @@ export type ProductAutocompleteItem = {
   id: string;
   productId: string;
   slug: string;
-  species: string | null;
+  species: CatalogSpecies | null;
   categorySlug: string;
   name: string;
   presentation: string | null;
@@ -182,15 +187,18 @@ export type WeightFacetOption = {
 export type ProductFacets = {
   brands: BrandFacetOption[];
   categories: CategoryFacetOption[];
+  foodTypes: CategoryFacetOption[];
+  subcategories: CategoryFacetOption[];
   lifeStages: StringFacetOption[];
   weights: WeightFacetOption[];
+  availability: StringFacetOption[];
 };
 
 export type CalculatorProductProjection = {
   id: string;
   name: string;
   slug: string;
-  species: Species | null;
+  species: CatalogSpecies | null;
   lifeStage: string | null;
   estimatedDailyGramsPerKg: string | null;
   variants: Array<{
@@ -207,18 +215,44 @@ export type SitemapProductProjection = {
 
 export type ProductFilters = {
   q?: string;
-  species?: Species;
-  category?: string;
+  species?: CatalogSpecies;
+  category?: ProductCategory;
+  foodType?: FoodType;
+  categorySlug?: string;
   brand?: string[];
-  lifeStage?: string[];
+  lifeStage?: LifeStage[];
   weightGrams?: number[];
   minPrice?: string;
   maxPrice?: string;
+  availability?: CatalogAvailability;
   featured?: boolean;
   sort?: "featured" | "name_asc" | "price_asc" | "price_desc";
   page?: number;
   perPage?: number;
 };
+
+export type CatalogBreadcrumb = { label: string; href: string };
+export type CatalogLandingFilters = Omit<Partial<ProductFilters>, "brand" | "lifeStage"> & {
+  brand?: string;
+  lifeStage?: LifeStage;
+};
+
+export type CatalogLanding = {
+  kind: "LANDING";
+  landingType: "CATALOG" | "BRAND_INDEX" | "BRAND";
+  filters: CatalogLandingFilters;
+  seo: {
+    title: string;
+    h1: string;
+    description: string;
+    canonical: string;
+    robots: { index: true; follow: true };
+  };
+  breadcrumbs: CatalogBreadcrumb[];
+};
+
+export type CatalogPathResolution = CatalogLanding | { kind: "REDIRECT"; statusCode: 308; destination: string };
+export type CatalogLandingManifest = { items: CatalogLanding[] };
 
 export type FoodDurationResult = {
   source: "MANUFACTURER" | "GENERAL_FALLBACK";

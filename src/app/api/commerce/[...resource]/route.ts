@@ -168,7 +168,20 @@ async function handle(request: Request, context: Context, method: string) {
 }
 
 const publicCatalogPaths = new Set(["/products", "/products/facets", "/products/autocomplete"]);
-const catalogScalarParams = new Set(["q", "species", "category", "minPrice", "maxPrice", "featured", "sort", "page", "perPage"]);
+const catalogScalarParams = new Set([
+  "q",
+  "species",
+  "category",
+  "foodType",
+  "categorySlug",
+  "minPrice",
+  "maxPrice",
+  "availability",
+  "featured",
+  "sort",
+  "page",
+  "perPage",
+]);
 const catalogListParams = new Set(["brand", "lifeStage", "weightGrams"]);
 const catalogSlugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
@@ -178,7 +191,7 @@ function isPublicCatalogRequest(path: string, method: string) {
 
 async function handlePublicCatalogRequest(request: Request, path: string) {
   if (request.headers.get("X-Patitas-Catalog-Client") !== "storefront") {
-    return catalogRequestError("Recurso no disponible.", 404, false);
+    return catalogRequestError("Recurso no disponible.", 404);
   }
 
   const url = new URL(request.url);
@@ -191,7 +204,7 @@ async function handlePublicCatalogRequest(request: Request, path: string) {
   return NextResponse.json(payload, {
     status: upstream.status,
     headers: {
-      "Cache-Control": upstream.ok ? "public, max-age=60, s-maxage=300, stale-while-revalidate=900" : "private, no-store",
+      "Cache-Control": upstream.ok ? "public, max-age=60, s-maxage=0, must-revalidate" : "private, no-store",
       "X-Robots-Tag": "noindex, nofollow, noarchive",
     },
   });
@@ -204,7 +217,20 @@ function normalizePublicCatalogQuery(path: string, input: URLSearchParams) {
     path === "/products/autocomplete"
       ? new Set(["q"])
       : path === "/products/facets"
-        ? new Set(["q", "species", "category", "minPrice", "maxPrice", "featured", "brand", "lifeStage", "weightGrams"])
+        ? new Set([
+            "q",
+            "species",
+            "category",
+            "foodType",
+            "categorySlug",
+            "minPrice",
+            "maxPrice",
+            "availability",
+            "featured",
+            "brand",
+            "lifeStage",
+            "weightGrams",
+          ])
         : new Set([...catalogScalarParams, ...catalogListParams]);
   if ([...input.keys()].some((key) => !allowedParams.has(key))) return null;
   if ([...catalogScalarParams].some((key) => input.getAll(key).length > 1)) return null;
@@ -217,18 +243,30 @@ function normalizePublicCatalogQuery(path: string, input: URLSearchParams) {
   if (q) output.set("q", q);
 
   const species = input.get("species");
-  if (species && species !== "dog" && species !== "cat") return null;
+  if (species && species !== "DOG" && species !== "CAT") return null;
   if (species) output.set("species", species);
 
   const category = input.get("category");
-  if (category && !isCatalogSlug(category, 220)) return null;
+  if (category && !new Set(["FOOD", "SNACK", "HYGIENE"]).has(category)) return null;
   if (category) output.set("category", category);
 
+  const foodType = input.get("foodType");
+  if (foodType && !new Set(["DRY", "WET"]).has(foodType)) return null;
+  if (foodType) output.set("foodType", foodType);
+
+  const categorySlug = input.get("categorySlug");
+  if (categorySlug && !isCatalogSlug(categorySlug, 220)) return null;
+  if (categorySlug) output.set("categorySlug", categorySlug);
+
   if (!appendSlugList(output, input, "brand", 20, 220)) return null;
-  if (!appendEnumList(output, input, "lifeStage", new Set(["puppy", "kitten", "adult", "senior"]), 4)) return null;
+  if (!appendEnumList(output, input, "lifeStage", new Set(["PUPPY", "ADULT", "SENIOR"]), 3)) return null;
   if (!appendIntegerList(output, input, "weightGrams", 20, 1, 100_000)) return null;
 
   if (!appendDecimal(output, input, "minPrice") || !appendDecimal(output, input, "maxPrice")) return null;
+
+  const availability = input.get("availability");
+  if (availability && !new Set(["AVAILABLE", "OUT_OF_STOCK"]).has(availability)) return null;
+  if (availability) output.set("availability", availability);
 
   const featured = input.get("featured");
   if (featured && featured !== "true" && featured !== "false") return null;
@@ -294,13 +332,13 @@ function appendBoundedInteger(output: URLSearchParams, input: URLSearchParams, n
   return true;
 }
 
-function catalogRequestError(message: string, status: number, cacheable = true) {
+function catalogRequestError(message: string, status: number) {
   return NextResponse.json(
     { message },
     {
       status,
       headers: {
-        "Cache-Control": cacheable ? "public, max-age=60" : "private, no-store",
+        "Cache-Control": "private, no-store",
         "X-Robots-Tag": "noindex, nofollow, noarchive",
       },
     },

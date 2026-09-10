@@ -67,20 +67,28 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
+        source: "/robots.txt",
+        headers: [{ key: "Cache-Control", value: "public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400" }],
+      },
+      {
+        source: "/sitemap.xml",
+        headers: [{ key: "Cache-Control", value: "public, max-age=0, s-maxage=21600, stale-while-revalidate=86400" }],
+      },
+      {
         source: "/buscar",
         headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow, noarchive" }],
       },
       {
         source: "/perros/:path*",
-        headers: [{ key: "Cache-Control", value: "public, max-age=60, s-maxage=60, stale-while-revalidate=300" }],
+        headers: [{ key: "Cache-Control", value: "public, max-age=60, s-maxage=0, must-revalidate" }],
       },
       {
         source: "/gatos/:path*",
-        headers: [{ key: "Cache-Control", value: "public, max-age=60, s-maxage=60, stale-while-revalidate=300" }],
+        headers: [{ key: "Cache-Control", value: "public, max-age=60, s-maxage=0, must-revalidate" }],
       },
       {
         source: "/producto/:slug",
-        headers: [{ key: "Cache-Control", value: "public, max-age=60, s-maxage=60, stale-while-revalidate=300" }],
+        headers: [{ key: "Cache-Control", value: "public, max-age=60, s-maxage=0, must-revalidate" }],
       },
       {
         source: "/(.*)",

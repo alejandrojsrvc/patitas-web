@@ -1,15 +1,67 @@
-import test from "node:test";
 import assert from "node:assert/strict";
-import { categoryPathForSpecies, categorySlugsForSpecies, resolveCatalogRoute } from "./catalog-routes.ts";
+import test from "node:test";
 
-test("resuelve el catálogo general de cada especie", () => {
-  assert.equal(resolveCatalogRoute("dog", [])?.title, "Todo para perros");
-  assert.equal(resolveCatalogRoute("cat", [])?.title, "Todo para gatos");
+import type { CatalogLanding } from "@/domain/catalog/types";
+import { findBestCatalogLanding, findCatalogLanding } from "./catalog-routes.ts";
+
+const landing = (canonical: string, filters: CatalogLanding["filters"]): CatalogLanding => ({
+  kind: "LANDING",
+  landingType: "CATALOG",
+  filters,
+  seo: { title: canonical, h1: canonical, description: canonical, canonical, robots: { index: true, follow: true } },
+  breadcrumbs: [],
 });
 
-test("mantiene categorías propias de perros y gatos", () => {
-  assert.equal(categorySlugsForSpecies("dog").has("arena-y-piedras"), false);
-  assert.equal(categorySlugsForSpecies("cat").has("bolsas-para-paseo"), false);
-  assert.equal(categoryPathForSpecies("dog", "alimento-seco"), "/perros/alimentos/secos");
-  assert.equal(categoryPathForSpecies("cat", "arena-y-piedras"), "/gatos/arena");
+const landings = [
+  landing("/perros", { species: "DOG" }),
+  landing("/perros/alimentos-balanceados", { species: "DOG", category: "FOOD", foodType: "DRY" }),
+  landing("/perros/alimentos-balanceados/adultos", {
+    species: "DOG",
+    category: "FOOD",
+    foodType: "DRY",
+    lifeStage: "ADULT",
+  }),
+  landing("/perros/alimentos-balanceados/adultos/royal-canin", {
+    species: "DOG",
+    category: "FOOD",
+    foodType: "DRY",
+    lifeStage: "ADULT",
+    brand: "royal-canin",
+  }),
+];
+
+test("encuentra solo una landing registrada para la combinación exacta", () => {
+  assert.equal(
+    findCatalogLanding(landings, {
+      species: "DOG",
+      category: "FOOD",
+      foodType: "DRY",
+      lifeStage: ["ADULT"],
+      brand: ["royal-canin"],
+    })?.seo.canonical,
+    "/perros/alimentos-balanceados/adultos/royal-canin",
+  );
+  assert.equal(
+    findCatalogLanding(landings, {
+      species: "DOG",
+      category: "FOOD",
+      foodType: "DRY",
+      lifeStage: ["ADULT"],
+      brand: ["inexistente"],
+    }),
+    undefined,
+  );
+});
+
+test("usa la landing más específica y deja filtros múltiples fuera de la ruta", () => {
+  assert.equal(
+    findBestCatalogLanding(landings, {
+      species: "DOG",
+      category: "FOOD",
+      foodType: "DRY",
+      lifeStage: ["ADULT"],
+      brand: ["royal-canin", "excellent"],
+    })?.seo.canonical,
+    "/perros/alimentos-balanceados/adultos",
+  );
 });

@@ -7,8 +7,8 @@ const groups = [
     links: [
       ["Perros", "/perros"],
       ["Gatos", "/gatos"],
-      ["Arena e higiene", "/gatos/arena"],
-      ["Snacks", "/perros/snacks"],
+      ["Alimento balanceado", "/perros/alimentos-balanceados"],
+      ["Arena e higiene", "/gatos/higiene"],
     ],
   },
   {

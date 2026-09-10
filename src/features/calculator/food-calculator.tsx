@@ -12,7 +12,7 @@ export function FoodCalculator({ products }: { products: CalculatorProductProjec
   const product = useMemo(() => products.find((item) => item.slug === productSlug) ?? products[0], [productSlug, products]);
   const [variantId, setVariantId] = useState(product?.variants[0]?.id ?? "");
   const [weight, setWeight] = useState("");
-  const [lifeStage, setLifeStage] = useState(product?.lifeStage ?? "adult");
+  const [lifeStage, setLifeStage] = useState(product?.lifeStage?.toLowerCase() ?? "adult");
   const [result, setResult] = useState<ReplenishmentEstimate | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -25,7 +25,7 @@ export function FoodCalculator({ products }: { products: CalculatorProductProjec
     const next = products.find((item) => item.slug === slug);
     setProductSlug(slug);
     setVariantId(next?.variants[0]?.id ?? "");
-    setLifeStage(next?.lifeStage ?? "adult");
+    setLifeStage(next?.lifeStage?.toLowerCase() ?? "adult");
     setResult(null);
     setError(null);
     setLeadStatus("idle");
@@ -48,7 +48,7 @@ export function FoodCalculator({ products }: { products: CalculatorProductProjec
           productId: product.id,
           variantId,
           petWeightKg: Number(weight.replace(",", ".")),
-          species: product.species ?? "dog",
+          species: product.species?.toLowerCase() ?? "dog",
           lifeStage,
         }),
       });

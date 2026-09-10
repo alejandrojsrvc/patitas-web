@@ -14,7 +14,7 @@ pnpm dev
 bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open the URL shown by `pnpm dev` with your browser to see the result.
 
 ## Universal Links and App Links
 

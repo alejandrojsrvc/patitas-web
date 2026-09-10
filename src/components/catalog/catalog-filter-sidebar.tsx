@@ -5,8 +5,8 @@ import Form from "next/form";
 import Link from "next/link";
 import { type FormEvent, useEffect, useRef, useState } from "react";
 
-import { categoryPathForSpecies } from "@/data/catalog-routes";
-import { catalogHref, type CatalogSearchParams } from "@/lib/catalog-search-params";
+import type { CatalogSpecies } from "@/domain/catalog/types";
+import { catalogHref, type CatalogNavigation, type CatalogSearchParams } from "@/lib/catalog-search-params";
 import { CatalogSortOptions } from "./catalog-sort-options";
 
 export function CatalogFilterSidebar({
@@ -18,15 +18,23 @@ export function CatalogFilterSidebar({
   brands,
   stages,
   weights,
+  foodTypes,
+  subcategories,
+  availability,
+  navigation,
 }: {
   pathname: string;
   current: CatalogSearchParams;
-  species?: "dog" | "cat";
+  species?: CatalogSpecies;
   resultCount: number;
   categories: Array<readonly [string, string]>;
   brands: Array<readonly [string, string]>;
   stages: Array<readonly [string, string]>;
   weights: Array<readonly [string, string]>;
+  foodTypes: Array<readonly [string, string]>;
+  subcategories: Array<readonly [string, string]>;
+  availability: Array<readonly [string, string]>;
+  navigation?: CatalogNavigation;
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -36,15 +44,21 @@ export function CatalogFilterSidebar({
   const selectedStages = values(current.lifeStage);
   const selectedWeights = values(current.weightGrams);
   const selectedCategory = first(current.category);
+  const selectedFoodType = first(current.foodType);
+  const selectedSubcategory = first(current.categorySlug);
+  const selectedAvailability = first(current.availability);
   const selectedMinPrice = first(current.minPrice);
   const selectedMaxPrice = first(current.maxPrice);
   const activeFilterCount =
     (species ? 0 : selectedSpecies ? 1 : 0) +
     (selectedCategory ? 1 : 0) +
+    (selectedFoodType ? 1 : 0) +
+    (selectedSubcategory ? 1 : 0) +
     selectedBrands.length +
     selectedStages.length +
     selectedWeights.length +
-    (selectedMinPrice || selectedMaxPrice ? 1 : 0);
+    (selectedMinPrice || selectedMaxPrice ? 1 : 0) +
+    (selectedAvailability ? 1 : 0);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -132,13 +146,17 @@ export function CatalogFilterSidebar({
             brands={brands}
             stages={stages}
             weights={weights}
+            foodTypes={foodTypes}
+            subcategories={subcategories}
+            availability={availability}
+            navigation={navigation}
             onNavigate={closeDrawer}
             onClose={closeDrawer}
           />
         </aside>
       ) : null}
 
-      <aside className="hidden self-start pr-2 lg:block" aria-label="Filtros del catálogo">
+      <aside className="hidden self-start pr-2 lg:sticky lg:top-28 lg:block" aria-label="Filtros del catálogo">
         <FilterContent
           pathname={pathname}
           current={current}
@@ -147,6 +165,10 @@ export function CatalogFilterSidebar({
           brands={brands}
           stages={stages}
           weights={weights}
+          foodTypes={foodTypes}
+          subcategories={subcategories}
+          availability={availability}
+          navigation={navigation}
         />
       </aside>
     </>
@@ -161,16 +183,24 @@ function FilterContent({
   brands,
   stages,
   weights,
+  foodTypes,
+  subcategories,
+  availability,
+  navigation,
   onNavigate,
   onClose,
 }: {
   pathname: string;
   current: CatalogSearchParams;
-  species?: "dog" | "cat";
+  species?: CatalogSpecies;
   categories: Array<readonly [string, string]>;
   brands: Array<readonly [string, string]>;
   stages: Array<readonly [string, string]>;
   weights: Array<readonly [string, string]>;
+  foodTypes: Array<readonly [string, string]>;
+  subcategories: Array<readonly [string, string]>;
+  availability: Array<readonly [string, string]>;
+  navigation?: CatalogNavigation;
   onNavigate?: () => void;
   onClose?: () => void;
 }) {
@@ -217,7 +247,7 @@ function FilterContent({
         )}
       </div>
       <div className="grid gap-3 border-b border-catalog-line py-4 lg:hidden">
-        <CatalogSortOptions current={current} pathname={pathname} />
+        <CatalogSortOptions current={current} pathname={pathname} navigation={navigation} />
         <Link
           href={pathname}
           prefetch={false}
@@ -235,11 +265,12 @@ function FilterContent({
             name="species"
             values={selectedSpecies ? [selectedSpecies] : []}
             options={[
-              ["dog", "Perros"],
-              ["cat", "Gatos"],
+              ["DOG", "Perros"],
+              ["CAT", "Gatos"],
             ]}
             current={current}
             pathname={pathname}
+            navigation={navigation}
             onNavigate={onNavigate}
           />
         ) : null}
@@ -249,22 +280,49 @@ function FilterContent({
             name="category"
             values={selectedCategory ? [selectedCategory] : []}
             options={categories}
-            categorySpecies={species ?? (selectedSpecies === "dog" || selectedSpecies === "cat" ? selectedSpecies : undefined)}
             current={current}
             pathname={pathname}
+            navigation={navigation}
             onNavigate={onNavigate}
           />
         ) : null}
-        <FilterOptionList
-          label="Marca"
-          name="brand"
-          values={selectedBrands}
-          multiple
-          options={brands}
-          current={current}
-          pathname={pathname}
-          onNavigate={onNavigate}
-        />
+        {foodTypes.length ? (
+          <FilterOptionList
+            label="Tipo de alimento"
+            name="foodType"
+            values={first(current.foodType) ? [first(current.foodType)!] : []}
+            options={foodTypes}
+            current={current}
+            pathname={pathname}
+            navigation={navigation}
+            onNavigate={onNavigate}
+          />
+        ) : null}
+        {subcategories.length ? (
+          <FilterOptionList
+            label="Subcategoría"
+            name="categorySlug"
+            values={first(current.categorySlug) ? [first(current.categorySlug)!] : []}
+            options={subcategories}
+            current={current}
+            pathname={pathname}
+            navigation={navigation}
+            onNavigate={onNavigate}
+          />
+        ) : null}
+        {brands.length ? (
+          <FilterOptionList
+            label="Marca"
+            name="brand"
+            values={selectedBrands}
+            multiple
+            options={brands}
+            current={current}
+            pathname={pathname}
+            navigation={navigation}
+            onNavigate={onNavigate}
+          />
+        ) : null}
         <FilterOptionList
           label="Etapa"
           name="lifeStage"
@@ -273,6 +331,7 @@ function FilterContent({
           options={stages}
           current={current}
           pathname={pathname}
+          navigation={navigation}
           onNavigate={onNavigate}
         />
         <FilterOptionList
@@ -283,6 +342,17 @@ function FilterContent({
           options={weights}
           current={current}
           pathname={pathname}
+          navigation={navigation}
+          onNavigate={onNavigate}
+        />
+        <FilterOptionList
+          label="Disponibilidad"
+          name="availability"
+          values={first(current.availability) ? [first(current.availability)!] : []}
+          options={availability}
+          current={current}
+          pathname={pathname}
+          navigation={navigation}
           onNavigate={onNavigate}
         />
         <Form action={pathname} scroll={false} onSubmit={validatePriceRange} className="border-b border-catalog-line py-3">
@@ -346,9 +416,9 @@ function FilterOptionList({
   values: selectedValues,
   multiple = false,
   options,
-  categorySpecies,
   current,
   pathname,
+  navigation,
   onNavigate,
 }: {
   label: string;
@@ -356,9 +426,9 @@ function FilterOptionList({
   values: string[];
   multiple?: boolean;
   options: Array<readonly [string, string]>;
-  categorySpecies?: "dog" | "cat";
   current: CatalogSearchParams;
   pathname: string;
+  navigation?: CatalogNavigation;
   onNavigate?: () => void;
 }) {
   const selectedCount = selectedValues.length;
@@ -385,16 +455,12 @@ function FilterOptionList({
               : selected
                 ? []
                 : [optionValue];
-            const canonicalCategoryPath =
-              pathname !== "/buscar" && name === "category" && categorySpecies
-                ? categoryPathForSpecies(categorySpecies, optionValue)
-                : null;
             return (
               <FilterOption
                 key={optionValue}
                 label={optionLabel}
                 selected={selected}
-                href={canonicalCategoryPath ?? catalogHref(pathname, current, { [name]: nextValues, page: 1 })}
+                href={catalogHref(pathname, current, { [name]: nextValues, page: 1 }, navigation)}
                 onNavigate={onNavigate}
               />
             );

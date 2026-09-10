@@ -16,21 +16,49 @@ const navItems = [
   {
     label: "Perros",
     href: "/perros",
-    children: [
-      ["Ver todo", "/perros"],
-      ["Alimentos", "/perros/alimentos"],
-      ["Snacks", "/perros/snacks"],
-      ["Bolsas para paseo", "/perros/bolsas"],
+    groups: [
+      {
+        label: "Alimentos",
+        links: [
+          ["Alimentos balanceados", "/perros/alimentos-balanceados"],
+          ["Alimentos húmedos", "/perros/alimentos-humedos"],
+        ],
+      },
+      {
+        label: "Premios y complementos",
+        links: [["Snacks y premios", "/perros/snacks"]],
+      },
+      {
+        label: "Higiene y paseo",
+        links: [
+          ["Ver higiene y paseo", "/perros/higiene"],
+          ["Bolsitas para perros", "/perros/higiene/bolsas"],
+        ],
+      },
     ] as const,
   },
   {
     label: "Gatos",
     href: "/gatos",
-    children: [
-      ["Ver todo", "/gatos"],
-      ["Alimentos", "/gatos/alimentos"],
-      ["Arena y piedras", "/gatos/arena"],
-      ["Snacks", "/gatos/snacks"],
+    groups: [
+      {
+        label: "Alimentos",
+        links: [
+          ["Alimentos balanceados", "/gatos/alimentos-balanceados"],
+          ["Alimentos húmedos", "/gatos/alimentos-humedos"],
+        ],
+      },
+      {
+        label: "Premios y complementos",
+        links: [["Snacks y premios", "/gatos/snacks"]],
+      },
+      {
+        label: "Higiene",
+        links: [
+          ["Ver arena e higiene", "/gatos/higiene"],
+          ["Arena para gatos", "/gatos/higiene/arena"],
+        ],
+      },
     ] as const,
   },
   { label: "Marcas", href: "/marcas" },
@@ -209,6 +237,10 @@ function NavItem({ item, currentPath }: { item: (typeof navItems)[number]; curre
     }
   }
 
+  function focusTrigger() {
+    navRef.current?.querySelector<HTMLAnchorElement>(`#${menuId}-trigger`)?.focus({ preventScroll: true });
+  }
+
   useEffect(
     () => () => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
@@ -216,7 +248,7 @@ function NavItem({ item, currentPath }: { item: (typeof navItems)[number]; curre
     [],
   );
 
-  if (!("children" in item)) {
+  if (!("groups" in item)) {
     return (
       <Link
         href={item.href}
@@ -259,7 +291,7 @@ function NavItem({ item, currentPath }: { item: (typeof navItems)[number]; curre
         }
         if (event.key === "Escape") {
           setOpen(false);
-          navRef.current?.querySelector<HTMLAnchorElement>(`#${menuId}-trigger`)?.focus({ preventScroll: true });
+          focusTrigger();
         }
       }}
     >
@@ -282,38 +314,98 @@ function NavItem({ item, currentPath }: { item: (typeof navItems)[number]; curre
           role="menu"
           aria-label={`${item.label}: categorías`}
           aria-labelledby={`${menuId}-trigger`}
-          className="absolute left-0 top-full z-50 min-w-[210px] rounded-xl bg-white p-2 shadow-[0_14px_36px_rgba(23,23,23,0.14)]"
+          className="absolute left-0 top-full z-50 w-[min(34rem,calc(100vw-2rem))] rounded-2xl border border-catalog-line bg-white p-3 text-ink shadow-[0_20px_48px_rgba(23,23,23,0.16)]"
         >
-          {item.children.map(([label, href]) => (
-            <Link
-              key={href}
-              href={href}
-              scroll={!isCatalogPath(href)}
-              role="menuitem"
-              aria-current={isCurrentPath(currentPath, href) ? "page" : undefined}
-              onKeyDown={(event) => {
-                if (event.key === "ArrowDown" || event.key === "ArrowUp") {
-                  event.preventDefault();
-                  const menuItems = navRef.current?.querySelectorAll<HTMLAnchorElement>('[role="menuitem"]');
-                  if (!menuItems?.length) return;
-                  const index = Array.from(menuItems).indexOf(event.currentTarget);
-                  const nextIndex =
-                    event.key === "ArrowDown" ? (index + 1) % menuItems.length : (index - 1 + menuItems.length) % menuItems.length;
-                  menuItems[nextIndex]?.focus({ preventScroll: true });
-                } else if (event.key === "Escape") {
-                  event.preventDefault();
-                  setOpen(false);
-                  navRef.current?.querySelector<HTMLAnchorElement>(`#${menuId}-trigger`)?.focus({ preventScroll: true });
-                }
+          <div className="mb-2 flex items-center justify-between gap-4 border-b border-catalog-line px-2 pb-3">
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted">Comprar para</p>
+              <p className="mt-1 font-display text-lg font-semibold text-ink">{item.label}</p>
+            </div>
+            <MenuLink
+              href={item.href}
+              label="Ver todo"
+              currentPath={currentPath}
+              onNavigate={() => setOpen(false)}
+              onEscape={() => {
+                setOpen(false);
+                focusTrigger();
               }}
-              className="block min-h-11 whitespace-nowrap rounded-lg px-3 py-2.5 text-sm text-ink hover:bg-soft-blue hover:text-brand-blue"
-            >
-              {label}
-            </Link>
-          ))}
+              featured
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-3 px-1 pb-1">
+            {item.groups.map((group) => (
+              <div key={group.label} className="min-w-0">
+                <p className="px-2 pb-1 text-[10px] font-bold uppercase tracking-[0.14em] text-muted">{group.label}</p>
+                <div role="group" aria-label={group.label}>
+                  {group.links.map(([label, href]) => (
+                    <MenuLink
+                      key={href}
+                      href={href}
+                      label={label}
+                      currentPath={currentPath}
+                      onEscape={() => {
+                        setOpen(false);
+                        focusTrigger();
+                      }}
+                    />
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       ) : null}
     </div>
+  );
+}
+
+function MenuLink({
+  href,
+  label,
+  currentPath,
+  onNavigate,
+  onEscape,
+  featured = false,
+}: {
+  href: string;
+  label: string;
+  currentPath: string | null;
+  onNavigate?: () => void;
+  onEscape?: () => void;
+  featured?: boolean;
+}) {
+  return (
+    <Link
+      href={href}
+      scroll={!isCatalogPath(href)}
+      role="menuitem"
+      aria-current={isCurrentPath(currentPath, href) ? "page" : undefined}
+      onClick={onNavigate}
+      onKeyDown={(event) => {
+        if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+          event.preventDefault();
+          event.stopPropagation();
+          const menu = event.currentTarget.closest('[role="menu"]');
+          const menuItems = menu?.querySelectorAll<HTMLAnchorElement>('[role="menuitem"]');
+          if (!menuItems?.length) return;
+          const index = Array.from(menuItems).indexOf(event.currentTarget);
+          const nextIndex = event.key === "ArrowDown" ? (index + 1) % menuItems.length : (index - 1 + menuItems.length) % menuItems.length;
+          menuItems[nextIndex]?.focus({ preventScroll: true });
+        } else if (event.key === "Escape") {
+          event.preventDefault();
+          event.stopPropagation();
+          onEscape?.();
+        }
+      }}
+      className={`flex min-h-10 items-center rounded-lg px-2.5 py-2 text-sm transition-colors ${
+        featured
+          ? "bg-soft-blue font-semibold text-brand-blue hover:bg-brand-blue hover:text-white"
+          : "text-ink hover:bg-soft-blue hover:text-brand-blue"
+      }`}
+    >
+      {label}
+    </Link>
   );
 }
 

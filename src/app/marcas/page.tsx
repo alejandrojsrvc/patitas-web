@@ -4,19 +4,23 @@ import Link from "next/link";
 import { PawPrint } from "@phosphor-icons/react/ssr";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
-import { getBrands, safeCatalogCall } from "@/infrastructure/api/patitas-api";
+import { getBrands, resolveCatalogPath, safeCatalogCall } from "@/infrastructure/api/patitas-api";
 import { brandLogoUrl } from "@/lib/brand-assets";
+import { BreadcrumbJsonLd } from "@/components/seo/json-ld";
+import { catalogLandingMetadata } from "@/features/catalog/catalog-landing-page";
 
-export const metadata: Metadata = {
-  title: "Marcas para perros y gatos | Patitas Inquietas",
-  description: "Encontrá el alimento que tu mascota ya consume y compará sus presentaciones.",
-  alternates: { canonical: "/marcas" },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return catalogLandingMetadata("/marcas", {});
+}
 
 export default async function BrandsPage() {
-  const result = await safeCatalogCall(() => getBrands());
+  const [result, taxonomy] = await Promise.all([
+    safeCatalogCall(() => getBrands()),
+    safeCatalogCall(() => resolveCatalogPath("/marcas")),
+  ]);
   return (
     <>
+      {taxonomy.ok && taxonomy.data.kind === "LANDING" ? <BreadcrumbJsonLd breadcrumbs={taxonomy.data.breadcrumbs} /> : null}
       <SiteHeader publicOnly />
       <main id="contenido" className="min-h-[65vh] bg-catalog-canvas py-12 sm:py-16 lg:py-20">
         <div className="container-shell">

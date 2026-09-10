@@ -9,7 +9,7 @@ test("acepta pesos repetidos y separados por coma", () => {
 });
 
 test("acepta varias marcas y etapas en la URL", () => {
-  const filters = productFiltersFromSearchParams({ brand: "excellent,pro-plan", lifeStage: ["adult", "senior"] });
+  const filters = productFiltersFromSearchParams({ brand: "excellent,pro-plan", lifeStage: ["ADULT", "SENIOR"] });
   assert.deepEqual(filters.brand, ["excellent", "pro-plan"]);
-  assert.deepEqual(filters.lifeStage, ["adult", "senior"]);
+  assert.deepEqual(filters.lifeStage, ["ADULT", "SENIOR"]);
 });
