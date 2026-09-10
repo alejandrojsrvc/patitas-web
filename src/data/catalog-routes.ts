@@ -1,26 +1,27 @@
-import type { CatalogLanding, ProductFilters } from "@/domain/catalog/types";
+import type { CatalogLanding, CatalogLandingFilters, ProductFilters } from "@/domain/catalog/types";
 
 const SEO_FILTER_KEYS = ["species", "category", "foodType", "categorySlug", "lifeStage", "brand"] as const;
 
-export function findCatalogLanding(landings: CatalogLanding[], filters: Partial<ProductFilters>) {
-  return landings.find((landing) =>
-    SEO_FILTER_KEYS.every((key) => equalFilterValue(landing.filters[key], filters[key])),
-  );
+type CatalogFilterLookup = CatalogLandingFilters | Partial<ProductFilters>;
+
+export function findCatalogLanding(landings: CatalogLanding[], filters: CatalogFilterLookup) {
+  return landings.find((landing) => SEO_FILTER_KEYS.every((key) => equalFilterValue(landing.filters[key], filters[key])));
 }
 
-export function findBestCatalogLanding(landings: CatalogLanding[], filters: Partial<ProductFilters>) {
+export function findBestCatalogLanding(landings: CatalogLanding[], filters: CatalogFilterLookup) {
   return landings
-    .filter((landing) =>
-      landing.landingType === "CATALOG" &&
-      SEO_FILTER_KEYS.every((key) => {
-        const landingValue = landing.filters[key];
-        return landingValue === undefined || equalFilterValue(landingValue, filters[key]);
-      }),
+    .filter(
+      (landing) =>
+        landing.landingType === "CATALOG" &&
+        SEO_FILTER_KEYS.every((key) => {
+          const landingValue = landing.filters[key];
+          return landingValue === undefined || equalFilterValue(landingValue, filters[key]);
+        }),
     )
     .sort((left, right) => seoFilterCount(right.filters) - seoFilterCount(left.filters))[0];
 }
 
-function seoFilterCount(filters: Partial<ProductFilters>) {
+function seoFilterCount(filters: CatalogFilterLookup) {
   return SEO_FILTER_KEYS.filter((key) => filters[key] !== undefined).length;
 }
 
