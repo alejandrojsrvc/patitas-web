@@ -231,16 +231,16 @@ sub vcl_synth {
   if (req.method == "PURGE" && resp.status == 200) {
     set resp.http.Content-Type = "application/json; charset=utf-8";
     set resp.http.X-Purged-Objects = req.http.X-Purged-Objects;
-    synthetic({"{"ok":true}"});
+    synthetic("{\"ok\":true}");
     return (deliver);
   }
 
   if (req.url == "/_varnish/health") {
     set resp.http.Content-Type = "application/json; charset=utf-8";
     if (resp.status == 200) {
-      synthetic({"{"status":"ok"}"});
+      synthetic("{\"status\":\"ok\"}");
     } else {
-      synthetic({"{"status":"unhealthy"}"});
+      synthetic("{\"status\":\"unhealthy\"}");
     }
     return (deliver);
   }
