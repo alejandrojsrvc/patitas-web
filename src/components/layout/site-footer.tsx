@@ -60,7 +60,7 @@ export function SiteFooter() {
             alt="Patitas Inquietas"
             width={220}
             height={24}
-            unoptimized={false}
+            unoptimized
             quality={60}
             sizes="176px"
             className="h-auto w-44 brightness-0 invert"

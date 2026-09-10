@@ -13,5 +13,5 @@ const iconSources = {
 export type PatitasIconName = keyof typeof iconSources;
 
 export function PatitasIcon({ name, className = "" }: { name: PatitasIconName; className?: string }) {
-  return <Image src={iconSources[name]} alt="" width={50} height={50} aria-hidden="true" className={`object-contain ${className}`} />;
+  return <Image src={iconSources[name]} alt="" width={50} height={50} unoptimized aria-hidden="true" className={`object-contain ${className}`} />;
 }

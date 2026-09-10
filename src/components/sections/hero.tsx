@@ -48,6 +48,7 @@ export function Hero() {
               alt=""
               width={736}
               height={876}
+              unoptimized
               loading="eager"
               priority
               className="absolute -right-16 -top-16 w-72 rotate-12 opacity-15 sm:w-96"

@@ -18,7 +18,7 @@ export function MobileAuthFallback({ title, description, appHref, invalidMessage
           alt="Patitas Inquietas"
           width={220}
           height={24}
-          unoptimized={false}
+          unoptimized
           priority
           className="mx-auto h-auto w-[180px]"
         />

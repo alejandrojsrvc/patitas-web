@@ -11,6 +11,7 @@ export function FinalCTA() {
           alt=""
           width={736}
           height={876}
+          unoptimized
           className="absolute -right-24 -top-28 w-72 rotate-12 opacity-12 sm:w-[28rem]"
         />
         <div className="relative max-w-3xl">

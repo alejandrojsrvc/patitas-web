@@ -32,6 +32,7 @@ export function HomeHero() {
             src="/brand/landing/hero-petshop-clean-v1.png"
             alt="Perro y gato junto a bolsas de alimento y otros esenciales"
             fill
+            unoptimized
             preload
             sizes="(min-width: 1024px) 54vw, calc(100vw - 1.25rem)"
             className="object-cover object-[68%_center] sm:object-[64%_center]"

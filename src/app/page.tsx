@@ -154,7 +154,7 @@ export default async function Home() {
                       src={category.image}
                       alt=""
                       fill
-                      unoptimized={false}
+                      unoptimized
                       sizes="(min-width: 1024px) 18vw, 184px"
                       className="object-cover object-center"
                     />
@@ -234,7 +234,7 @@ export default async function Home() {
                     >
                       {logoUrl ? (
                         <span className="relative h-16 w-full max-w-28">
-                          <Image src={logoUrl} alt="" fill unoptimized={false} sizes="112px" className="object-contain" />
+                          <Image src={logoUrl} alt="" fill unoptimized={logoUrl.startsWith("/")} sizes="112px" className="object-contain" />
                         </span>
                       ) : (
                         <span className="flex h-12 items-center justify-center text-brand-blue" aria-hidden="true">

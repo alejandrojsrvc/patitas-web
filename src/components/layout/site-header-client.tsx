@@ -97,7 +97,7 @@ export function SiteHeaderClient({
               alt="Patitas Inquietas"
               width={220}
               height={24}
-              unoptimized={false}
+              unoptimized
               priority
               quality={60}
               sizes="(min-width: 1024px) 164px, 142px"
