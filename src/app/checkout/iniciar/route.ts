@@ -8,7 +8,10 @@ import { authApi, AuthApiError } from "@/infrastructure/api/auth-api";
 import type { AuthSession } from "@/domain/auth/types";
 import { authCookieNames, clearAuthCookies, clearScopedToken, setAuthCookies, setScopedToken } from "@/lib/auth-cookies";
 
-export async function GET(request: Request) {
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
+if (!siteUrl) throw new Error("NEXT_PUBLIC_SITE_URL no está configurada.");
+
+export async function GET() {
   try {
     const cookieStore = await cookies();
     let accessToken = cookieStore.get(authCookieNames.accessToken)?.value;
@@ -23,7 +26,7 @@ export async function GET(request: Request) {
     if (!accessToken && refreshToken) {
       const refreshed = await refreshCheckoutAuth(refreshToken);
       if (refreshed?.status !== "authenticated" || !refreshed.session) {
-        const response = redirectToCart(request, "session-expired");
+        const response = redirectToCart("session-expired");
         clearAuthCookies(response);
         return response;
       }
@@ -56,14 +59,14 @@ export async function GET(request: Request) {
       }
     }
     if (cartResponse.status === 401) {
-      const response = redirectToCart(request, "session-expired");
+      const response = redirectToCart("session-expired");
       clearAuthCookies(response);
       return response;
     }
-    if (!cartResponse.ok) return finish(redirectToCart(request, "cart-unavailable"));
+    if (!cartResponse.ok) return finish(redirectToCart("cart-unavailable"));
     const cart = (await cartResponse.json()) as Cart & { cartMerged?: boolean };
     mergedGuestCart = cartResponse.ok && cart.cartMerged === true;
-    if (!cart.items.length) return finish(NextResponse.redirect(new URL("/carrito", request.url)));
+    if (!cart.items.length) return finish(NextResponse.redirect(new URL("/carrito", siteUrl)));
 
     const nextCartToken = typeof cart.cartToken === "string" ? cart.cartToken : cartToken;
     const checkoutHeaders: Record<string, string> = accessToken ? authHeaders : nextCartToken ? { "X-Cart-Token": nextCartToken } : {};
@@ -73,10 +76,10 @@ export async function GET(request: Request) {
       headers: checkoutHeaders,
     });
     if (!sessionResponse.ok) {
-      return finish(redirectToCart(request, sessionResponse.status >= 500 ? "checkout-unavailable" : "checkout-conflict"));
+      return finish(redirectToCart(sessionResponse.status >= 500 ? "checkout-unavailable" : "checkout-conflict"));
     }
     const result = (await sessionResponse.json()) as CheckoutCreateResult;
-    const response = NextResponse.redirect(new URL(`/checkout?sessionId=${encodeURIComponent(result.session.id)}`, request.url));
+    const response = NextResponse.redirect(new URL(`/checkout?sessionId=${encodeURIComponent(result.session.id)}`, siteUrl));
 
     if (!accessToken && nextCartToken) setScopedToken(response, "cartToken", nextCartToken);
     if (mergedGuestCart) clearScopedToken(response, "cartToken");
@@ -86,12 +89,12 @@ export async function GET(request: Request) {
   } catch {
     // La navegación del checkout no debe terminar en un 500 de Next si el
     // backend está temporalmente caído o agotó el timeout de red.
-    return redirectToCart(request, "checkout-unavailable");
+    return redirectToCart("checkout-unavailable");
   }
 }
 
-function redirectToCart(request: Request, reason: string) {
-  const url = new URL("/carrito", request.url);
+function redirectToCart(reason: string) {
+  const url = new URL("/carrito", siteUrl);
   url.searchParams.set("checkoutError", reason);
   return NextResponse.redirect(url);
 }
