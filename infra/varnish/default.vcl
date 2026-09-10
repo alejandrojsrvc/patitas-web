@@ -121,16 +121,6 @@ sub vcl_backend_response {
   return (deliver);
 }
 
-sub vcl_hit {
-  if (obj.ttl >= 0s) {
-    return (deliver);
-  }
-  if (std.healthy(default)) {
-    return (miss);
-  }
-  return (deliver);
-}
-
 sub vcl_deliver {
   if (resp.http.X-Patitas-Cacheable == "1") {
     if (obj.hits > 0) {
