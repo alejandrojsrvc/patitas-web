@@ -65,6 +65,7 @@ const sectionCopy: Record<AccountSection, { title: string; description: string }
 export function AccountFrame({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const activeSection = accountSectionFromPathname(pathname);
+  const isOrderDetail = activeSection === "pedidos" && pathname.split("/").filter(Boolean).length > 2;
   const account = useAccount();
   const [loggingOut, setLoggingOut] = useState(false);
   const [logoutError, setLogoutError] = useState<string | null>(null);
@@ -106,7 +107,7 @@ export function AccountFrame({ children }: { children: React.ReactNode }) {
         onLogout={() => void handleLogout()}
       />
       <section className="min-w-0">
-        <AccountHeader section={activeSection} />
+        {!isOrderDetail ? <AccountHeader section={activeSection} /> : null}
         {children}
       </section>
     </div>
@@ -1081,52 +1082,77 @@ function Replenishments({
 function Orders({ orders, detail, meta }: { orders: OrderListItem[]; detail: OrderSummary | null; meta?: AccountOrdersSection["meta"] }) {
   if (detail)
     return (
-      <article className="rounded-2xl border border-catalog-line bg-white p-5 sm:p-7">
-        <Link href="/mi-cuenta/pedidos" className="text-sm font-semibold text-brand-blue">
+      <div className="space-y-5">
+        <Link
+          href="/mi-cuenta/pedidos"
+          className="inline-flex min-h-11 items-center text-sm font-semibold text-brand-blue hover:underline hover:underline-offset-4"
+        >
           ← Volver a tus pedidos
         </Link>
-        <div className="mt-5 flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <h2 className="font-display text-2xl font-semibold">Pedido #{detail.number ?? detail.id}</h2>
-            <p className="mt-2 text-sm text-muted">
-              {orderStatus(detail.status)} · {formatAccountDate(detail.createdAt)}
-            </p>
+        <header className="min-w-0">
+          <h1 className="display-heading break-words text-3xl sm:text-4xl">Pedido #{detail.number ?? detail.id}</h1>
+          <p className="mt-2 text-sm text-muted">Realizado el {formatAccountDate(detail.createdAt)}</p>
+        </header>
+
+        <section className="rounded-2xl bg-soft-blue p-5 sm:p-6" aria-labelledby="order-status-title">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="max-w-2xl">
+              <h2 id="order-status-title" className="font-display text-2xl font-semibold">
+                Dónde está y qué sigue
+              </h2>
+              <p className="mt-3 text-lg font-semibold text-ink">{orderStatus(detail.status)}</p>
+              <p className="mt-1 text-sm leading-6 text-muted">{orderStatusMessage(detail.status)}</p>
+            </div>
+            <PaymentBadge status={detail.paymentStatus} />
           </div>
-          <PaymentBadge status={detail.paymentStatus} />
-        </div>
+          {detail.shipment ? (
+            <div className="mt-5 border-t border-brand-blue/15 pt-4 text-sm">
+              <p className="font-semibold">Entrega: {shipmentStatusLabel(detail.shipment.status)}</p>
+              <p className="mt-1 text-muted">{deliveryExpectation(detail)}</p>
+            </div>
+          ) : (
+            <p className="mt-5 border-t border-brand-blue/15 pt-4 text-sm leading-6 text-muted">
+              {noShipmentMessage(detail.status)}
+            </p>
+          )}
+        </section>
+
         {detail.reconciliationRequired ? (
-          <p className="mt-5 rounded-xl bg-warning-surface p-4 text-sm text-warning">
+          <p className="rounded-xl bg-warning-surface p-4 text-sm leading-6 text-warning" role="status">
             Este pago necesita revisión. Para evitar un cobro duplicado, no intentes pagarlo de nuevo.
           </p>
         ) : null}
-        <ul className="mt-6 divide-y divide-catalog-line">
-          {detail.lines.map((line) => (
-            <li key={line.variantId} className="flex justify-between gap-4 py-3">
-              <span className="min-w-0 break-words">
-                {line.quantity} × {line.productName}
-                {line.presentation ? ` · ${line.presentation}` : ""}
-              </span>
-              <span className="shrink-0 tabular-nums">{formatMoney(Number(line.lineTotal))}</span>
-            </li>
-          ))}
-        </ul>
-        <div className="mt-5 flex justify-between border-t border-catalog-line pt-5 font-semibold">
-          <span>Total</span>
-          <span>{formatMoney(Number(detail.total))}</span>
+
+        <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_19rem]">
+          <div className="space-y-5">
+            <section className="rounded-2xl border border-catalog-line bg-white p-5 sm:p-6" aria-labelledby="order-products-title">
+              <h2 id="order-products-title" className="font-display text-xl font-semibold">
+                Productos del pedido
+              </h2>
+              <ul className="mt-4 divide-y divide-catalog-line border-y border-catalog-line">
+                {detail.lines.map((line) => (
+                  <li key={line.variantId} className="flex justify-between gap-4 py-4">
+                    <span className="min-w-0 break-words">
+                      <span className="font-semibold">{line.quantity} × {line.productName}</span>
+                      {line.presentation ? <span className="mt-1 block text-sm text-muted">{line.presentation}</span> : null}
+                    </span>
+                    <span className="shrink-0 tabular-nums">{formatMoney(Number(line.lineTotal))}</span>
+                  </li>
+                ))}
+              </ul>
+            </section>
+
+            <OrderDelivery detail={detail} />
+          </div>
+
+          <aside className="space-y-5" aria-label="Pago y dirección del pedido">
+            <OrderPaymentSummary detail={detail} />
+            <OrderAddress detail={detail} />
+          </aside>
         </div>
-        {detail.shipment ? (
-          <section className="mt-6 rounded-xl bg-soft-blue p-4">
-            <p className="text-sm font-semibold">Entrega: {shipmentStatusLabel(detail.shipment.status)}</p>
-            {detail.shipment.trackingNumber ? <p className="mt-1 text-sm text-muted">Seguimiento: {detail.shipment.trackingNumber}</p> : null}
-            <ol className="mt-3 space-y-2 text-sm text-muted">
-              {detail.shipment.events.map((event) => <li key={event.id}><strong>{shipmentStatusLabel(event.status)}</strong> · {event.visibleMessage}</li>)}
-            </ol>
-            {detail.shipment.trackingUrl ? <a className="mt-3 inline-block text-sm font-semibold text-brand-blue" href={detail.shipment.trackingUrl} target="_blank" rel="noreferrer">Ver seguimiento</a> : null}
-          </section>
-        ) : null}
+
         <OrderClaimForm orderId={detail.id} />
-        {detail.canRetry && !detail.reconciliationRequired ? <OrderRetryButton orderId={detail.id} /> : null}
-      </article>
+      </div>
     );
   return (
     <div className="grid gap-3">
@@ -1135,23 +1161,22 @@ function Orders({ orders, detail, meta }: { orders: OrderListItem[]; detail: Ord
           <Link
             key={item.id}
             href={`/mi-cuenta/pedidos/${item.id}`}
-            className="rounded-2xl border border-catalog-line bg-white p-5 transition-colors hover:bg-soft-blue"
+            className="rounded-2xl border border-catalog-line bg-white p-5 transition-colors hover:border-brand-blue/30 hover:bg-soft-blue"
           >
-            <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
               <div className="min-w-0">
                 <h2 className="break-words font-display text-xl font-semibold">Pedido {item.number ?? item.id}</h2>
-                <p className="mt-1 text-sm text-muted">
-                  {formatAccountDate(item.createdAt)} · {orderStatus(item.status)}
-                </p>
+                <p className="mt-1 text-sm text-muted">{formatAccountDate(item.createdAt)}</p>
+                <p className="mt-3 text-sm font-semibold text-ink">{orderStatus(item.status)}</p>
               </div>
-              <PaymentBadge status={item.paymentStatus} />
+              <div className="flex flex-wrap items-center justify-between gap-3 sm:flex-col sm:items-end">
+                <PaymentBadge status={item.paymentStatus} />
+                <strong className="text-lg tabular-nums">{formatMoney(Number(item.total))}</strong>
+              </div>
             </div>
-            <div className="mt-4 flex items-end justify-between gap-3">
-              <p className="text-sm text-muted">
-                {item.lineCount} {item.lineCount === 1 ? "producto" : "productos"}
-              </p>
-              <strong className="tabular-nums">{formatMoney(Number(item.total))}</strong>
-            </div>
+            <p className="mt-4 border-t border-catalog-line pt-3 text-sm text-muted">
+              {item.lineCount} {item.lineCount === 1 ? "producto" : "productos"} · Ver detalle y seguimiento
+            </p>
           </Link>
         ))
       ) : (
@@ -1164,7 +1189,7 @@ function Orders({ orders, detail, meta }: { orders: OrderListItem[]; detail: Ord
         </div>
       )}
       {meta && meta.totalPages > 1 ? (
-        <nav aria-label="Paginación de pedidos" className="mt-4 flex items-center justify-center gap-3">
+        <nav aria-label="Paginación de pedidos" className="mt-4 flex flex-wrap items-center justify-center gap-3">
           <Link
             aria-disabled={meta.page <= 1}
             tabIndex={meta.page <= 1 ? -1 : undefined}
@@ -1190,6 +1215,112 @@ function Orders({ orders, detail, meta }: { orders: OrderListItem[]; detail: Ord
   );
 }
 
+function OrderDelivery({ detail }: { detail: OrderSummary }) {
+  const shipment = detail.shipment;
+  return (
+    <section className="rounded-2xl border border-catalog-line bg-white p-5 sm:p-6" aria-labelledby="order-delivery-title">
+      <h2 id="order-delivery-title" className="font-display text-xl font-semibold">
+        Entrega
+      </h2>
+      <p className="mt-3 font-semibold">{shipment ? shipmentStatusLabel(shipment.status) : "Seguimiento todavía no disponible"}</p>
+      <p className="mt-1 text-sm leading-6 text-muted">{deliveryExpectation(detail)}</p>
+      {shipment?.trackingNumber ? (
+        <p className="mt-4 break-words text-sm text-muted">
+          Número de seguimiento: <strong className="text-ink">{shipment.trackingNumber}</strong>
+        </p>
+      ) : null}
+      {shipment?.trackingUrl ? (
+        <a
+          className="mt-3 inline-flex min-h-11 items-center text-sm font-semibold text-brand-blue hover:underline hover:underline-offset-4"
+          href={shipment.trackingUrl}
+          target="_blank"
+          rel="noreferrer"
+        >
+          Ver seguimiento en una pestaña nueva
+        </a>
+      ) : null}
+      {shipment?.events.length ? (
+        <details className="mt-4 border-t border-catalog-line pt-2">
+          <summary className="flex min-h-11 cursor-pointer items-center text-sm font-semibold text-brand-blue">
+            Ver historial de la entrega
+          </summary>
+          <ol className="space-y-4 pb-2 pt-2 text-sm">
+            {shipment.events.map((event) => (
+              <li key={event.id} className="min-w-0">
+                <strong className="block">{shipmentStatusLabel(event.status)}</strong>
+                <span className="mt-1 block break-words text-muted">{event.visibleMessage}</span>
+                <span className="mt-1 block text-xs text-muted">{formatAccountDate(event.occurredAt)}</span>
+              </li>
+            ))}
+          </ol>
+        </details>
+      ) : null}
+    </section>
+  );
+}
+
+function OrderPaymentSummary({ detail }: { detail: OrderSummary }) {
+  const discount = Number(detail.discountTotal);
+  const shipping = Number(detail.shippingCost);
+  return (
+    <section className="rounded-2xl border border-catalog-line bg-white p-5" aria-labelledby="order-payment-title">
+      <h2 id="order-payment-title" className="font-display text-xl font-semibold">
+        Pago y totales
+      </h2>
+      <div className="mt-4 space-y-3 text-sm">
+        <div className="flex justify-between gap-4">
+          <span className="text-muted">Subtotal</span>
+          <span className="shrink-0 tabular-nums">{formatMoney(Number(detail.subtotal))}</span>
+        </div>
+        {discount > 0 ? (
+          <div className="flex justify-between gap-4 text-brand-blue">
+            <span>Descuentos</span>
+            <span className="shrink-0 tabular-nums">−{formatMoney(discount)}</span>
+          </div>
+        ) : null}
+        <div className="flex justify-between gap-4">
+          <span className="text-muted">Envío</span>
+          <span className="shrink-0 tabular-nums">{shipping > 0 ? formatMoney(shipping) : "Gratis"}</span>
+        </div>
+        <div className="flex items-end justify-between gap-4 border-t border-catalog-line pt-4">
+          <span className="font-semibold">Total</span>
+          <strong className="text-xl tabular-nums">{formatMoney(Number(detail.total))}</strong>
+        </div>
+      </div>
+      <div className="mt-4 border-t border-catalog-line pt-4">
+        <p className="text-xs font-semibold uppercase tracking-[0.04em] text-muted">Estado del pago</p>
+        <p className="mt-1 text-sm font-semibold">{paymentStatusLabel(detail.paymentStatus)}</p>
+        {detail.paymentMethod ? <p className="mt-1 text-sm text-muted">Medio: {orderPaymentMethodLabel(detail.paymentMethod)}</p> : null}
+      </div>
+      {detail.canRetry && !detail.reconciliationRequired ? <OrderRetryButton orderId={detail.id} /> : null}
+    </section>
+  );
+}
+
+function OrderAddress({ detail }: { detail: OrderSummary }) {
+  const address = orderAddressLines(detail.shippingAddress);
+  return (
+    <section className="rounded-2xl border border-catalog-line bg-white p-5" aria-labelledby="order-address-title">
+      <h2 id="order-address-title" className="font-display text-xl font-semibold">
+        Dirección de entrega
+      </h2>
+      {address.length ? (
+        <div className="mt-3 text-sm leading-6">
+          <p className="font-semibold">{detail.contactName}</p>
+          {address.map((line, index) => (
+            <p key={`${index}:${line}`} className="break-words text-muted">
+              {line}
+            </p>
+          ))}
+          {detail.deliveryInstructions ? <p className="mt-3 break-words text-muted">Indicaciones: {detail.deliveryInstructions}</p> : null}
+        </div>
+      ) : (
+        <p className="mt-3 text-sm leading-6 text-muted">La dirección todavía no está disponible en este detalle.</p>
+      )}
+    </section>
+  );
+}
+
 function OrderClaimForm({ orderId }: { orderId: string }) {
   const [type, setType] = useState("DELIVERY_DELAY");
   const [message, setMessage] = useState("");
@@ -1200,7 +1331,58 @@ function OrderClaimForm({ orderId }: { orderId: string }) {
     try { await requestAccountJson(`/me/orders/${encodeURIComponent(orderId)}/claims`, { method: "POST", body: JSON.stringify({ type, message }) }); setSent(true); setMessage(""); }
     catch (cause) { setError(cause instanceof Error ? cause.message : "No pudimos enviar el reclamo."); }
   }
-  return <form onSubmit={submit} className="mt-6 border-t border-catalog-line pt-5"><p className="text-sm font-semibold">¿Necesitás ayuda con este pedido?</p><div className="mt-3 flex flex-wrap gap-3"><select value={type} onChange={(event) => setType(event.target.value)} className="rounded-xl border border-catalog-line p-3 text-sm"><option value="DELIVERY_DELAY">Demora en la entrega</option><option value="ADDRESS_CHANGE">Cambiar dirección</option><option value="MISSING_PACKAGE">Paquete faltante</option><option value="DAMAGED_PACKAGE">Paquete dañado</option><option value="OTHER">Otro motivo</option></select><input required minLength={3} value={message} onChange={(event) => setMessage(event.target.value)} placeholder="Contanos qué pasó" className="min-w-52 flex-1 rounded-xl border border-catalog-line p-3 text-sm" /><button className="rounded-xl bg-brand-blue px-4 py-3 text-sm font-semibold text-white">Enviar consulta</button></div>{sent ? <p className="mt-2 text-sm text-brand-blue">Recibimos tu consulta.</p> : null}{error ? <p role="alert" className="mt-2 text-sm text-[#8d2020]">{error}</p> : null}</form>;
+  return (
+    <details className="group rounded-2xl border border-catalog-line bg-white">
+      <summary className="flex min-h-14 cursor-pointer items-center justify-between gap-4 px-5 font-semibold sm:px-6">
+        ¿Necesitás ayuda con este pedido?
+        <span className="text-sm font-normal text-muted group-open:hidden">Abrir</span>
+        <span className="hidden text-sm font-normal text-muted group-open:inline">Cerrar</span>
+      </summary>
+      <form onSubmit={submit} className="border-t border-catalog-line p-5 sm:p-6">
+        <p className="text-sm leading-6 text-muted">Contanos el motivo y qué pasó para que podamos ayudarte.</p>
+        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+          <label className="text-sm font-semibold">
+            Motivo
+            <select
+              value={type}
+              onChange={(event) => setType(event.target.value)}
+              className="mt-1.5 min-h-12 w-full rounded-xl border border-catalog-line bg-white px-3 text-base font-normal focus-visible:border-brand-blue focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue"
+            >
+              <option value="DELIVERY_DELAY">Demora en la entrega</option>
+              <option value="ADDRESS_CHANGE">Cambiar dirección</option>
+              <option value="MISSING_PACKAGE">Paquete faltante</option>
+              <option value="DAMAGED_PACKAGE">Paquete dañado</option>
+              <option value="OTHER">Otro motivo</option>
+            </select>
+          </label>
+          <label className="text-sm font-semibold">
+            ¿Qué pasó?
+            <input
+              required
+              minLength={3}
+              value={message}
+              onChange={(event) => setMessage(event.target.value)}
+              placeholder="Por ejemplo: todavía no recibí el pedido"
+              className="mt-1.5 min-h-12 w-full rounded-xl border border-catalog-line px-3 text-base font-normal focus-visible:border-brand-blue focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue"
+            />
+          </label>
+        </div>
+        <button className="mt-4 inline-flex min-h-12 items-center rounded-xl bg-brand-blue px-5 text-sm font-semibold text-white">
+          Enviar consulta
+        </button>
+        {sent ? (
+          <p role="status" className="mt-3 text-sm text-brand-blue">
+            Recibimos tu consulta. Podés seguir usando tu cuenta con normalidad.
+          </p>
+        ) : null}
+        {error ? (
+          <p role="alert" className="mt-3 text-sm text-error">
+            {error}
+          </p>
+        ) : null}
+      </form>
+    </details>
+  );
 }
 
 function OrderRetryButton({ orderId }: { orderId: string }) {
@@ -1709,6 +1891,62 @@ function replenishmentStatus(status: string) {
       status
     ] ?? "Estado no disponible"
   );
+}
+
+function orderStatusMessage(status: string) {
+  return (
+    (
+      {
+        DRAFT: "El pedido todavía no fue confirmado.",
+        PENDING_PAYMENT: "Falta confirmar el pago para poder continuar con la preparación.",
+        PAID: "Recibimos el pago. El próximo paso es preparar la entrega.",
+        PROCESSING: "Estamos preparando los productos antes del despacho.",
+        SHIPPED: "El pedido ya salió. Revisá el seguimiento para ver las novedades de la entrega.",
+        DELIVERED: "La entrega figura como completada.",
+        CANCELLED: "El pedido fue cancelado. Si necesitás ayuda, escribinos desde esta página.",
+      } as Record<string, string>
+    )[status] ?? "Consultá abajo el pago y la entrega para conocer las últimas novedades."
+  );
+}
+
+function deliveryExpectation(detail: OrderSummary) {
+  if (!detail.shipment && detail.status === "CANCELLED") return noShipmentMessage(detail.status);
+  const date = detail.shipment?.estimatedDate ?? detail.shippingDeliveryDate;
+  const slot = detail.shipment?.estimatedSlot ?? detail.shippingDeliverySlot;
+  if (date && slot) return `Entrega estimada: ${formatAccountDate(date)} · ${slot}`;
+  if (date) return `Entrega estimada: ${formatAccountDate(date)}`;
+  if (slot) return `Horario estimado: ${slot}`;
+  if (detail.shippingEstimate) return detail.shippingEstimate;
+  return detail.shipment ? "La fecha estimada todavía no está disponible. El seguimiento se actualizará acá." : noShipmentMessage(detail.status);
+}
+
+function noShipmentMessage(status: string) {
+  if (status === "CANCELLED") return "Este pedido no tiene un envío activo porque fue cancelado.";
+  if (status === "DRAFT" || status === "PENDING_PAYMENT") {
+    return "El seguimiento aparecerá después de confirmar el pedido y comenzar la preparación.";
+  }
+  return "Todavía no hay un envío asignado. Cuando comience la preparación, vas a ver el seguimiento acá.";
+}
+
+function orderPaymentMethodLabel(method: string) {
+  return (
+    ({ MERCADO_PAGO: "Mercado Pago", PAYWAY: "Tarjeta de débito", BANK_TRANSFER: "Transferencia bancaria" } as Record<
+      string,
+      string
+    >)[method] ?? "Otro medio de pago"
+  );
+}
+
+function orderAddressLines(address?: Record<string, unknown>) {
+  const value = (field: string) => {
+    const candidate = address?.[field];
+    return typeof candidate === "string" && candidate.trim() ? candidate.trim() : null;
+  };
+  const street = [value("street"), value("number")].filter(Boolean).join(" ");
+  const apartment = value("apartment");
+  const area = [value("neighborhood"), value("city")].filter(Boolean).join(", ");
+  const region = [value("province"), value("postalCode")].filter(Boolean).join(" · ");
+  return [street, apartment, area, region].filter((line): line is string => Boolean(line));
 }
 
 function formatAccountDate(value: string) {
