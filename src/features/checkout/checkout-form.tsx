@@ -199,7 +199,9 @@ export function CheckoutForm({
     void loadPaywaySdk()
       .then(() => {
         if (!window.Decidir) throw new Error("No pudimos cargar el medio de pago.");
-        const decidir = new window.Decidir(PAYWAY_API_URL);
+        // El sitio sandbox entregado no tiene configuración de Cybersource.
+        // El segundo argumento evita que la SDK consulte /frauddetectionconf antes de tokenizar.
+        const decidir = new window.Decidir(PAYWAY_API_URL, true);
         decidir.setPublishableKey(paywayPublicApiKey);
         decidir.setTimeout(5000);
         paywaySdkRef.current = decidir;
